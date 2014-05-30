@@ -116,6 +116,22 @@ trait AnyCompositeKeyTable extends AnyTable { table =>
       val getItem = mkGetItem(item)
       getItem(rep, hash, range)
     }
+
+    /*
+      The query method lets you do per-hash retrieval of items. You fix a value of the hash key and then pass on a predicate over the range key (which could be empty). 
+    */
+    def query [
+      I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] },
+      RP <: I#Tpe#Predicate,
+      FP <: I#Tpe#Predicate
+    ](
+      item: I,
+      hash: table.tpe.key.hashKey.Rep,
+      withRange: RP,
+      filter: FP
+    )(implicit
+      ev: (I#Tpe#PredicateOver[RP,table.tpe.key.RangeKey])
+    ): List[I#Rep] = ???
   }
 
 }

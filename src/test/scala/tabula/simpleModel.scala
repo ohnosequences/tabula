@@ -8,6 +8,7 @@ object simpleModel {
 
   object id extends Attribute[Int]
   object name extends Attribute[String]
+  object age extends Attribute[Int]
   object email extends Attribute[String]
   object serializedCrap extends Attribute[Bytes]
   // object nono extends Attribute[Traversable[Array[Float]]]
@@ -25,6 +26,7 @@ object simpleModel {
 
   case object UserItem extends ItemType(UsersTable)
   implicit val user_name = UserItem has name
+  implicit val user_age = UserItem has age
 
   case object FunnyUserItem extends ItemType(UsersTable)
   implicit val funnyUser_name = FunnyUserItem has name
@@ -40,4 +42,14 @@ object simpleModel {
 
   // ideally I'd like something like
   // val pred = UserItem ? (name EQ "piticli")
+
+  // alt predicates
+  val apred = PredicateOn(UserItem) and EQ[name.type](name, "piticli")
+  // val wrongapred = PredicateOn(UserItem) and EQ[email.type](email, "oh@uh.com")
+  val anowOK = PredicateOn(FunnyUserItem) and EQ[email.type](email, "oh@uh.com")
+
+  import AnyPredicate._
+  import Condition._
+
+  val superPred = UserItem ? (name === "piticli") and (age ≤ 34)
 }

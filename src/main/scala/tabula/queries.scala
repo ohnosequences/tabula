@@ -34,3 +34,14 @@ case class GE[A <: AnyAttribute](val attribute: A, val value: A#Raw)(implicit ev
 case class BEGINS_WITH[A <: AnyAttribute](val attribute: A, val value: A#Raw)(implicit ev: oneOf[ValuesWithPrefixes]#is[A#Raw])
   extends SimpleCondition[A]
 case class BETWEEN[A <: AnyAttribute](val attribute: A, val start: A#Raw, val end: A#Raw)(implicit ev: oneOf[NotSetValues]#is[A#Raw]) extends Condition { type Attribute = A }
+
+case class ConditionOps[A <: Singleton with AnyAttribute](attribute: A) {
+
+  def ===(value: A#Raw): EQ[A] = EQ(attribute, value)
+  def ≤(value: A#Raw)(implicit ev: oneOf[NotSetValues]#is[A#Raw]): LT[A] = LT(attribute, value)
+}
+
+object Condition {
+
+  implicit def conditionOps[A <: Singleton with AnyAttribute](attribute: A): ConditionOps[A] = ConditionOps(attribute)
+}

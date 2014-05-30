@@ -9,9 +9,13 @@ trait AnyItemType { itemT =>
 
   type TableType <: AnyTableType
   val tableType: TableType
+  // just in case
+  type Key = TableType#Key
 
   /*
-    predicates refer to this item type. They need to use attributes that this item type has; this is enforced when building them by requiring an implicit for the corresponding item having the attribute that the condition refers to. All this stuff is nested here but could possibly be somewhere else just by adding an ItemType type/value pair to Predicate. In that case all the predicate builders should check that they are building predicates for the same item (or nest the classes inside the corresponding predicateOps trait/class)
+    predicates refer to this item type. They need to use attributes that this item type has; this is enforced when building them by requiring an implicit for the corresponding item having the attribute that the condition refers to. 
+
+    All this stuff is nested here but could possibly be somewhere else just by adding an ItemType type/value pair to Predicate. In that case all the predicate builders should check that they are building predicates for the same item (or nest the classes inside the corresponding predicateOps trait/class)
   */
   trait Predicate
 
@@ -28,8 +32,9 @@ trait AnyItemType { itemT =>
     object EMPTY_ extends EMPTY
     val EMPTY: EMPTY = EMPTY_
 
-
     trait OrPredicate extends Predicate
+
+    trait PredicateOver[P <: Predicate, A <: AnyAttribute]
 
 }
 
