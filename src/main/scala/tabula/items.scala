@@ -5,11 +5,35 @@ import ohnosequences.scarph._
 /*
   This is the type of items of a given table. A table can hold different kinds of records, as you could want to restrict access to some items for example; there's even functionality in IAM for this. By separating the item type from the table we can easily model this scenario as different item types for the same table.
 */
-trait AnyItemType {
+trait AnyItemType { itemT =>
 
   type TableType <: AnyTableType
   val tableType: TableType
+
+  /*
+    predicates refer to this item type. They need to use attributes that this item type has; this is enforced when building them by requiring an implicit for the corresponding item having the attribute that the condition refers to. All this stuff is nested here but could possibly be somewhere else just by adding an ItemType type/value pair to Predicate. In that case all the predicate builders should check that they are building predicates for the same item (or nest the classes inside the corresponding predicateOps trait/class)
+  */
+  trait Predicate
+
+    trait AndPredicate extends Predicate
+
+      case class AND[P <: AndPredicate, C <: Condition](
+        val allThis: P, 
+        val also: C
+      )(implicit
+        ev: (itemT.type HasProperty C#Attribute)
+      ) 
+      extends AndPredicate
+    trait EMPTY extends AndPredicate
+    object EMPTY_ extends EMPTY
+    val EMPTY: EMPTY = EMPTY_
+
+
+    trait OrPredicate extends Predicate
+
 }
+
+
 object AnyItemType {
 
   type of[T <: AnyTableType] = AnyItemType { type TableType = T }

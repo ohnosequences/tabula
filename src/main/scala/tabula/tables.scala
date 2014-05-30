@@ -2,6 +2,11 @@ package ohnosequences.tabula
 
 import ohnosequences.scarph._
 
+/*
+  ### table types
+
+  a table type contains the static part of a table, all that cannot be changed once the the table is created.
+*/
 trait AnyTableType {
 
   type Region <: AnyRegion
@@ -13,10 +18,13 @@ trait AnyTableType {
   val name: String
 }
 
+/*
+  Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation only makes sense on a table with a composite key.
+*/
 trait AnyHashKeyTableType extends AnyTableType { type Key <: AnyHash }
 trait AnyCompositeKeyTableType extends AnyTableType { type Key <: AnyHashRange }
 
-abstract class HashKeyTableType[ 
+class HashKeyTableType[
   K <: AnyHash,
   R <: AnyRegion
 ](
