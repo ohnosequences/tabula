@@ -34,23 +34,17 @@ object simpleModel {
   implicit val funnyUser_serializedCrap = FunnyUserItem has serializedCrap
 
   // predicates
-
-  // TODO add typeclasses so that we can write name EQ "piticli". This will improve type inference too
-  val pred = UserItem.AND(UserItem.EMPTY, EQ[name.type](name, "piticli"))
-  // val wrongPred = UserItem.AND(UserItem.EMPTY, EQ[email.type](email, "oh@uh.com"))
-  val nowOK = FunnyUserItem.AND(FunnyUserItem.EMPTY, EQ[email.type](email, "oh@uh.com"))
-
-  // ideally I'd like something like
-  // val pred = UserItem ? (name EQ "piticli")
-
-  // alt predicates
-  val apred = PredicateOn(UserItem) and EQ[name.type](name, "piticli")
-  // val wrongapred = PredicateOn(UserItem) and EQ[email.type](email, "oh@uh.com")
-  val anowOK = PredicateOn(FunnyUserItem) and EQ[email.type](email, "oh@uh.com")
+  val pred = PredicateOn(UserItem) and EQ[name.type](name, "piticli")
+  // val wrongpred = PredicateOn(UserItem) and EQ[email.type](email, "oh@uh.com")
+  val nowOK = PredicateOn(FunnyUserItem) and EQ[email.type](email, "oh@uh.com")
 
   import AnyPredicate._
   import Condition._
 
   val superPred = UserItem ? (name === "piticli") and (age ≤ 34)
+
+  val moreStuff = superPred and (age ≥ 5)
+
+  val other = UserItem ? (name isThere)
 
 }

@@ -65,8 +65,12 @@ trait AnyHashKeyTable extends AnyTable { table =>
 
     def apply(rep: table.Rep, hash: table.tpe.key.hashKey.Rep): item.Rep
   }
+
   abstract class GetItem[I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }](val item: I) 
-    extends AnyGetItem { type Item = I }
+  extends AnyGetItem { 
+
+    type Item = I
+  }
 
   case class TableOps(val rep: table.Rep) {
 
@@ -131,12 +135,9 @@ trait AnyCompositeKeyTable extends AnyTable { table =>
       filter: FP
     ): List[I#Rep] = ???
   }
-
 }
 
-
 // Keys
-
 sealed trait AnyPrimaryKey
   /*
     A simple hash key
