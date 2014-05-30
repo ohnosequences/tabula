@@ -2,6 +2,10 @@ package ohnosequences.tabula
 
 import ohnosequences.scarph._
 
+
+/*
+  This is more or less OK by now.
+*/
 trait AnyPredicate {
 
   type ItemType <: AnyItemType

@@ -52,4 +52,5 @@ object simpleModel {
   import Condition._
 
   val superPred = UserItem ? (name === "piticli") and (age ≤ 34)
+
 }

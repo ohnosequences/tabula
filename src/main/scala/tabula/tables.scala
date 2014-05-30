@@ -122,15 +122,13 @@ trait AnyCompositeKeyTable extends AnyTable { table =>
     */
     def query [
       I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] },
-      RP <: I#Tpe#Predicate,
-      FP <: I#Tpe#Predicate
+      RP <: AnyPredicate.Over[I#Tpe], // TODO add bound for this to be only on the range key
+      FP <: AnyPredicate.Over[I#Tpe]
     ](
       item: I,
       hash: table.tpe.key.hashKey.Rep,
       withRange: RP,
       filter: FP
-    )(implicit
-      ev: (I#Tpe#PredicateOver[RP,table.tpe.key.RangeKey])
     ): List[I#Rep] = ???
   }
 
