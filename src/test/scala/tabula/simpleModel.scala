@@ -34,17 +34,17 @@ object simpleModel {
   implicit val funnyUser_serializedCrap = FunnyUserItem has serializedCrap
 
   // predicates
-  val pred = PredicateOn(UserItem) and EQ[name.type](name, "piticli")
-  // val wrongpred = PredicateOn(UserItem) and EQ[email.type](email, "oh@uh.com")
-  val nowOK = PredicateOn(FunnyUserItem) and EQ[email.type](email, "oh@uh.com")
-
   import AnyPredicate._
   import Condition._
 
-  val superPred = UserItem ? (name === "piticli") and (age ≤ 34)
+  val namePred = SimplePredicate(UserItem, EQ[name.type](name, "piticli"))
+  val agePred = AND(namePred, age < 18)
 
-  val moreStuff = superPred and (age ≥ 5)
+  val emailPred = SimplePredicate(FunnyUserItem, EQ[email.type](email, "oh@uh.com"))
 
-  val other = UserItem ? (name isThere)
+  val orNamePred = UserItem ? (name === "piticli") or (name === "clipiti")
+  val andAgePred = orNamePred and (age ≥ 5)
+
+  val userHasName = UserItem ? (name isThere)
 
 }

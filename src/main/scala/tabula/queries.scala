@@ -45,7 +45,9 @@ case class BETWEEN[A <: Singleton with AnyAttribute](val attribute: A, val start
 case class ConditionOps[A <: Singleton with AnyAttribute](attribute: A) {
 
   def ===(value: A#Raw): EQ[A] = EQ(attribute, value)
+  def <(value: A#Raw)(implicit ev: oneOf[NotSetValues]#is[A#Raw]): LT[A] = LT(attribute, value)
   def ≤(value: A#Raw)(implicit ev: oneOf[NotSetValues]#is[A#Raw]): LE[A] = LE(attribute, value)
+  def >(value: A#Raw)(implicit ev: oneOf[NotSetValues]#is[A#Raw]): GT[A] = GT(attribute, value)
   def ≥(value: A#Raw)(implicit ev: oneOf[NotSetValues]#is[A#Raw]): GE[A] = GE(attribute, value)
 
   def isThere = has(attribute)

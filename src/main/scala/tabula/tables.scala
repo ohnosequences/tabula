@@ -126,8 +126,8 @@ trait AnyCompositeKeyTable extends AnyTable { table =>
     */
     def query [
       I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] },
-      RP <: AnyPredicate.Over[I#Tpe], // TODO add bound for this to be only on the range key
-      FP <: AnyPredicate.Over[I#Tpe]
+      RP <: AnyPredicate.On[I#Tpe], // TODO add bound for this to be only on the range key
+      FP <: AnyPredicate.On[I#Tpe]
     ](
       item: I,
       hash: table.tpe.key.hashKey.Rep,

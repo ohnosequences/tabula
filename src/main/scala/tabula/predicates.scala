@@ -12,54 +12,40 @@ trait AnyPredicate {
   val itemType: ItemType
 }
 
-trait AndPredicate extends AnyPredicate { self =>
+class PredicateOn[I <: Singleton with AnyItemType](val itemType: I) 
+  extends AnyPredicate { self =>
 
-  type ItemType <: Singleton with AnyItemType
-
-  def and[Other <: Condition](other: Other)
-    (implicit ev: ItemType HasProperty other.Attribute): AndPredicate { type ItemType = self.ItemType }
-}
-trait OrPredicate extends AnyPredicate
-
-case class AND[P <: Singleton with AndPredicate, C <: Condition](val allThis: P, val also: C) 
-extends AndPredicate { self =>
-
-  type ItemType = allThis.ItemType
-  val itemType = allThis.itemType
+  type ItemType = I 
 
   def and[Other <: Condition](other: Other)(implicit 
     ev: ItemType HasProperty other.Attribute
-  ): AndPredicate { type ItemType = self.ItemType } = AND[this.type, Other](this, other)
-}
+  ): AND[this.type, Other] = AND[this.type, Other](this, other)
 
-// an atomic pred; it is both or, and
-case class SimplePredicate[I <: Singleton with AnyItemType, C <: Condition](val itemType: I, val condition: C) 
-extends AnyPredicate with AndPredicate with OrPredicate { self =>
-
-  type ItemType = I
-
-  def and[Other <: Condition](other: Other)(implicit 
+  def or[Other <: Condition](other: Other)(implicit 
     ev: ItemType HasProperty other.Attribute
-  ): AndPredicate { type ItemType = self.ItemType } = AND[this.type, Other](this, other)
+  ): OR[this.type, Other] = OR[this.type, Other](this, other)
 }
 
-case class PredicateOn[I <: Singleton with AnyItemType](val itemType: I)
-extends AnyPredicate with AndPredicate with OrPredicate { self =>
+case class SimplePredicate[I <: Singleton with AnyItemType, C <: Condition](override val itemType: I, val condition: C) 
+  extends PredicateOn[I](itemType) 
 
-  type ItemType = I
+case class AND[P <: AnyPredicate, C <: Condition](val allThis: P, val also: C) 
+  extends PredicateOn[P#ItemType](allThis.itemType) 
 
-  def and[Other <: Condition](other: Other)(implicit 
-    ev: ItemType HasProperty other.Attribute
-  ): AndPredicate { type ItemType = self.ItemType } = AND[this.type, Other](this, other)
+case class OR[P <: AnyPredicate, C <: Condition](val allThis: P, val also: C) 
+  extends PredicateOn[P#ItemType](allThis.itemType) 
 
-  def ?[C <: Condition](c: C)(implicit ev: ItemType HasProperty C#Attribute): SimplePredicate[ItemType,C] =
-    SimplePredicate(itemType, c)
-}
 
-  
 object AnyPredicate {
 
-  type Over[I <: AnyItemType] = AnyPredicate { type ItemType = I }
+  type On[I <: AnyItemType] = AnyPredicate { type ItemType = I }
 
-  implicit def toPredicateOps[I <: Singleton with AnyItemType](itemType: I): PredicateOn[I] = PredicateOn(itemType)
+  // itemType ? condition == SimplePredicate(itemType, condition)
+  implicit def toItemPredicateOps[I <: Singleton with AnyItemType](itemType: I): ItemPredicateOps[I] = ItemPredicateOps(itemType)
+  case class ItemPredicateOps[I <: Singleton with AnyItemType](itemType: I) {
+    def ?[C <: Condition](c: C)(implicit 
+        ev: I HasProperty C#Attribute
+      ): SimplePredicate[I, C] =
+         SimplePredicate(itemType, c)
+  }
 }
