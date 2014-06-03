@@ -1,5 +1,6 @@
 package ohnosequences.tabula
 
+import ohnosequences.typesets._
 import ohnosequences.scarph._
 
 /*
