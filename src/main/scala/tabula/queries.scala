@@ -1,5 +1,7 @@
 package ohnosequences.tabula
 
+import ohnosequences.typesets._
+
 trait Condition {
   
   type Attribute <: Singleton with AnyAttribute
