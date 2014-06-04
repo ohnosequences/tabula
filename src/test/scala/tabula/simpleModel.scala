@@ -43,6 +43,7 @@ object simpleModel {
 
   val superPred = UserItem ? (name === "piticli") and (age ≤ 34)
 
+  // note that you can add stuff to already defined predicates
   val moreStuff = superPred and (age ≥ 5)
 
   val other = UserItem ? (name isThere)

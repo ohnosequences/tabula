@@ -32,7 +32,7 @@ package object tabula {
   // not documented; the API informs you about it if you try not to adhere to it
   type PrimaryKeyValues = either[String]#or[Num]#or[Bytes]
   type NotSetValues = either[Num]#or[String]#or[Bytes]
-  type ValuesWithPrefixes = either[String]#or[Bytes]
+  type ValuesWithPrefixes = either[String]#or[Bytes]#or[Num]
 
   trait AnyAccount {
   

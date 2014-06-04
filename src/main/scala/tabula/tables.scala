@@ -7,7 +7,7 @@ import ohnosequences.scarph._
 
   a table type contains the static part of a table, all that cannot be changed once the the table is created.
 */
-trait AnyTableType {
+trait AnyTableType extends AnyDynamoDBResourceType {
 
   type Region <: AnyRegion
   val region: Region
@@ -37,12 +37,34 @@ class HashKeyTableType[
   type Key = K
 }
 
+trait AnyTableState extends AnyDynamoDBState {
+
+  type Resource <: AnyTable
+  
+  val throughputStatus: ThroughputStatus
+}
+
+case class ThroughputStatus(
+  readCapacity: Int,
+  writeCapacity: Int,
+  lastIncrease: java.util.Date,
+  lastDecrease: java.util.Date,
+  numberOfDecreasesToday: Int
+)
+
+trait Creating extends AnyTableState
+trait Updating extends AnyTableState
+trait Active extends AnyTableState
+trait Deleting extends AnyTableState  
+
 object AnyTableType {
 
   type HashTable = AnyTableType { type Key <: AnyHash }
 }
 
-trait AnyTable extends Denotation[AnyTableType] {
+trait AnyTable extends DynamoDBResource[AnyTableType] {
+
+  type Service <: AnyDynamoDBService
 
   // type Tpe <: AnyTableType
 
@@ -51,6 +73,8 @@ trait AnyTable extends Denotation[AnyTableType] {
   /*
     get an item of this table by type
   */
+
+  def increaseThroughput[TS <: Updating { type TableType = Tpe }](factor: Float): Updating { type TableType = Tpe }
 }
 
 trait AnyHashKeyTable extends AnyTable { table =>
@@ -66,8 +90,9 @@ trait AnyHashKeyTable extends AnyTable { table =>
     def apply(rep: table.Rep, hash: table.tpe.key.hashKey.Rep): item.Rep
   }
 
-  abstract class GetItem[I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }](val item: I) 
-  extends AnyGetItem { 
+  abstract class GetItem [
+    I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }
+  ](val item: I) extends AnyGetItem { 
 
     type Item = I
   }
@@ -89,6 +114,7 @@ trait AnyHashKeyTable extends AnyTable { table =>
   }
 
 }
+
 
 trait AnyCompositeKeyTable extends AnyTable { table =>
   
