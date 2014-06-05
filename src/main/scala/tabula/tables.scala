@@ -6,7 +6,7 @@ import ohnosequences.scarph._
 /*
   ### table types
 
-  a table type contains the static part of a table, all that cannot be changed once the the table is created.
+  a table type contains the static part of a table, all that cannot be changed once the the table is created. Note that the service is absent here; this way you can manage a given table through different services.
 */
 trait AnyTableType extends AnyDynamoDBResourceType {
 
@@ -22,8 +22,14 @@ trait AnyTableType extends AnyDynamoDBResourceType {
 /*
   Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation only makes sense on a table with a composite key.
 */
-trait AnyHashKeyTableType extends AnyTableType { type Key <: AnyHash }
-trait AnyCompositeKeyTableType extends AnyTableType { type Key <: AnyHashRange }
+trait AnyHashKeyTableType extends AnyTableType { 
+
+  type Key <: AnyHash 
+}
+trait AnyCompositeKeyTableType extends AnyTableType { 
+
+  type Key <: AnyHashRange
+}
 
 class HashKeyTableType[
   K <: AnyHash,
@@ -40,7 +46,7 @@ class HashKeyTableType[
 
 trait AnyTableState extends AnyDynamoDBState {
 
-  type Resource <: AnyTable
+  type ResourceType <: AnyTableType
   
   val throughputStatus: ThroughputStatus
 }
@@ -61,21 +67,17 @@ trait Deleting extends AnyTableState
 object AnyTableType {
 
   type HashTable = AnyTableType { type Key <: AnyHash }
+  type CompositeTable = AnyTableType { type Key <: AnyHashRange }
 }
 
+/*
+  Do take into account that `DynamoDBResource` here implies that this is a `Denotation` of `AnyTableType`.
+*/
 trait AnyTable extends DynamoDBResource[AnyTableType] {
 
+  type Raw = (Tpe, Service)
   type Service <: AnyDynamoDBService
-
-  // type Tpe <: AnyTableType
-
-  // TODO methods here for reading items through the key, retrieving attributes etc
-  // same pattern as for vertices for example
-  /*
-    get an item of this table by type
-  */
-
-  def increaseThroughput[TS <: Updating { type TableType = Tpe }](factor: Float): Updating { type TableType = Tpe }
+  val service: Service
 }
 
 trait AnyHashKeyTable extends AnyTable { table =>

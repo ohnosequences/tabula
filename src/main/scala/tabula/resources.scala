@@ -21,24 +21,13 @@ trait DynamoDBResource[X <: AnyDynamoDBResourceType] extends Denotation[X] with 
 
 trait AnyDynamoDBARN {}
 
-trait AnyDynamoDBStateType {
+trait AnyDynamoDBState {
 
   type ResourceType <: AnyDynamoDBResourceType
   val resourceType: ResourceType
 }
 
-object AnyDynamoDBStateType {
-
-  type Of[R <: AnyDynamoDBResourceType] = AnyDynamoDBStateType { type ResourceType = R }
-}
-
-trait AnyDynamoDBState extends Denotation[AnyDynamoDBStateType] {  
-
-  type Resource <: AnyDynamoDBResource
-  val resource: Resource
-}
-
 object AnyDynamoDBState {
 
-  type Of[R <: AnyDynamoDBResource] = AnyDynamoDBState { type Resource = R }
+  type Of[R <: AnyDynamoDBResourceType] = AnyDynamoDBState { type ResourceType = R }
 }
