@@ -23,7 +23,7 @@ trait AnyTable extends AnyDynamoDBResource {
 }
 
 /*
-  Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation onl y makes sense on a table with a composite key.
+  Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation only makes sense on a table with a composite key.
 */
 trait AnyHashKeyTable extends AnyTable { 
 
@@ -78,13 +78,15 @@ case class InitialThroughput(
   val lastIncrease: java.util.Date = new java.util.Date(),
   val lastDecrease: java.util.Date = new java.util.Date(),
   val numberOfDecreasesToday: Int = 0
-) extends ThroughputStatus {}
+) 
+extends ThroughputStatus {}
 
 case class InitialState[T <: Singleton with AnyTable](
   val resource: T,
   val account: Account,
   val initialThroughput: InitialThroughput
-) extends AnyTableState {
+) 
+extends AnyTableState {
 
   type Resource = T
 

@@ -20,10 +20,24 @@ trait AnyDynamoDBService { self =>
   def endpoint: String
 
   import AnyDynamoDBService._
-  def please[A <: Action { type Service = self.type }](action: A): (action.Output, action.OutputState) = action()
+  def please[A <: AnyAction { type Service = self.type }](action: A): (action.Output, action.OutputState) = action()
   // then you can do: service please createTable(table, initialState)
 
-  trait AnyCreateTable extends Action {
+  def please[A <: AnyAction { type Service = self.type }](
+    action: A
+  )(implicit
+    exec: Execute { type Action = A }
+  ): A#Out[(A#Output, A#OutputState)] = exec()
+
+  trait Execute {
+
+    type Action <: AnyAction { type Service = self.type }
+    val action: Action
+
+    def apply(): action.Out[(action.Output, action.OutputState)]
+  }
+
+  trait AnyCreateTable extends AnyAction {
 
     type Service = self.type
     val service = self:self.type
@@ -49,7 +63,7 @@ trait AnyDynamoDBService { self =>
     def apply(): (T, AnyTableState { type Resource = T }) = ???
   }
 
-  trait AnyDeleteTable extends Action {
+  trait AnyDeleteTable extends AnyAction {
 
     type Input <: Singleton with AnyTable
     type InputState <: AnyTableState { type Resource = Input }
@@ -63,7 +77,7 @@ trait AnyDynamoDBService { self =>
 
 object AnyDynamoDBService {
 
-  trait Action {
+  trait AnyAction {
 
     type Service <: AnyDynamoDBService
     val service: Service
@@ -79,6 +93,8 @@ object AnyDynamoDBService {
     type OutputState
 
     def apply(): (Output, OutputState) 
+
+    type Out[+X]
   }
 
   
