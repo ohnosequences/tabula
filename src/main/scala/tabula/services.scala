@@ -1,5 +1,9 @@
 package ohnosequences.tabula
 
+// TODO move to a different namespace
+trait AwsService
+object DynamoDB extends AwsService
+
 trait AnyDynamoDBService { self =>
   
   // TODO move this to the type
@@ -24,17 +28,17 @@ trait AnyDynamoDBService { self =>
     type Service = self.type
     val service = self:self.type
 
-    type Input <: Singleton with AnyTableType
-    type InputState <: AnyTableState { type ResourceType = Input }
+    type Input <: Singleton with AnyTable
+    type InputState <: AnyTableState { type Resource = Input }
 
-    type Output = table[Input]
+    type Output = Input
     // TODO this should be something concrete
-    type OutputState = AnyTableState { type ResourceType = Input }
+    type OutputState = AnyTableState { type Resource = Input }
   }
 
   abstract class CreateTable[
-    T <: Singleton with AnyTableType,
-    TS <: AnyTableState { type ResourceType = T }
+    T <: Singleton with AnyTable,
+    TS <: AnyTableState { type Resource = T }
   ](
     val input: T,
     val state: TS
@@ -46,25 +50,14 @@ trait AnyDynamoDBService { self =>
   }
 
   case class createTable[
-    T <: Singleton with AnyTableType,
-    TS <: AnyTableState { type ResourceType = T }
+    T <: Singleton with AnyTable,
+    TS <: AnyTableState { type Resource = T }
   ](
     override val input: T,
     override val state: TS
   ) extends CreateTable(input,state) {
 
-    def apply(): (table[Input], AnyTableState { type ResourceType = T }) = ???
-  }
-
-  case class table[T <: Singleton with AnyTableType](val tpe: T) extends AnyTable {
-
-    type Tpe = T
-    type Service = self.type
-    val service = self:self.type
-
-    // TODO actually do something with this
-    type ARN = AnyDynamoDBARN
-    val arn: ARN = new AnyDynamoDBARN {}
+    def apply(): (T, AnyTableState { type Resource = T }) = ???
   }
 
 }

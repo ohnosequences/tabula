@@ -2,32 +2,36 @@ package ohnosequences.tabula
 
 import ohnosequences.scarph._
 
-trait AnyDynamoDBResourceType {}
-// only tables in this case
-
 trait AnyDynamoDBResource {
 
-  type Service <: AnyDynamoDBService
-  val service: Service
-
-  type ARN <: AnyDynamoDBARN
-  val arn: ARN
+  type Region <: AnyRegion
+  val region: Region  
 
   // type Region <: AWSRegion
 }
-// instances of resources: a particular table etc
 
-trait DynamoDBResource[X <: AnyDynamoDBResourceType] extends Denotation[X] with AnyDynamoDBResource {}
+trait AnyDynamoDBARN {
 
-trait AnyDynamoDBARN {}
+  type Resource <: AnyDynamoDBResource
+  val resource: Resource
 
-trait AnyDynamoDBState {
+  // the AWS rep
+  val id: String
+}
 
-  type ResourceType <: AnyDynamoDBResourceType
-  val resourceType: ResourceType
+
+trait AnyDynamoDBState { state =>
+
+  type Resource <: AnyDynamoDBResource
+  val resource: Resource
+
+  val account: Account
+
+  type ARN <: AnyDynamoDBARN { type Resource = state.Resource }
+  val arn: ARN
 }
 
 object AnyDynamoDBState {
 
-  type Of[R <: AnyDynamoDBResourceType] = AnyDynamoDBState { type ResourceType = R }
+  type Of[R <: AnyDynamoDBResource] = AnyDynamoDBState { type Resource = R }
 }

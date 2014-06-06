@@ -8,7 +8,7 @@ import ohnosequences.scarph._
 
   a table type contains the static part of a table, all that cannot be changed once the the table is created. Note that the service is absent here; this way you can manage a given table through different services.
 */
-trait AnyTableType extends AnyDynamoDBResourceType {
+trait AnyTable extends AnyDynamoDBResource {
 
   type Region <: AnyRegion
   val region: Region
@@ -22,23 +22,23 @@ trait AnyTableType extends AnyDynamoDBResourceType {
 /*
   Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation only makes sense on a table with a composite key.
 */
-trait AnyHashKeyTableType extends AnyTableType { 
+trait AnyHashKeyTable extends AnyTable { 
 
   type Key <: AnyHash 
 }
-trait AnyCompositeKeyTableType extends AnyTableType { 
+trait AnyCompositeKeyTable extends AnyTable { 
 
   type Key <: AnyHashRange
 }
 
-class HashKeyTableType[
+class HashKeyTable[
   K <: AnyHash,
   R <: AnyRegion
 ](
   val name: String,
   val key: K,
   val region: R
-) extends AnyHashKeyTableType {
+) extends AnyHashKeyTable {
 
   type Region = R
   type Key = K
@@ -46,9 +46,11 @@ class HashKeyTableType[
 
 trait AnyTableState extends AnyDynamoDBState {
 
-  type ResourceType <: AnyTableType
+  type Resource <: AnyTable
   
   val throughputStatus: ThroughputStatus
+
+  // TODO table ARN
 }
 
 case class ThroughputStatus(
@@ -64,106 +66,10 @@ trait Updating extends AnyTableState
 trait Active extends AnyTableState
 trait Deleting extends AnyTableState  
 
-object AnyTableType {
+object AnyTable {
 
-  type HashTable = AnyTableType { type Key <: AnyHash }
-  type CompositeTable = AnyTableType { type Key <: AnyHashRange }
-}
-
-/*
-  Do take into account that `DynamoDBResource` here implies that this is a `Denotation` of `AnyTableType`.
-*/
-trait AnyTable extends DynamoDBResource[AnyTableType] {
-
-  type Raw = (Tpe, Service)
-  type Service <: AnyDynamoDBService
-  val service: Service
-}
-
-trait AnyHashKeyTable extends AnyTable { table =>
-  
-  type Tpe <: AnyHashKeyTableType
-
-  trait AnyGetItem {
-
-    // an item of this table
-    type Item <: AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }
-    val item: Item
-
-    def apply(rep: table.Rep, hash: table.tpe.key.hashKey.Rep): item.Rep
-  }
-
-  abstract class GetItem [
-    I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }
-  ](val item: I) extends AnyGetItem { 
-
-    type Item = I
-  }
-
-  case class TableOps(val rep: table.Rep) {
-
-    def get[
-      I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }
-    ](
-      item: I,
-      hash: table.tpe.key.hashKey.Rep
-    )(implicit
-      mkGetItem: I => GetItem[I]
-    ): I#Rep = {
-
-      val getItem = mkGetItem(item)
-      getItem(rep, hash)
-    }
-  }
-
-}
-
-
-trait AnyCompositeKeyTable extends AnyTable { table =>
-  
-  type Tpe <: AnyCompositeKeyTableType
-
-  trait AnyGetItem {
-
-    // an item of this table
-    type Item <: AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }
-    val item: Item
-
-    def apply(rep: table.Rep, hash: table.tpe.key.hashKey.Rep, range: table.tpe.key.rangeKey.Rep): item.Rep
-  }
-  abstract class GetItem[I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }](val item: I) 
-    extends AnyGetItem { type Item = I }
-
-  case class TableOps(val rep: table.Rep) {
-
-    def get[
-      I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }
-    ](
-      item: I,
-      hash: table.tpe.key.hashKey.Rep,
-      range: table.tpe.key.rangeKey.Rep
-    )(implicit
-      mkGetItem: I => GetItem[I]
-    ): I#Rep = {
-
-      val getItem = mkGetItem(item)
-      getItem(rep, hash, range)
-    }
-
-    /*
-      The query method lets you do per-hash retrieval of items. You fix a value of the hash key and then pass on a predicate over the range key (which could be empty). 
-    */
-    def query [
-      I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] },
-      RP <: AnyPredicate.Over[I#Tpe], // TODO add bound for this to be only on the range key
-      FP <: AnyPredicate.Over[I#Tpe]
-    ](
-      item: I,
-      hash: table.tpe.key.hashKey.Rep,
-      withRange: RP,
-      filter: FP
-    ): List[I#Rep] = ???
-  }
+  type HashTable = AnyTable { type Key <: AnyHash }
+  type CompositeTable = AnyTable { type Key <: AnyHashRange }
 }
 
 // Keys
@@ -207,3 +113,90 @@ sealed trait AnyPrimaryKey
       type RangeKey = RA
       val rangeKey = range
     }
+
+
+// trait AnyHashKeyTable extends AnyTable { table =>
+  
+//   type Tpe <: AnyHashKeyTableType
+
+//   trait AnyGetItem {
+
+//     // an item of this table
+//     type Item <: AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }
+//     val item: Item
+
+//     def apply(rep: table.Rep, hash: table.tpe.key.hashKey.Rep): item.Rep
+//   }
+
+//   abstract class GetItem [
+//     I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }
+//   ](val item: I) extends AnyGetItem { 
+
+//     type Item = I
+//   }
+
+//   case class TableOps(val rep: table.Rep) {
+
+//     def get[
+//       I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }
+//     ](
+//       item: I,
+//       hash: table.tpe.key.hashKey.Rep
+//     )(implicit
+//       mkGetItem: I => GetItem[I]
+//     ): I#Rep = {
+
+//       val getItem = mkGetItem(item)
+//       getItem(rep, hash)
+//     }
+//   }
+
+// }
+
+
+// trait AnyCompositeKeyTable extends AnyTable { table =>
+  
+//   type Tpe <: AnyCompositeKeyTableType
+
+//   trait AnyGetItem {
+
+//     // an item of this table
+//     type Item <: AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }
+//     val item: Item
+
+//     def apply(rep: table.Rep, hash: table.tpe.key.hashKey.Rep, range: table.tpe.key.rangeKey.Rep): item.Rep
+//   }
+//   abstract class GetItem[I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }](val item: I) 
+//     extends AnyGetItem { type Item = I }
+
+//   case class TableOps(val rep: table.Rep) {
+
+//     def get[
+//       I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] }
+//     ](
+//       item: I,
+//       hash: table.tpe.key.hashKey.Rep,
+//       range: table.tpe.key.rangeKey.Rep
+//     )(implicit
+//       mkGetItem: I => GetItem[I]
+//     ): I#Rep = {
+
+//       val getItem = mkGetItem(item)
+//       getItem(rep, hash, range)
+//     }
+
+//     /*
+//       The query method lets you do per-hash retrieval of items. You fix a value of the hash key and then pass on a predicate over the range key (which could be empty). 
+//     */
+//     def query [
+//       I <: Singleton with AnyItem { type Tpe <: AnyItemType.of[table.Tpe] },
+//       RP <: AnyPredicate.Over[I#Tpe], // TODO add bound for this to be only on the range key
+//       FP <: AnyPredicate.Over[I#Tpe]
+//     ](
+//       item: I,
+//       hash: table.tpe.key.hashKey.Rep,
+//       withRange: RP,
+//       filter: FP
+//     ): List[I#Rep] = ???
+//   }
+// }

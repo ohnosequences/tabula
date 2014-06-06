@@ -7,22 +7,22 @@ import ohnosequences.scarph._
 */
 trait AnyItemType {
 
-  type TableType <: AnyTableType
-  val tableType: TableType
+  type Table <: AnyTable
+  val table: Table
   // just in case
-  type Key = TableType#Key
+  type Key = Table#Key
 }
 
 
 object AnyItemType {
 
-  type of[T <: AnyTableType] = AnyItemType { type TableType = T }
+  type of[T <: AnyTable] = AnyItemType { type Table = T }
   implicit def itemTypeOps[IT <: AnyItemType](itemType: IT) = ItemTypeOps(itemType)
 }
 
-class ItemType[T <: AnyTableType](val tableType: T) extends AnyItemType {
+class ItemType[T <: AnyTable](val table: T) extends AnyItemType {
 
-  type TableType = T
+  type Table = T
 }
 
 case class ItemTypeOps[IT <: AnyItemType](val itemType: IT) {
