@@ -30,8 +30,6 @@ case class ItemTypeOps[IT <: AnyItemType](val itemType: IT) {
   def has[P <: AnyAttribute](p: P) = HasProperty[IT, P](itemType, p)
 }
 
-
-
 /*
   Items are denotations of an item type. the table type is accessible through the item type.
 */

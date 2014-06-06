@@ -29,7 +29,7 @@ trait AnyDynamoDBService { self =>
     val service = self:self.type
 
     type Input <: Singleton with AnyTable
-    type InputState <: AnyTableState { type Resource = Input }
+    type InputState = InitialState[Input]
 
     type Output = Input
     // TODO this should be something concrete
@@ -37,27 +37,26 @@ trait AnyDynamoDBService { self =>
   }
 
   abstract class CreateTable[
-    T <: Singleton with AnyTable,
-    TS <: AnyTableState { type Resource = T }
+    T <: Singleton with AnyTable
   ](
     val input: T,
-    val state: TS
+    val state: InitialState[T]
   )
   extends AnyCreateTable {
 
     type Input = T
-    type InputState = TS
-  }
-
-  case class createTable[
-    T <: Singleton with AnyTable,
-    TS <: AnyTableState { type Resource = T }
-  ](
-    override val input: T,
-    override val state: TS
-  ) extends CreateTable(input,state) {
 
     def apply(): (T, AnyTableState { type Resource = T }) = ???
+  }
+
+  trait AnyDeleteTable extends Action {
+
+    type Input <: Singleton with AnyTable
+    type InputState <: AnyTableState { type Resource = Input }
+
+    type Output = Input
+    // TODO this should be something concrete
+    type OutputState = AnyTableState { type Resource = Input }
   }
 
 }

@@ -2,21 +2,36 @@ package ohnosequences.tabula
 
 import ohnosequences.scarph._
 
-trait AnyDynamoDBResource {
+trait AnyDynamoDBResourceType {
 
-  type Region <: AnyRegion
-  val region: Region  
-
-  // type Region <: AWSRegion
+  val name: String
 }
 
-trait AnyDynamoDBARN {
+object Table extends AnyDynamoDBResourceType {
 
-  type Resource <: AnyDynamoDBResource
-  val resource: Resource
+  val name = "table"
+}
+
+trait AnyDynamoDBResource {
+
+  type ResourceType <: AnyDynamoDBResourceType
+  val resourceType: ResourceType
+
+  type Region <: AnyRegion
+  val region: Region
+
+  val name: String
+}
+
+/*
+  see http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/UsingIAMWithDDB.html#ARN_Format
+*/
+case class DynamoDBARN[R <: AnyDynamoDBResource](val resource: R, val account: Account) {
+
+  type Resource = R
 
   // the AWS rep
-  val id: String
+  val id: String = s"arn:aws:dynamodb:${resource.region.name}:${account.id}:${resource.resourceType.name}/${resource.name}"
 }
 
 
@@ -27,8 +42,7 @@ trait AnyDynamoDBState { state =>
 
   val account: Account
 
-  type ARN <: AnyDynamoDBARN { type Resource = state.Resource }
-  val arn: ARN
+  val arn: DynamoDBARN[Resource] = DynamoDBARN(resource, account)
 }
 
 object AnyDynamoDBState {

@@ -4,11 +4,14 @@ import ohnosequences.typesets._
 import ohnosequences.scarph._
 
 /*
-  ### table types
+  ## Tables
 
-  a table type contains the static part of a table, all that cannot be changed once the the table is created. Note that the service is absent here; this way you can manage a given table through different services.
+  A table contains only the static part of a table, things hat cannot be changed once the the table is created. Dynamic data lives in `AnyTableState`. The only exception to this is the `Account`; this is so because normally it is something that is retrieved dynamically from the environment.
 */
 trait AnyTable extends AnyDynamoDBResource {
+
+  type ResourceType = Table.type
+  val resourceType = Table
 
   type Region <: AnyRegion
   val region: Region
@@ -20,18 +23,19 @@ trait AnyTable extends AnyDynamoDBResource {
 }
 
 /*
-  Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation only makes sense on a table with a composite key.
+  Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation onl y makes sense on a table with a composite key.
 */
 trait AnyHashKeyTable extends AnyTable { 
 
   type Key <: AnyHash 
 }
+
 trait AnyCompositeKeyTable extends AnyTable { 
 
   type Key <: AnyHashRange
 }
 
-class HashKeyTable[
+class HashKeyTable [
   K <: AnyHash,
   R <: AnyRegion
 ](
@@ -44,6 +48,11 @@ class HashKeyTable[
   type Key = K
 }
 
+/*
+  ### table states
+
+
+*/
 trait AnyTableState extends AnyDynamoDBState {
 
   type Resource <: AnyTable
@@ -51,16 +60,37 @@ trait AnyTableState extends AnyDynamoDBState {
   val throughputStatus: ThroughputStatus
 
   // TODO table ARN
+    
 }
 
-case class ThroughputStatus(
-  readCapacity: Int,
-  writeCapacity: Int,
-  lastIncrease: java.util.Date,
-  lastDecrease: java.util.Date,
-  numberOfDecreasesToday: Int
-)
+sealed trait ThroughputStatus {
 
+  val readCapacity: Int
+  val writeCapacity: Int
+  val lastIncrease: java.util.Date
+  val lastDecrease: java.util.Date
+  val numberOfDecreasesToday: Int
+}
+  
+case class InitialThroughput(
+  val readCapacity: Int,
+  val writeCapacity: Int,
+  val lastIncrease: java.util.Date = new java.util.Date(),
+  val lastDecrease: java.util.Date = new java.util.Date(),
+  val numberOfDecreasesToday: Int = 0
+) extends ThroughputStatus {}
+
+case class InitialState[T <: Singleton with AnyTable](
+  val resource: T,
+  val account: Account,
+  val initialThroughput: InitialThroughput
+) extends AnyTableState {
+
+  type Resource = T
+
+  val throughputStatus = initialThroughput
+  
+}
 trait Creating extends AnyTableState
 trait Updating extends AnyTableState
 trait Active extends AnyTableState
