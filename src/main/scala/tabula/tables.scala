@@ -48,7 +48,7 @@ class HashKeyTable [
   type Key = K
 }
 
-class CompositeKeyTable[
+class CompositeKeyTable [
   K <: AnyHashRange,
   R <: AnyRegion
 ](
