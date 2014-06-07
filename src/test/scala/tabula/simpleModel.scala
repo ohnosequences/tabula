@@ -13,7 +13,7 @@ object simpleModel {
   object serializedCrap extends Attribute[Bytes]
   // object nono extends Attribute[Traversable[Array[Float]]]
 
-  case object UsersTable extends HashKeyTableType (
+  case object UsersTable extends HashKeyTable (
     name = "users",
     key = Hash(id),
     region = EU

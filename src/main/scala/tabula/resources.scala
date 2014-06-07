@@ -2,40 +2,47 @@ package ohnosequences.tabula
 
 import ohnosequences.scarph._
 
-trait AnyDynamoDBResourceType {}
-// only tables in this case
+trait AnyDynamoDBResourceType {
+
+  val name: String
+}
+
+object Table extends AnyDynamoDBResourceType {
+
+  val name = "table"
+}
 
 trait AnyDynamoDBResource {
 
-  type Service <: AnyDynamoDBService
-  val service: Service
-
-  type ARN <: AnyDynamoDBARN
-  val arn: ARN
-
-  // type Region <: AWSRegion
-}
-// instances of resources: a particular table etc
-
-trait DynamoDBResource[X <: AnyDynamoDBResourceType] extends Denotation[X] with AnyDynamoDBResource {}
-
-trait AnyDynamoDBARN {}
-
-trait AnyDynamoDBStateType {
-
   type ResourceType <: AnyDynamoDBResourceType
   val resourceType: ResourceType
+
+  type Region <: AnyRegion
+  val region: Region
+
+  val name: String
 }
 
-object AnyDynamoDBStateType {
+/*
+  see http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/UsingIAMWithDDB.html#ARN_Format
+*/
+case class DynamoDBARN[R <: AnyDynamoDBResource](val resource: R, val account: Account) {
 
-  type Of[R <: AnyDynamoDBResourceType] = AnyDynamoDBStateType { type ResourceType = R }
+  type Resource = R
+
+  // the AWS rep
+  val id: String = s"arn:aws:dynamodb:${resource.region.name}:${account.id}:${resource.resourceType.name}/${resource.name}"
 }
 
-trait AnyDynamoDBState extends Denotation[AnyDynamoDBStateType] {  
+
+trait AnyDynamoDBState { state =>
 
   type Resource <: AnyDynamoDBResource
   val resource: Resource
+
+  val account: Account
+
+  val arn: DynamoDBARN[Resource] = DynamoDBARN(resource, account)
 }
 
 object AnyDynamoDBState {
