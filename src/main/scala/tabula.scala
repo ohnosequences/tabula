@@ -12,11 +12,4 @@ package object tabula {
   type PrimaryKeyValues = NotSetValues
   type ValidValues = NotSetValues#or[Set[Num]]#or[Set[String]]#or[Set[Bytes]]
   type ValuesWithPrefixes = either[String]#or[Bytes]
-
 }
-
-// trait AnyAccount {
-
-//   val id: String
-//   val canonical_id: String
-// }
