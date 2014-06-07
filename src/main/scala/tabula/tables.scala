@@ -48,6 +48,19 @@ class HashKeyTable [
   type Key = K
 }
 
+class CompositeKeyTable[
+  K <: AnyHashRange,
+  R <: AnyRegion
+](
+  val name: String,
+  val key: K,
+  val region: R
+) extends AnyCompositeKeyTable {
+
+  type Region = R
+  type Key = K
+}
+
 /*
   ### table states
 
