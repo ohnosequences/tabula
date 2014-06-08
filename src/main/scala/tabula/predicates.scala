@@ -12,8 +12,9 @@ trait AnyPredicate {
   val itemType: ItemType
 }
 
-class PredicateOn[I <: Singleton with AnyItemType](val itemType: I) 
-  extends AnyPredicate { self =>
+// TODO add And and Or variants.
+
+trait PredicateOver[I <: Singleton with AnyItemType] extends AnyPredicate { self =>
 
   type ItemType = I 
 
@@ -26,14 +27,14 @@ class PredicateOn[I <: Singleton with AnyItemType](val itemType: I)
   ): OR[this.type, Other] = OR[this.type, Other](this, other)
 }
 
-case class SimplePredicate[I <: Singleton with AnyItemType, C <: Condition](override val itemType: I, val condition: C) 
-  extends PredicateOn[I](itemType) 
+case class SimplePredicate[I <: Singleton with AnyItemType, C <: Condition](val itemType: I, val condition: C) 
+  extends PredicateOver[I] {}
 
 case class AND[P <: AnyPredicate, C <: Condition](val allThis: P, val also: C) 
-  extends PredicateOn[P#ItemType](allThis.itemType) 
+  extends PredicateOver[P#ItemType] { val itemType = allThis.itemType }
 
 case class OR[P <: AnyPredicate, C <: Condition](val allThis: P, val also: C) 
-  extends PredicateOn[P#ItemType](allThis.itemType) 
+  extends PredicateOver[P#ItemType] { val itemType = allThis.itemType } 
 
 
 object AnyPredicate {

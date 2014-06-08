@@ -11,6 +11,7 @@ trait AnyItemType {
   val table: Table
   // just in case
   type Key = Table#Key
+  val key: Key = table.key
 }
 
 

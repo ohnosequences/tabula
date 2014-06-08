@@ -6,8 +6,8 @@ import ohnosequences.scarph._
 
 object simpleModel {
 
-  object id extends Attribute[Int]
-  object name extends Attribute[String]
+  case object id extends Attribute[Int]
+  case object name extends Attribute[String]
   object age extends Attribute[Int]
   object email extends Attribute[String]
   object serializedCrap extends Attribute[Bytes]
@@ -23,6 +23,21 @@ object simpleModel {
   //   key = Hash(serializedCrap),
   //   region = EU
   // )
+
+  // keys
+  object tableId extends Hash(id)
+  object compositeKey extends HashRange(id,name)
+  // creating values
+  val z = tableId ->> (id ->> 2234)
+  // this also works
+  val z0 = tableId ->> 231231
+
+  // composite key; again both named and raw are possible
+  val ckv = compositeKey ->> (
+    id ->> 32424, 
+    name ->> "Salustiano"
+  )
+  val ckv0 = compositeKey ->> (312312, "Antonio")
 
   case object UserItem extends ItemType(UsersTable)
   implicit val user_name = UserItem has name

@@ -49,7 +49,7 @@ class HashKeyTable [
 }
 
 class CompositeKeyTable [
-  K <: AnyHashRange,
+  K <: Singleton with AnyHashRange,
   R <: AnyRegion
 ](
   val name: String,
@@ -117,47 +117,80 @@ object AnyTable {
   type CompositeTable = AnyTable { type Key <: AnyHashRange }
 }
 
+
+
+
+
+
+
 // Keys
-sealed trait AnyPrimaryKey
-  /*
-    A simple hash key
-  */
-  trait AnyHash extends AnyPrimaryKey {
-    type HashKey  <: AnyAttribute
-    val hashKey: HashKey
-  }
-    case class Hash[HA <: AnyAttribute](val hash: HA)(implicit ev: oneOf[PrimaryKeyValues]#is[HA#Raw]) 
-    extends AnyHash {    
+trait AnyPrimaryKey extends Denotation[AnyPrimaryKey] {
 
-      type HashKey = HA
-      val hashKey = hash
-    }
-  /*
-    A composite primary key
-  */
-  trait AnyHashRange extends AnyPrimaryKey {
-    type HashKey  <: AnyAttribute
-    val hashKey: HashKey
-    type RangeKey <: AnyAttribute
-    val rangeKey: RangeKey
-  }
-    case class HashRange[
-      H: oneOf[ValidValues]#is: oneOf[PrimaryKeyValues]#is,
-      HA <: AnyAttribute { type Raw = H },
-      R: oneOf[ValidValues]#is: oneOf[PrimaryKeyValues]#is,
-      RA <: AnyAttribute { type Raw = R }
-    ]
-    (
-      val hash: HA,
-      val range: RA
-    ) 
-    extends AnyHashRange {
+  type Tpe = this.type
+  val  tpe = this: this.type
+}
+/*
+  A simple hash key
+*/
+trait AnyHash extends AnyPrimaryKey {
+  
+  type HashKey <: Singleton with AnyAttribute
+  val hashKey: HashKey
+  type Raw = hashKey.Raw
+}
 
-      type HashKey  = HA
-      val hashKey = hash
-      type RangeKey = RA
-      val rangeKey = range
-    }
+case class Hash[
+  HA <: Singleton with AnyAttribute
+](
+  val hashKey: HA
+)(implicit 
+  val uhuhuh: oneOf[PrimaryKeyValues]#is[HA#Raw]
+) 
+extends AnyHash {    
+
+  type HashKey = HA
+}
+/*
+  A composite primary key
+*/
+trait AnyHashRange extends AnyPrimaryKey {
+
+  type HashKey  <: AnyAttribute
+  val hashKey: HashKey
+
+  type RangeKey <: AnyAttribute
+  val rangeKey: RangeKey
+
+  type Raw = (hashKey.Raw, rangeKey.Raw)
+}
+
+case class HashRange[
+  HA <: AnyAttribute,
+  RA <: AnyAttribute
+]
+(
+  val hashKey: HA,
+  val rangeKey: RA
+)
+(implicit 
+  val evh: oneOf[PrimaryKeyValues]#is[HA#Raw],
+  val evr: oneOf[PrimaryKeyValues]#is[RA#Raw]
+)
+extends AnyHashRange {
+
+  type HashKey  = HA
+  type RangeKey = RA
+}
+
+
+
+
+
+
+
+
+
+
 
 
 // trait AnyHashKeyTable extends AnyTable { table =>
