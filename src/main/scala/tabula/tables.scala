@@ -16,54 +16,65 @@ trait AnyTable extends AnyDynamoDBResource {
   type Region <: AnyRegion
   val region: Region
 
-  type Key <: AnyPrimaryKey
-  val key: Key
-
   val name: String
 }
 
 /*
   Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation only makes sense on a table with a composite key.
 */
-trait AnyHashKeyTable extends AnyTable { 
+sealed trait AnyHashKeyTable extends AnyTable { 
 
-  type Key <: AnyHash 
+  type HashKey <: AnyAttribute
+  val hashKey: HashKey
 }
 
-trait AnyCompositeKeyTable extends AnyTable { 
+sealed trait AnyCompositeKeyTable extends AnyTable { 
 
-  type Key <: AnyHashRange
+  type HashKey <: AnyAttribute
+  val hashKey: HashKey
+
+  type RangeKey <: AnyAttribute
+  val rangeKey: RangeKey
 }
 
 class HashKeyTable [
-  K <: AnyHash,
+  HK <: AnyAttribute,
   R <: AnyRegion
 ](
   val name: String,
-  val key: K,
+  val hashKey: HK,
   val region: R
+)(implicit
+  val ev_k: oneOf[PrimaryKeyValues]#is[HK#Raw]
 ) extends AnyHashKeyTable {
 
   type Region = R
-  type Key = K
+  type HashKey = HK
 }
 
 class CompositeKeyTable [
-  K <: Singleton with AnyHashRange,
+  HK <: AnyAttribute,
+  RK <: AnyAttribute,
   R <: AnyRegion
 ](
   val name: String,
-  val key: K,
+  val hashKey: HK,
+  val rangeKey: RK,
   val region: R
-) extends AnyCompositeKeyTable {
+) 
+(implicit 
+  val ev_h: oneOf[PrimaryKeyValues]#is[HK#Raw],
+  val ev_r: oneOf[PrimaryKeyValues]#is[RK#Raw]
+)
+extends AnyCompositeKeyTable {
 
   type Region = R
-  type Key = K
+  type HashKey = HK
+  type RangeKey = RK
 }
 
 /*
   ### table states
-
 
 */
 trait AnyTableState extends AnyDynamoDBState {
@@ -72,8 +83,7 @@ trait AnyTableState extends AnyDynamoDBState {
   
   val throughputStatus: ThroughputStatus
 
-  // TODO table ARN
-    
+  // TODO table ARN  
 }
 
 sealed trait ThroughputStatus {
@@ -111,86 +121,7 @@ trait Updating extends AnyTableState
 trait Active extends AnyTableState
 trait Deleting extends AnyTableState  
 
-object AnyTable {
-
-  type HashTable = AnyTable { type Key <: AnyHash }
-  type CompositeTable = AnyTable { type Key <: AnyHashRange }
-}
-
-
-
-
-
-
-
-// Keys
-trait AnyPrimaryKey extends Denotation[AnyPrimaryKey] {
-
-  type Tpe = this.type
-  val  tpe = this: this.type
-}
-/*
-  A simple hash key
-*/
-trait AnyHash extends AnyPrimaryKey {
-  
-  type HashKey <: Singleton with AnyAttribute
-  val hashKey: HashKey
-  type Raw = hashKey.Raw
-}
-
-case class Hash[
-  HA <: Singleton with AnyAttribute
-](
-  val hashKey: HA
-)(implicit 
-  val uhuhuh: oneOf[PrimaryKeyValues]#is[HA#Raw]
-) 
-extends AnyHash {    
-
-  type HashKey = HA
-}
-/*
-  A composite primary key
-*/
-trait AnyHashRange extends AnyPrimaryKey {
-
-  type HashKey  <: AnyAttribute
-  val hashKey: HashKey
-
-  type RangeKey <: AnyAttribute
-  val rangeKey: RangeKey
-
-  type Raw = (hashKey.Raw, rangeKey.Raw)
-}
-
-case class HashRange[
-  HA <: AnyAttribute,
-  RA <: AnyAttribute
-]
-(
-  val hashKey: HA,
-  val rangeKey: RA
-)
-(implicit 
-  val evh: oneOf[PrimaryKeyValues]#is[HA#Raw],
-  val evr: oneOf[PrimaryKeyValues]#is[RA#Raw]
-)
-extends AnyHashRange {
-
-  type HashKey  = HA
-  type RangeKey = RA
-}
-
-
-
-
-
-
-
-
-
-
+object AnyTable {}
 
 
 // trait AnyHashKeyTable extends AnyTable { table =>

@@ -15,29 +15,21 @@ object simpleModel {
 
   case object UsersTable extends HashKeyTable (
     name = "users",
-    key = Hash(id),
+    hashKey = id,
     region = EU
-  ) {}
+  )
   // object WrongHashTable extends TableType (
   //   name = "users",
   //   key = Hash(serializedCrap),
   //   region = EU
   // )
 
-  // keys
-  object tableId extends Hash(id)
-  object compositeKey extends HashRange(id,name)
-  // creating values
-  val z = tableId ->> (id ->> 2234)
-  // this also works
-  val z0 = tableId ->> 231231
-
-  // composite key; again both named and raw are possible
-  val ckv = compositeKey ->> (
-    id ->> 32424, 
-    name ->> "Salustiano"
+  case object RandomTable extends CompositeKeyTable (
+    name = "someStuff",
+    hashKey = id,
+    rangeKey = name,
+    region = EU
   )
-  val ckv0 = compositeKey ->> (312312, "Antonio")
 
   case object UserItem extends ItemType(UsersTable)
   implicit val user_name = UserItem has name

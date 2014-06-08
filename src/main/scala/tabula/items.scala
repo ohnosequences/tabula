@@ -10,8 +10,6 @@ trait AnyItemType {
   type Table <: AnyTable
   val table: Table
   // just in case
-  type Key = Table#Key
-  val key: Key = table.key
 }
 
 
