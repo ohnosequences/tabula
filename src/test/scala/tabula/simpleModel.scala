@@ -11,6 +11,7 @@ object simpleModel {
   object age extends Attribute[Int]
   object email extends Attribute[String]
   object serializedCrap extends Attribute[Bytes]
+  object departments extends Attribute[Set[String]]
   // object nono extends Attribute[Traversable[Array[Float]]]
 
   case object UsersTable extends HashKeyTable (
@@ -39,6 +40,7 @@ object simpleModel {
   implicit val funnyUser_name = FunnyUserItem has name
   implicit val funnyUser_email = FunnyUserItem has email
   implicit val funnyUser_serializedCrap = FunnyUserItem has serializedCrap
+  implicit val funnyUser_departments = FunnyUserItem has departments
 
   // predicates
   import AnyPredicate._
@@ -55,5 +57,8 @@ object simpleModel {
   val orAge = orNamePred or (age ≥ 5)
 
   val userHasName = UserItem ? (name isThere)
+
+  val userNotInDpt = FunnyUserItem ? (departments ∌ "sales")
+  val userInDpt = FunnyUserItem ? (departments ∋ "IT")
 
 }

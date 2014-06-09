@@ -98,7 +98,7 @@ trait AnyDynamoDBService { self =>
     We need as input
   
     - a hash key value
-    - _optional_ a predicate on the range key
+    - _optional_ a condition on the range key
     - the item type over which we want to query
     - _optional_ a predicate over it for filtering results service-side
   */
