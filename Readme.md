@@ -1,6 +1,9 @@
 ### tabula
 
-First there's table types. They represent the static immutable data about a table: the region, the name and the key conf.
+General principles
+
+- If something has an ARN, then it is assumed to be created statically
+- everything is accessed through the service
 
 #### table ops
 

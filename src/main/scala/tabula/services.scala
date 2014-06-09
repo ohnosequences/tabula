@@ -57,11 +57,52 @@ trait AnyDynamoDBService { self =>
     type OutputState = AnyTableState { type Resource = Input }
   }
 
-  trait AnyGetItem {
+  /*
+    #### GetItem
+
+    - [API - GetItem](http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_GetItem.html)
+
+    This action depends on the table type, and thus its signature and implementation will be different for each. In the case of a HashKeyTable we need as **input**
+    
+    - an `item` object of type `Item` (**not** `ItemType`)
+    - a value of type `table.hashKey.Rep`
+    - _optional_ consistent read, capacity
+
+    As per the output, we should get
+
+    - the corresponding `item.Rep` value
+    - possibly errors instead
+
+    ##### input, inputState
+
+    In principle, we should have something like
+
+    - `input` correspond to the table from which you want to read the item
+    - `inputState` being the key value, the `item` and whatever else is needed
+
+    This sounds like more orthodox in principle, but it could be confusing _if_ the action class mirrors this in its parameters: `service getItem(table, otherStuff(key, item))`. But this does not need to be so: just use the table inside `item` to set the input, and use a more intuitive set of parameters: `service getItem(item, key)`. Actually, as a table is the only resource in DynamoDB, for all DynamoDB actions the input is going to be formed by tables.
+  
+  */
+  trait AnyGetItem extends AnyAction {
 
     type Input <: AnyItemType
+    // type Input
     // type InputState = input.
   }
+
+  /*
+    ### Query
+
+    - [API - Query](http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html)
+
+    We need as input
+  
+    - a hash key value
+    - _optional_ a predicate on the range key
+    - the item type over which we want to query
+    - _optional_ a predicate over it for filtering results service-side
+  */
+  trait AnyQuery extends AnyAction {}
 
 }
 
