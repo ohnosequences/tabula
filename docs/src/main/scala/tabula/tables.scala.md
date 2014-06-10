@@ -1,13 +1,18 @@
+
+```scala
 package ohnosequences.tabula
 
 import ohnosequences.typesets._
 import ohnosequences.scarph._
+```
 
-/*
-  ## Tables
 
-  A table contains only the static part of a table, things hat cannot be changed once the the table is created. Dynamic data lives in `AnyTableState`. The only exception to this is the `Account`; this is so because normally it is something that is retrieved dynamically from the environment.
-*/
+## Tables
+
+A table contains only the static part of a table, things hat cannot be changed once the the table is created. Dynamic data lives in `AnyTableState`. The only exception to this is the `Account`; this is so because normally it is something that is retrieved dynamically from the environment.
+
+
+```scala
 trait AnyTable extends AnyDynamoDBResource {
 
   type ResourceType = Table.type
@@ -18,10 +23,13 @@ trait AnyTable extends AnyDynamoDBResource {
 
   val name: String
 }
+```
 
-/*
-  Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation only makes sense on a table with a composite key.
-*/
+
+Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation only makes sense on a table with a composite key.
+
+
+```scala
 sealed trait AnyHashKeyTable extends AnyTable { 
 
   type HashKey <: AnyAttribute
@@ -72,11 +80,14 @@ extends AnyCompositeKeyTable {
   type HashKey = HK
   type RangeKey = RK
 }
+```
 
-/*
-  ### table states
 
-*/
+### table states
+
+
+
+```scala
 trait AnyTableState extends AnyDynamoDBState {
 
   type Resource <: AnyTable
@@ -209,3 +220,43 @@ object AnyTable {}
 //     ): List[I#Rep] = ???
 //   }
 // }
+
+```
+
+
+------
+
+### Index
+
++ src
+  + test
+    + scala
+      + tabula
+        + [simpleModel.scala][test/scala/tabula/simpleModel.scala]
+  + main
+    + scala
+      + [tabula.scala][main/scala/tabula.scala]
+      + tabula
+        + [predicates.scala][main/scala/tabula/predicates.scala]
+        + [accounts.scala][main/scala/tabula/accounts.scala]
+        + [regions.scala][main/scala/tabula/regions.scala]
+        + [items.scala][main/scala/tabula/items.scala]
+        + [resources.scala][main/scala/tabula/resources.scala]
+        + [actions.scala][main/scala/tabula/actions.scala]
+        + [tables.scala][main/scala/tabula/tables.scala]
+        + [attributes.scala][main/scala/tabula/attributes.scala]
+        + [services.scala][main/scala/tabula/services.scala]
+        + [queries.scala][main/scala/tabula/queries.scala]
+
+[test/scala/tabula/simpleModel.scala]: ../../../test/scala/tabula/simpleModel.scala.md
+[main/scala/tabula.scala]: ../tabula.scala.md
+[main/scala/tabula/predicates.scala]: predicates.scala.md
+[main/scala/tabula/accounts.scala]: accounts.scala.md
+[main/scala/tabula/regions.scala]: regions.scala.md
+[main/scala/tabula/items.scala]: items.scala.md
+[main/scala/tabula/resources.scala]: resources.scala.md
+[main/scala/tabula/actions.scala]: actions.scala.md
+[main/scala/tabula/tables.scala]: tables.scala.md
+[main/scala/tabula/attributes.scala]: attributes.scala.md
+[main/scala/tabula/services.scala]: services.scala.md
+[main/scala/tabula/queries.scala]: queries.scala.md

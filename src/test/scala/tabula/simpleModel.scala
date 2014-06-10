@@ -6,23 +6,31 @@ import ohnosequences.scarph._
 
 object simpleModel {
 
-  object id extends Attribute[Int]
-  object name extends Attribute[String]
+  case object id extends Attribute[Int]
+  case object name extends Attribute[String]
   object age extends Attribute[Int]
   object email extends Attribute[String]
   object serializedCrap extends Attribute[Bytes]
+  object departments extends Attribute[Set[String]]
   // object nono extends Attribute[Traversable[Array[Float]]]
 
   case object UsersTable extends HashKeyTable (
     name = "users",
-    key = Hash(id),
+    hashKey = id,
     region = EU
-  ) {}
+  )
   // object WrongHashTable extends TableType (
   //   name = "users",
   //   key = Hash(serializedCrap),
   //   region = EU
   // )
+
+  case object RandomTable extends CompositeKeyTable (
+    name = "someStuff",
+    hashKey = id,
+    rangeKey = name,
+    region = EU
+  )
 
   case object UserItem extends ItemType(UsersTable)
   implicit val user_name = UserItem has name
@@ -32,20 +40,25 @@ object simpleModel {
   implicit val funnyUser_name = FunnyUserItem has name
   implicit val funnyUser_email = FunnyUserItem has email
   implicit val funnyUser_serializedCrap = FunnyUserItem has serializedCrap
+  implicit val funnyUser_departments = FunnyUserItem has departments
 
   // predicates
-  val pred = PredicateOn(UserItem) and EQ[name.type](name, "piticli")
-  // val wrongpred = PredicateOn(UserItem) and EQ[email.type](email, "oh@uh.com")
-  val nowOK = PredicateOn(FunnyUserItem) and EQ[email.type](email, "oh@uh.com")
-
   import AnyPredicate._
   import Condition._
 
-  val superPred = UserItem ? (name === "piticli") and (age ≤ 34)
+  val namePred = SimplePredicate(UserItem, EQ[name.type](name, "piticli"))
+  val agePred = AND(namePred, age < 18)
 
-  // note that you can add stuff to already defined predicates
-  val moreStuff = superPred and (age ≥ 5)
+  val emailPred = SimplePredicate(FunnyUserItem, EQ[email.type](email, "oh@uh.com"))
 
-  val other = UserItem ? (name isThere)
+  val orNamePred = UserItem ? (name === "piticli") or (name === "clipiti")
+  // wrong! no mixing and/or
+  // val andAgePred = orNamePred and (age ≥ 5)
+  val orAge = orNamePred or (age ≥ 5)
+
+  val userHasName = UserItem ? (name isThere)
+
+  val userNotInDpt = FunnyUserItem ? (departments ∌ "sales")
+  val userInDpt = FunnyUserItem ? (departments ∋ "IT")
 
 }
