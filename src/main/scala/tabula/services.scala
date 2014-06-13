@@ -4,7 +4,7 @@ package ohnosequences.tabula
 trait AwsService
 object DynamoDB extends AwsService
 
-trait AnyDynamoDBService { self =>
+trait AnyDynamoDBService { thisService =>
   
   // TODO move this to the type
   type Region <: AnyRegion
@@ -24,19 +24,19 @@ trait AnyDynamoDBService { self =>
   // then you can do: service please createTable(table, initialState)
   // it could also be apply, like: service createTable(table, initialState)
   // TODO move to actionOps or something like that
-  def please[A <: AnyAction { type Service = self.type }](action: A)(implicit
-    exec: Execute { type Action = A }
-  ): exec.Out[(A#Output, A#OutputState)] = exec()
+  def please[A <: AnyAction.Of[thisService.type]](action: A)(implicit
+    exec: Execute.For[A]
+  ): exec.Out = exec()
 
-  def apply[A <: AnyAction { type Service = self.type }](action: A)(implicit
-    exec: Execute { type Action = A }
-  ): exec.Out[(A#Output, A#OutputState)] = exec()
+  def apply[A <: AnyAction.Of[thisService.type]](action: A)(implicit
+    exec: Execute.For[A]
+  ): exec.Out = exec()
 
 
   trait AnyCreateTable extends AnyAction {
 
-    type Service = self.type
-    val service = self: self.type
+    type Service = thisService.type
+    val service = thisService: thisService.type
 
     type Input <: Singleton with AnyTable
     type InputState = InitialState[Input]
@@ -91,8 +91,6 @@ trait AnyDynamoDBService { self =>
   trait AnyGetItem extends AnyAction {
 
     type Input <: AnyItemType
-    // type Input
-    // type InputState = input.
   }
 
   /*
@@ -131,14 +129,26 @@ object AnyDynamoDBService {
     // def apply(): (Output, OutputState) 
   }
 
+  object AnyAction {
+
+    type Of[S <: AnyDynamoDBService] = AnyAction { type Service = S }
+  }
+
   trait Execute {
 
     type Action <: AnyAction
     val action: Action
 
-    type Out[+X]
+    type C[+X]
 
-    def apply(): Out[(action.Output, action.OutputState)]
+    def apply(): Out
+
+    type Out = C[(action.Output, action.OutputState)]
+  }
+
+  object Execute {
+    
+    type For[A <: AnyAction] = Execute { type Action = A }
   }
 
 }

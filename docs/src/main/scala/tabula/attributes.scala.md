@@ -9,6 +9,10 @@ import scala.reflect.ClassTag
 sealed trait AnyAttribute extends AnyProperty
 class Attribute[V: oneOf[ValidValues]#is](implicit val c0: ClassTag[V]) extends Property[V]()(c0) with AnyAttribute {}
 
+object Attribute {
+
+  type SetsOf[V] = AnyAttribute { type Raw = Set[V] }
+}
 ```
 
 
@@ -34,7 +38,7 @@ class Attribute[V: oneOf[ValidValues]#is](implicit val c0: ClassTag[V]) extends 
         + [tables.scala][main/scala/tabula/tables.scala]
         + [attributes.scala][main/scala/tabula/attributes.scala]
         + [services.scala][main/scala/tabula/services.scala]
-        + [queries.scala][main/scala/tabula/queries.scala]
+        + [conditions.scala][main/scala/tabula/conditions.scala]
 
 [test/scala/tabula/simpleModel.scala]: ../../../test/scala/tabula/simpleModel.scala.md
 [main/scala/tabula.scala]: ../tabula.scala.md
@@ -47,4 +51,4 @@ class Attribute[V: oneOf[ValidValues]#is](implicit val c0: ClassTag[V]) extends 
 [main/scala/tabula/tables.scala]: tables.scala.md
 [main/scala/tabula/attributes.scala]: attributes.scala.md
 [main/scala/tabula/services.scala]: services.scala.md
-[main/scala/tabula/queries.scala]: queries.scala.md
+[main/scala/tabula/conditions.scala]: conditions.scala.md

@@ -13,6 +13,7 @@ object simpleModel {
   object age extends Attribute[Int]
   object email extends Attribute[String]
   object serializedCrap extends Attribute[Bytes]
+  object departments extends Attribute[Set[String]]
   // object nono extends Attribute[Traversable[Array[Float]]]
 
   case object UsersTable extends HashKeyTable (
@@ -41,6 +42,7 @@ object simpleModel {
   implicit val funnyUser_name = FunnyUserItem has name
   implicit val funnyUser_email = FunnyUserItem has email
   implicit val funnyUser_serializedCrap = FunnyUserItem has serializedCrap
+  implicit val funnyUser_departments = FunnyUserItem has departments
 
   // predicates
   import AnyPredicate._
@@ -58,8 +60,10 @@ object simpleModel {
 
   val userHasName = UserItem ? (name isThere)
 
-}
+  val userNotInDpt = FunnyUserItem ? (departments ∌ "sales")
+  val userInDpt = FunnyUserItem ? (departments ∋ "IT")
 
+}
 ```
 
 
@@ -85,7 +89,7 @@ object simpleModel {
         + [tables.scala][main/scala/tabula/tables.scala]
         + [attributes.scala][main/scala/tabula/attributes.scala]
         + [services.scala][main/scala/tabula/services.scala]
-        + [queries.scala][main/scala/tabula/queries.scala]
+        + [conditions.scala][main/scala/tabula/conditions.scala]
 
 [test/scala/tabula/simpleModel.scala]: simpleModel.scala.md
 [main/scala/tabula.scala]: ../../../main/scala/tabula.scala.md
@@ -98,4 +102,4 @@ object simpleModel {
 [main/scala/tabula/tables.scala]: ../../../main/scala/tabula/tables.scala.md
 [main/scala/tabula/attributes.scala]: ../../../main/scala/tabula/attributes.scala.md
 [main/scala/tabula/services.scala]: ../../../main/scala/tabula/services.scala.md
-[main/scala/tabula/queries.scala]: ../../../main/scala/tabula/queries.scala.md
+[main/scala/tabula/conditions.scala]: ../../../main/scala/tabula/conditions.scala.md
