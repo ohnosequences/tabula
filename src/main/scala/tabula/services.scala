@@ -28,6 +28,11 @@ trait AnyDynamoDBService { self =>
     exec: Execute { type Action = A }
   ): exec.Out[(A#Output, A#OutputState)] = exec()
 
+  def apply[A <: AnyAction { type Service = self.type }](action: A)(implicit
+    exec: Execute { type Action = A }
+  ): exec.Out[(A#Output, A#OutputState)] = exec()
+
+
   trait AnyCreateTable extends AnyAction {
 
     type Service = self.type
