@@ -21,146 +21,18 @@ trait AnyDynamoDBService { thisService =>
   // add here isSecure or something similar
   def endpoint: String
 
-  import AnyDynamoDBService._
-
   // then you can do: service please createTable(table, initialState)
   // it could also be apply, like: service createTable(table, initialState)
   // TODO move to actionOps or something like that
-  def please[A <: AnyAction.Of[thisService.type]](action: A)(implicit
+  def please[A <: AnyAction](action: A)(implicit
     exec: Execute.For[A]
   ): exec.Out = exec()
 
-  def apply[A <: AnyAction.Of[thisService.type]](action: A)(implicit
+  def apply[A <: AnyAction](action: A)(implicit
     exec: Execute.For[A]
   ): exec.Out = exec()
 
-
-  trait AnyCreateTable extends AnyAction {
-
-    type Service = thisService.type
-    val service = thisService: thisService.type
-
-    type Input <: Singleton with AnyTable
-    type InputState = InitialState[Input]
-
-    type Output = Input
-    // TODO this should be something concrete
-    type OutputState = AnyTableState { type Resource = Input }
-  }
-
-  case class CreateTable[T <: Singleton with AnyTable](val input: T, val state: InitialState[T])
-  extends AnyCreateTable {
-
-    type Input = T
-  }
-
-  trait AnyDeleteTable extends AnyAction {
-
-    type Input <: Singleton with AnyTable
-    type InputState <: AnyTableState { type Resource = Input }
-
-    type Output = Input
-    // TODO this should be something concrete
-    type OutputState = AnyTableState { type Resource = Input }
-  }
-```
-
-
-#### GetItem
-
-- [API - GetItem](http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_GetItem.html)
-
-This action depends on the table type, and thus its signature and implementation will be different for each. In the case of a HashKeyTable we need as **input**
-
-- an `item` object of type `Item` (**not** `ItemType`)
-- a value of type `table.hashKey.Rep`
-- _optional_ consistent read, capacity
-
-As per the output, we should get
-
-- the corresponding `item.Rep` value
-- possibly errors instead
-
-##### input, inputState
-
-In principle, we should have something like
-
-- `input` correspond to the table from which you want to read the item
-- `inputState` being the key value, the `item` and whatever else is needed
-
-This sounds like more orthodox in principle, but it could be confusing _if_ the action class mirrors this in its parameters: `service getItem(table, otherStuff(key, item))`. But this does not need to be so: just use the table inside `item` to set the input, and use a more intuitive set of parameters: `service getItem(item, key)`. Actually, as a table is the only resource in DynamoDB, for all DynamoDB actions the input is going to be formed by tables.
-  
-
-
-```scala
-  trait AnyGetItem extends AnyAction {
-
-    type Input <: AnyItemType
-  }
-```
-
-
-### Query
-
-- [API - Query](http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html)
-
-We need as input
-  
-- a hash key value
-- _optional_ a condition on the range key
-- the item type over which we want to query
-- _optional_ a predicate over it for filtering results service-side
-
-
-```scala
-  trait AnyQuery extends AnyAction {}
-
 }
-
-object AnyDynamoDBService {
-
-  trait AnyAction {
-
-    type Service <: AnyDynamoDBService
-    val service: Service
-
-    // this should be an HList of Resources; it is hard to express though
-    type Input
-    val input: Input
-    // same for this
-    type Output
-
-    type InputState
-    val state: InputState
-    type OutputState
-
-    // def apply(): (Output, OutputState) 
-  }
-
-  object AnyAction {
-
-    type Of[S <: AnyDynamoDBService] = AnyAction { type Service = S }
-  }
-
-  trait Execute {
-
-    type Action <: AnyAction
-    val action: Action
-
-    type C[+X]
-
-    def apply(): Out
-
-    type Out = C[(action.Output, action.OutputState)]
-  }
-
-  object Execute {
-    
-    type For[A <: AnyAction] = Execute { type Action = A }
-  }
-
-}
-
 ```
 
 
