@@ -13,11 +13,6 @@ trait AnyAction {
   type OutputState
 }
 
-object AnyAction {
-
-  type Of[S <: AnyDynamoDBService] = AnyAction { type Service = S }
-}
-
 // actions
 
 trait AnyCreateTable extends AnyAction {
