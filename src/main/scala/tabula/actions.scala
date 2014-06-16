@@ -100,7 +100,7 @@ trait Execute {
 
   def apply(): Out
 
-  type Out = C[(action.Output ,action.OutputState)]
+  type Out = C[(action.Input ,action.OutputState)]
 }
 
 

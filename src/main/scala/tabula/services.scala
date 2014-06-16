@@ -24,10 +24,10 @@ trait AnyDynamoDBService { thisService =>
   // TODO move to actionOps or something like that
   def please[A <: AnyAction](action: A)(implicit
     exec: A => Execute.For[A]
-  ) = exec(action).apply()
+  ): Execute.For[A]#Out = exec(action).apply()
 
   def apply[A <: AnyAction](action: A)(implicit
     exec: A => Execute.For[A]
-  ) = exec(action).apply()
+  ): Execute.For[A]#Out = exec(action).apply()
 
 }

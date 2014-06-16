@@ -23,6 +23,7 @@ trait DeleteTableAux extends AnyDeleteTable {
   override type InputState = InitialState[Input]
   override type OutputState = InitialState[Input]
 
+
 }
 
 class DeleteTable[T <: AnyTable with Singleton]  ( table: T,  val state: InitialState[T]) extends DeleteTableAux {
@@ -32,12 +33,10 @@ class DeleteTable[T <: AnyTable with Singleton]  ( table: T,  val state: Initial
 
 object DeleteTable {
 
-  implicit def makeExecutor[D <: DeleteTableAux](action: D) = DeleteTableExecute(action)
-
-  case class DeleteTableExecute[D <: DeleteTableAux](a: D) extends Execute {
+  implicit class DeleteTableExecute[D <: DeleteTableAux](ac: D) extends Execute {
 
     override type Action = D
-    override val action = a
+    override val action = ac
 
 
     override def apply(): (action.Input, action.OutputState) = {
