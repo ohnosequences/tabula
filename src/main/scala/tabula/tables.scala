@@ -116,6 +116,8 @@ extends AnyTableState {
   val throughputStatus = initialThroughput
   
 }
+
+//todo all these states fail AnyDynamoDBState constructor!!!
 trait Creating extends AnyTableState
 trait Updating extends AnyTableState
 trait Active extends AnyTableState

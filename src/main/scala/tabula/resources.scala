@@ -26,12 +26,19 @@ trait AnyDynamoDBResource {
 /*
   see http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/UsingIAMWithDDB.html#ARN_Format
 */
-case class DynamoDBARN[R <: AnyDynamoDBResource](val resource: R, val account: Account) {
+case class DynamoDBARN[R <: AnyDynamoDBResource](resource: R, account: Account) {
 
   type Resource = R
 
   // the AWS rep
+
+  //println("resource.region.name: " + resource.region)
+ // println("account.id: " + account.id)
+ // println("resource.resourceType.name: " + resource.resourceType.name)
+ // println("resource.name: " + resource.name)
+
   val id: String = s"arn:aws:dynamodb:${resource.region.name}:${account.id}:${resource.resourceType.name}/${resource.name}"
+ // val id = "id"
 }
 
 
