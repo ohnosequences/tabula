@@ -23,11 +23,11 @@ trait AnyDynamoDBService { thisService =>
   // it could also be apply, like: service createTable(table, initialState)
   // TODO move to actionOps or something like that
   def please[A <: AnyAction](action: A)(implicit
-    exec: Execute.For[A]
-  ): exec.Out = exec()
+    exec: A => Execute.For[A]
+  ) = exec(action).apply()
 
   def apply[A <: AnyAction](action: A)(implicit
-    exec: Execute.For[A]
-  ): exec.Out = exec()
+    exec: A => Execute.For[A]
+  ) = exec(action).apply()
 
 }

@@ -16,28 +16,39 @@ class ReadyToDelete[T <: AnyTable with Singleton](val service: IrishDynamoDBServ
   override type Resource = T
 }
 
-class DeleteTable[T <: AnyTable with Singleton]( table: T,  val state: InitialState[T]) extends AnyDeleteTable {
+trait DeleteTableAux extends AnyDeleteTable {
+  override type Input <: AnyTable with Singleton
+  val state: InitialState[Input]
+  override val input: Input //table
+  override type InputState = InitialState[Input]
+  override type OutputState = InitialState[Input]
+
+}
+
+class DeleteTable[T <: AnyTable with Singleton]  ( table: T,  val state: InitialState[T]) extends DeleteTableAux {
   override val input: Input = table
-  override type InputState = InitialState[T]
   override type Input = T
 }
 
-//object DeleteTable {
-//  implicit class DeleteTableExecute[T <: AnyTable with Singleton](table: T) extends Execute {
-//
-//    override type Action = DeleteTable[T]
-//
-//
-//    override def apply(): (T, InitialState[T]) = {
-//      println("executing: " + action)
-//      (table, action.state)
-//    }
-//
-//    override type C[+X] = X
-//
-//    override val action = new DeleteTable(table, InitialState[T](table,table.action.,InitialThroughput(0, 0)))
-//  }
-//}
+object DeleteTable {
+
+  implicit def makeExecutor[D <: DeleteTableAux](action: D) = DeleteTableExecute(action)
+
+  case class DeleteTableExecute[D <: DeleteTableAux](a: D) extends Execute {
+
+    override type Action = D
+    override val action = a
+
+
+    override def apply(): (action.Input, action.OutputState) = {
+      println("executing: " + action)
+      (action.input, action.state)
+    }
+
+    override type C[+X] = X
+
+  }
+}
 
 
 
@@ -57,20 +68,18 @@ class IrishDynamoDBService(credentialProvider: AWSCredentialsProvider) extends A
   val ddbClient = new AmazonDynamoDBClient(credentialProvider)
   ddbClient.setRegion(Region.getRegion(Regions.EU_WEST_1))
 
-  implicit class DeleteTableExecute[T <: AnyTable with Singleton](table: T) extends Execute {
-
-   override type Action = DeleteTable[T]
-
-
-    override def apply(): (T, InitialState[T]) = {
-      println("executing: " + action)
-      (table, action.state)
-    }
-
-    override type C[+X] = X
-
-    override val action = new DeleteTable(table, InitialState[T](table,account,InitialThroughput(0, 0)))
-  }
+//  implicit class DeleteTableExecute[T <: AnyTable with Singleton](table: T) extends Execute[ DeleteTable[T]] {
+//
+//
+//    override def apply(action: Action): (T, InitialState[T]) = {
+//      println("executing: " + action)
+//      (table, action.state)
+//    }
+//
+//    override type C[+X] = X
+//
+//   // override val action = new DeleteTable(table, InitialState[T](table,account,InitialThroughput(0, 0)))
+//  }
 }
 
 

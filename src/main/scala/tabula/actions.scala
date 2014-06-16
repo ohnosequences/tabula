@@ -42,7 +42,7 @@ trait AnyDeleteTable extends AnyAction {
 
   type Output = Input
   // TODO this should be something concrete
-  type OutputState = AnyTableState { type Resource = Input }
+  type OutputState <: AnyTableState { type Resource = Input }
 }
 
 /*
@@ -100,10 +100,14 @@ trait Execute {
 
   def apply(): Out
 
-  type Out = C[(action.Output, action.OutputState)]
+  type Out = C[(action.Output ,action.OutputState)]
 }
+
+
+
 
 object Execute {
   
   type For[A <: AnyAction] = Execute { type Action = A }
 }
+

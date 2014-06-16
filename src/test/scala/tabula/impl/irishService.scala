@@ -21,6 +21,6 @@ class irishService extends FunSuite {
 
     import service._
 
-    service.apply( new DeleteTable(table, InitialState(table, service.account, InitialThroughput(0, 0))))(new service.DeleteTableExecute[table.type](table))
+    service.apply( new DeleteTable(table, InitialState(table, service.account, InitialThroughput(0, 0))))
   }
 }

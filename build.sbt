@@ -29,3 +29,7 @@ dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-annotations" % "2
 
 dependencyOverrides += "joda-time" % "joda-time" % "2.3"
 
+
+scalacOptions ++= Seq(
+      "-language:existentials"
+)
