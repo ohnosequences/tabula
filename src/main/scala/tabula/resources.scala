@@ -23,6 +23,10 @@ trait AnyDynamoDBResource {
   val name: String
 }
 
+object AnyDynamoDBResource {
+  type inRegion[R <: AnyRegion] = AnyDynamoDBResource { type Region = R }
+}
+
 /*
   see http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/UsingIAMWithDDB.html#ARN_Format
 */

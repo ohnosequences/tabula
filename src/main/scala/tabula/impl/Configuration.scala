@@ -3,7 +3,6 @@ package ohnosequences.tabula.impl
 import com.amazonaws.auth.{PropertiesFileCredentialsProvider, EnvironmentVariableCredentialsProvider, InstanceProfileCredentialsProvider, AWSCredentialsProviderChain}
 import java.io.File
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
-// import com.amazonaws.regions.{Regions, Region}
 import ohnosequences.tabula._
 import com.amazonaws.services.dynamodbv2.model.{ScalarAttributeType, AttributeDefinition}
 

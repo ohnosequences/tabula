@@ -3,7 +3,7 @@ package ohnosequences.tabula
 trait AnyAction {
 
   // this should be an HList of Resources; it is hard to express though
-  type Input
+  type Input <: AnyDynamoDBResource
   val input: Input
   // same for this
   type Output
@@ -11,6 +11,10 @@ trait AnyAction {
   type InputState
   val state: InputState
   type OutputState
+}
+
+object AnyAction {
+  type inRegion[R <: AnyRegion] = AnyAction { type Input <: AnyDynamoDBResource.inRegion[R] }
 }
 
 // actions
@@ -81,10 +85,10 @@ case class DescribeTable[T <: AnyTable with Singleton](input: T, state: AnyTable
   This sounds like more orthodox in principle, but it could be confusing _if_ the action class mirrors this in its parameters: `service getItem(table, otherStuff(key, item))`. But this does not need to be so: just use the table inside `item` to set the input, and use a more intuitive set of parameters: `service getItem(item, key)`. Actually, as a table is the only resource in DynamoDB, for all DynamoDB actions the input is going to be formed by tables.
 
 */
-trait AnyGetItem extends AnyAction {
+// trait AnyGetItem extends AnyAction {
 
-  type Input <: AnyItemType
-}
+//   type Input <: AnyItemType
+// }
 
 /*
   ### Query

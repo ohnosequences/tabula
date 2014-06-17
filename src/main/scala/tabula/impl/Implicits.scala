@@ -7,7 +7,7 @@ import com.amazonaws.services.dynamodbv2.model.{ScalarAttributeType, AttributeDe
 
 
 object Implicits {
-  implicit val DefaultDynamoDBClient = new DynamoDBClient(EU, 
+  implicit def DefaultDynamoDBClient = new DynamoDBClient(EU, 
     new AmazonDynamoDBClient(CredentialProviderChains.default)) {
     client.setRegion(Region.getRegion(Regions.EU_WEST_1))
   }

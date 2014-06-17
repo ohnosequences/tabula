@@ -10,7 +10,7 @@ import ohnosequences.tabula.Account
 
 
 
-class IrishDynamoDBService(credentialProvider: AWSCredentialsProvider) extends AnyDynamoDBService {
+case object IrishDynamoDBService extends AnyDynamoDBService {
 
   override type Account = ohnosequences.tabula.Account
   override type Region = EU.type
@@ -20,11 +20,6 @@ class IrishDynamoDBService(credentialProvider: AWSCredentialsProvider) extends A
   override val account: Account = Account("", "")
 
   override val region = EU
-
-
-  val ddbClient = new AmazonDynamoDBClient(credentialProvider)
-  ddbClient.setRegion(Region.getRegion(Regions.EU_WEST_1))
-
 }
 
 

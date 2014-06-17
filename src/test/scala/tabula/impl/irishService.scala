@@ -14,11 +14,11 @@ class irishService extends FunSuite {
   type Id[+X] = X
   def typed[X](x: X) = x
 
-  val service = new IrishDynamoDBService(CredentialProviderChains.default)
+  val service = IrishDynamoDBService
 
-  test("test credentials") {
-    assert(!service.ddbClient.listTables().getTableNames.isEmpty)
-  }
+  // test("test credentials") {
+  //   assert(!service.ddbClient.listTables().getTableNames.isEmpty)
+  // }
 
   test("deleting table") {
 
@@ -26,10 +26,7 @@ class irishService extends FunSuite {
     case object id extends Attribute[Int]
     object table extends HashKeyTable("wordcount01_snapshot_errors", id, service.region)
 
-    // service.apply[DeleteTable[table.type], Id]( new DeleteTable(table, Active(table, service.account, InitialThroughput(0, 0))))
-
     typed[Deleting[table.type]](service(DeleteTable(table, Active(table, service.account, InitialThroughput(0, 0))))._2)
-
   }
 
   test("creating table") {

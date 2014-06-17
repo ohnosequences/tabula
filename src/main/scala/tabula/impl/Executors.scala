@@ -5,23 +5,23 @@ import com.amazonaws.services.dynamodbv2.model._
 
 object Executors {
 
-  case class DeleteTableExecute[D <: AnyDeleteTable](dynamoClient: AnyDynamoDBClient) extends Executor {
-    type Action = D
+  case class DeleteTableExecute[A <: AnyDeleteTable](dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region]) extends Executor {
+    type Action = A
 
     override type C[+X] = X
 
-    override def apply(action: D): Out = {
+    override def apply(action: A): Out = {
       println("executing: " + action)
       (action.input, action.state.deleting)
     }
   }
 
-  implicit def deleteTableExecute[D <: AnyDeleteTable]
-    (implicit dynamoClient: AnyDynamoDBClient): DeleteTableExecute[D] = DeleteTableExecute[D](dynamoClient)
+  implicit def deleteTableExecute[A <: AnyDeleteTable]
+    (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region]): DeleteTableExecute[A] = DeleteTableExecute[A](dynamoClient)
 
 
   case class CreateHashKeyTableExecute[A <: AnyCreateTable.withHashKeyTable](
-      dynamoClient: AnyDynamoDBClient,
+      dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
       getAttributeDefinition: A#HashKey => AttributeDefinition
     ) extends Executor {
 
@@ -52,13 +52,13 @@ object Executors {
   }
 
   implicit def createHashKeyTableExecute[A <: AnyCreateTable.withHashKeyTable](implicit 
-      dynamoClient: AnyDynamoDBClient,
+      dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
       getAttributeDefinition: A#HashKey => AttributeDefinition
     ): CreateHashKeyTableExecute[A] =
        CreateHashKeyTableExecute[A](dynamoClient, getAttributeDefinition)
 
 
-  case class DescribeTableExecute[A <: AnyDescribeTable](dynamoClient: AnyDynamoDBClient) extends Executor {
+  case class DescribeTableExecute[A <: AnyDescribeTable](dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region]) extends Executor {
 
     override type Action = A
 
@@ -81,7 +81,7 @@ object Executors {
   }
 
   implicit def describeTableExecute[A <: AnyDescribeTable]
-    (implicit dynamoClient: AnyDynamoDBClient): DescribeTableExecute[A] =
+    (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region]): DescribeTableExecute[A] =
       DescribeTableExecute[A](dynamoClient)
 
 }
