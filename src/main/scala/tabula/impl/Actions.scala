@@ -53,9 +53,6 @@ trait CreateHashKeyTableAux extends AnyAction {
   override val input: Input //table
   override type InputState = InitialState[Input]
   override type OutputState = Creating[Input]
-
-
-
 }
 
 class CreateHashKeyTable[HK <: AnyAttribute, R <: AnyRegion, T <: HashKeyTable[HK, R] with Singleton]  ( table: T,  val state: InitialState[T]) extends CreateHashKeyTableAux {
@@ -84,24 +81,60 @@ object CreateHashKeyTable {
       val keySchemaElement = new KeySchemaElement(ac.input.hashKey.label, "HASH")
       val throughput = new ProvisionedThroughput(ac.state.initialThroughput.readCapacity, ac.state.initialThroughput.writeCapacity)
 
-      var request = new CreateTableRequest()
+      val request = new CreateTableRequest()
         .withTableName(table.name)
         .withProvisionedThroughput(throughput)
         .withKeySchema(keySchemaElement)
         .withAttributeDefinitions(attributeDefinition)
 
       dynamoClient.client.createTable(request)
-    //  ac.input.hashKey
 
-//      action.Input match {
-//
-//      }
-     // ac.input.
-     // action.state.
       (action.input, action.state.creating)
     }
 
     override type C[+X] = X
 
   }
+
+  trait GetTableAux extends AnyAction {
+
+    override type Input <: AnyTable with Singleton
+    val state: InitialState[Input]
+    override val input: Input //table
+    override type InputState =  AnyTableState.For[Input]
+    override type OutputState =  AnyTableState.For[Input]
+  }
+
+  class GetTable[T <: AnyTable with Singleton]  ( table: T,  val state:  AnyTableState.For[T]) extends DeleteTableAux {
+    override val input: Input = table
+    override type Input = T
+  }
+
+  object GetTable {
+
+    implicit class GetTableExecute[A <: GetTableAux](ac: A)(implicit dynamoClient: DynamoDBClient) extends Execute {
+
+      override type Action = A
+      override val action = ac
+
+
+      override def apply(): (action.Input, AnyTableState.For[action.Input]) = {
+        println("executing: " + action)
+        val table = ac.input
+        //CREATING, UPDATING, DELETING, ACTIVE
+        dynamoClient.client.describeTable(table.name).getTable.getTableStatus match {
+          case "ACTIVE" => Active(table, ac.state.account, ac.state.throughputStatus)
+          case "CREATING" => Creating(table, ac.state.account, ac.state.throughputStatus)
+          case "DELETING" => Deleting(table, ac.state.account, ac.state.throughputStatus)
+          case "UPDATING" => Updating(table, ac.state.account, ac.state.throughputStatus)
+        }
+
+        (action.input, action.state.deleting)
+      }
+
+      override type C[+X] = X
+
+    }
+  }
+
 }
