@@ -22,7 +22,7 @@ object AnyAction {
 trait AnyCreateTable extends AnyAction {
   override type Input <: AnyTable with Singleton
   override type Output = Input
-  type HashKey = input.HashKey
+  // type HashKey = input.HashKey
 
   override type InputState = InitialState[Input]
   override type OutputState = Creating[Input]
@@ -33,6 +33,7 @@ case class CreateTable[T <: AnyTable with Singleton](input: T, state: InitialSta
 
 object AnyCreateTable {
   type withHashKeyTable = AnyCreateTable { type Input <: Singleton with AnyHashKeyTable }
+  type withCompositeKeyTable = AnyCreateTable { type Input <: Singleton with AnyCompositeKeyTable }
 }
 
 

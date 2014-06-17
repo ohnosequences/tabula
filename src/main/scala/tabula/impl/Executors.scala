@@ -22,7 +22,7 @@ object Executors {
 
   case class CreateHashKeyTableExecute[A <: AnyCreateTable.withHashKeyTable](
       dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
-      getAttributeDefinition: A#HashKey => AttributeDefinition
+      getAttributeDefinition: A#Input#HashKey => AttributeDefinition
     ) extends Executor {
 
     override type Action = A
@@ -53,10 +53,51 @@ object Executors {
 
   implicit def createHashKeyTableExecute[A <: AnyCreateTable.withHashKeyTable](implicit 
       dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
-      getAttributeDefinition: A#HashKey => AttributeDefinition
+      getAttributeDefinition: A#Input#HashKey => AttributeDefinition
     ): CreateHashKeyTableExecute[A] =
        CreateHashKeyTableExecute[A](dynamoClient, getAttributeDefinition)
 
+
+  case class CreateCompositeKeyTableExecute[A <: AnyCreateTable.withCompositeKeyTable](
+      dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
+      getHashKeyAttributeDefinition: A#Input#HashKey => AttributeDefinition,
+      getRangeKeyAttributeDefinition: A#Input#RangeKey => AttributeDefinition
+    ) extends Executor {
+
+    override type Action = A
+
+    override def apply(ac: A): Out = {
+
+      val table = ac.input
+      println("executing: " + ac)
+     // println(getHashDefinition(ac.input.hashKey))
+
+      val hashAttributeDefinition = getHashKeyAttributeDefinition(ac.input.hashKey)
+      val rangeAttributeDefinition = getRangeKeyAttributeDefinition(ac.input.rangeKey)
+      val hashSchemaElement = new KeySchemaElement(ac.input.hashKey.label, "HASH")
+      val rangeSchemaElement = new KeySchemaElement(ac.input.rangeKey.label, "RANGE")
+      val throughput = new ProvisionedThroughput(ac.state.initialThroughput.readCapacity, ac.state.initialThroughput.writeCapacity)
+
+      val request = new CreateTableRequest()
+        .withTableName(table.name)
+        .withProvisionedThroughput(throughput)
+        .withKeySchema(hashSchemaElement, rangeSchemaElement)
+        .withAttributeDefinitions(hashAttributeDefinition, rangeAttributeDefinition)
+
+      dynamoClient.client.createTable(request)
+
+      (ac.input, ac.state.creating)
+    }
+
+    override type C[+X] = X
+  }
+
+  implicit def createCompositeKeyTableExecute[A <: AnyCreateTable.withCompositeKeyTable](implicit 
+      dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
+      getHashKeyAttributeDefinition: A#Input#HashKey => AttributeDefinition,
+      getRangeKeyAttributeDefinition: A#Input#RangeKey => AttributeDefinition
+    ): CreateCompositeKeyTableExecute[A] =
+       CreateCompositeKeyTableExecute[A](dynamoClient, getHashKeyAttributeDefinition, getRangeKeyAttributeDefinition)
 
   case class DescribeTableExecute[A <: AnyDescribeTable](dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region]) extends Executor {
 
