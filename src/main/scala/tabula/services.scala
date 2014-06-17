@@ -22,12 +22,12 @@ trait AnyDynamoDBService { thisService =>
   // then you can do: service please createTable(table, initialState)
   // it could also be apply, like: service createTable(table, initialState)
   // TODO move to actionOps or something like that
-  def please[A <: AnyAction](action: A)(implicit
-    exec: A => Execute.For[A]
-  ): Execute.For[A]#Out = exec(action).apply()
+  def apply[A <: AnyAction](action: A)(implicit
+    exec: Execute.For[A]
+  ): exec.Out = exec(action)
 
-  def apply[A <: AnyAction, B[+_]](action: A)(implicit
-    exec: A => Execute.For2[A, B]
-  ): B[(A#Output, A#OutputState)] = exec(action).apply()
+  // def apply[A <: AnyAction, B[+_]](action: A)(implicit
+  //   exec: A => Execute.For2[A, B]
+  // ): B[(A#Output, A#OutputState)] = exec(action).apply()
 
 }

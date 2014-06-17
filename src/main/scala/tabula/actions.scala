@@ -89,13 +89,13 @@ trait AnyQuery extends AnyAction {}
 trait Execute {
 
   type Action <: AnyAction
-  val action: Action
+  // val action: Action
 
   type C[+X]
 
-  def apply(): Out
+  def apply(action: Action): Out
 
-  type Out = C[(action.Output ,action.OutputState)]
+  type Out = C[(Action#Output ,Action#OutputState)]
 }
 
 
