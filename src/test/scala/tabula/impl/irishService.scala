@@ -1,4 +1,4 @@
-package tabula.impl
+package ohnosequences.tabula.impl
 
 import org.scalatest.FunSuite
 import ohnosequences.tabula.impl._
@@ -31,6 +31,8 @@ class irishService extends FunSuite {
 
   test("creating table") {
     case object id extends Attribute[Int]
+
+
 
     val service = new IrishDynamoDBService(CredentialProviderChains.default)
     object table extends HashKeyTable("wordcount01_snapshot_errors", id, service.region)

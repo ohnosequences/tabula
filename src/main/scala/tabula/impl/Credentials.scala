@@ -4,6 +4,8 @@ import com.amazonaws.auth.{PropertiesFileCredentialsProvider, EnvironmentVariabl
 import java.io.File
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.amazonaws.regions.{Regions, Region}
+import ohnosequences.tabula.Attribute
+import com.amazonaws.services.dynamodbv2.model.{ScalarAttributeType, AttributeDefinition}
 
 trait DynamoDBClient {
   val client: AmazonDynamoDBClient
@@ -31,4 +33,11 @@ object Implicits {
     val client = new AmazonDynamoDBClient(CredentialProviderChains.default)
     client.setRegion(Region.getRegion(Regions.EU_WEST_1))
   }
+
+  implicit def getAttributeDefinition(attr: Attribute[Int]): AttributeDefinition = {
+    new AttributeDefinition()
+      .withAttributeName(attr.name)
+      .withAttributeType(ScalarAttributeType.N)
+  }
 }
+
