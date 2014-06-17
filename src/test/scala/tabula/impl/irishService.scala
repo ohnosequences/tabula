@@ -35,8 +35,8 @@ class irishService extends FunSuite {
 
 
     val service = new IrishDynamoDBService(CredentialProviderChains.default)
-    object table extends HashKeyTable("wordcount01_snapshot_errors", id, service.region)
+    object table extends HashKeyTable("tabula_test", id, service.region)
 
-    service apply new CreateHashKeyTable[id.type, service.Region, table.type](table, InitialState(table, service.account, InitialThroughput(0, 0)))
+    service apply new CreateHashKeyTable[id.type, service.Region, table.type](table, InitialState(table, service.account, InitialThroughput(1, 1)))
   }
 }

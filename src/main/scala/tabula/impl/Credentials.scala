@@ -28,16 +28,5 @@ object CredentialProviderChains {
   )
 }
 
-object Implicits {
-  implicit object DefaultDynamoDBClient extends DynamoDBClient {
-    val client = new AmazonDynamoDBClient(CredentialProviderChains.default)
-    client.setRegion(Region.getRegion(Regions.EU_WEST_1))
-  }
 
-  implicit def getAttributeDefinition(attr: Attribute[Int]): AttributeDefinition = {
-    new AttributeDefinition()
-      .withAttributeName(attr.label)
-      .withAttributeType(ScalarAttributeType.N)
-  }
-}
 
