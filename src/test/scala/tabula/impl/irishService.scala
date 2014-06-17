@@ -6,7 +6,6 @@ import ohnosequences.tabula._
 import ohnosequences.tabula.InitialThroughput
 import ohnosequences.tabula.Active
 import ohnosequences.tabula.InitialThroughput
-import ohnosequences.tabula.impl.CreateHashKeyTable.GetTable
 
 class irishService extends FunSuite {
   import Implicits._
@@ -56,20 +55,20 @@ class irishService extends FunSuite {
 
     println("tabula_test status: " + sta)
 
-//    var status = sta
-//    var deleted = false
-//    while (!deleted) {
-//      status = (service apply new GetTable(table, status))._2
-//      println("tabula_test status: " + status)
-//
-//      status match {
-//        case active: Active[table.type] => {
-//          println("deleting tabula_test")
-//          service apply new DeleteTable(table, active)
-//        }
-//      }
-//      Thread.sleep(5000)
-//    }
+    var status = sta
+    var deleted = false
+    while (!deleted) {
+      status = (service.apply[GetTable[table.type], Id](new GetTable(table, status)))._2
+      println("tabula_test status: " + status)
+
+      status match {
+        case active: Active[table.type] => {
+          println("deleting tabula_test")
+          service.apply[DeleteTable[table.type], Id]( new DeleteTable(table, status))
+        }
+      }
+      Thread.sleep(5000)
+    }
   }
 
 
