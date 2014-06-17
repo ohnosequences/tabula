@@ -12,6 +12,11 @@ object Executors {
 
     override def apply(action: A): Out = {
       println("executing: " + action)
+      try { 
+        dynamoClient.client.deleteTable(action.input.name)
+      } catch {
+        case e: Exception => e.printStackTrace
+      }
       (action.input, action.state.deleting)
     }
   }
@@ -107,14 +112,14 @@ object Executors {
       println("executing: " + action)
       val table = action.input
       //CREATING, UPDATING, DELETING, ACTIVE
-      dynamoClient.client.describeTable(table.name).getTable.getTableStatus match {
+      val newState = dynamoClient.client.describeTable(table.name).getTable.getTableStatus match {
         case "ACTIVE" => Active(table, action.state.account, action.state.throughputStatus)
         case "CREATING" => Creating(table, action.state.account, action.state.throughputStatus)
         case "DELETING" => Deleting(table, action.state.account, action.state.throughputStatus)
         case "UPDATING" => Updating(table, action.state.account, action.state.throughputStatus)
       }
 
-      (action.input, action.state.deleting)
+      (action.input, newState)
     }
 
     override type C[+X] = X
