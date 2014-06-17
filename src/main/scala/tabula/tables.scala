@@ -77,11 +77,12 @@ extends AnyCompositeKeyTable {
   ### table states
 
 */
-trait AnyTableState extends AnyDynamoDBState {
+sealed trait AnyTableState extends AnyDynamoDBState {
 
-  type Resource <: AnyTable
+  type Resource <: Singleton with AnyTable
   
   val throughputStatus: ThroughputStatus
+
 
   // TODO table ARN  
 }
@@ -105,23 +106,59 @@ case class InitialThroughput(
 extends ThroughputStatus {}
 
 case class InitialState[T <: Singleton with AnyTable](
-  val resource: T,
-  val account: Account,
-  val initialThroughput: InitialThroughput
-) 
+  resource: T,
+  account: Account,
+  initialThroughput: InitialThroughput
+)
+
 extends AnyTableState {
 
   type Resource = T
 
   val throughputStatus = initialThroughput
+
+  def creating = Creating(resource, account, initialThroughput)
   
 }
 
-//todo all these states fail AnyDynamoDBState constructor!!!
-trait Creating extends AnyTableState
-trait Updating extends AnyTableState
-trait Active extends AnyTableState
-trait Deleting extends AnyTableState  
+
+case class Updating[T <: Singleton with AnyTable](
+  resource: T,
+  account: Account,
+  throughputStatus: ThroughputStatus
+) extends AnyTableState {
+  type Resource = T
+  //val throughputStatus = initialThroughput
+}
+
+case class Creating[T <: Singleton with AnyTable](
+  resource: T,
+  account: Account,
+  throughputStatus: ThroughputStatus
+) extends AnyTableState {
+  type Resource = T
+ // val throughputStatus = ThroughputStatus
+}
+
+case class Active[T <: Singleton with AnyTable](
+  resource: T,
+  account: Account,
+  throughputStatus: ThroughputStatus
+) extends AnyTableState {
+  type Resource = T
+  //val throughputStatus = initialThroughput
+
+  def deleting = Deleting(resource, account, throughputStatus)
+}
+
+case class Deleting[T <: Singleton with AnyTable](
+  resource: T,
+  account: Account,
+  throughputStatus: ThroughputStatus
+) extends AnyTableState {
+  type Resource = T
+ // val throughputStatus = initialThroughput
+}
 
 object AnyTable {}
 

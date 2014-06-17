@@ -1,8 +1,9 @@
 package tabula.impl
 
 import org.scalatest.FunSuite
-import ohnosequences.tabula.impl.{ReadyToDelete, DeleteTable, CredentialProviderChains, IrishDynamoDBService}
-import ohnosequences.tabula.{InitialThroughput, InitialState, Attribute, HashKeyTable}
+import ohnosequences.tabula.impl.{Implicits, DeleteTable, CredentialProviderChains, IrishDynamoDBService}
+import ohnosequences.tabula._
+import ohnosequences.tabula.InitialThroughput
 
 class irishService extends FunSuite {
   test("test credentials") {
@@ -19,8 +20,8 @@ class irishService extends FunSuite {
     val service = new IrishDynamoDBService(CredentialProviderChains.default)
     object table extends HashKeyTable("wordcount01_snapshot_errors", id, service.region)
 
-    import service._
+    import Implicits._
 
-    service.apply( new DeleteTable(table, InitialState(table, service.account, InitialThroughput(0, 0))))
+    service.apply( new DeleteTable(table, Active(table, service.account, InitialThroughput(0, 0))))
   }
 }
