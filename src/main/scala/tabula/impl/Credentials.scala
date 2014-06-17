@@ -36,7 +36,7 @@ object Implicits {
 
   implicit def getAttributeDefinition(attr: Attribute[Int]): AttributeDefinition = {
     new AttributeDefinition()
-      .withAttributeName(attr.name)
+      .withAttributeName(attr.label)
       .withAttributeType(ScalarAttributeType.N)
   }
 }

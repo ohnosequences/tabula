@@ -4,6 +4,7 @@ import ohnosequences.tabula._
 import ohnosequences.tabula.InitialState
 import ohnosequences.tabula.Deleting
 import ohnosequences.tabula.Creating
+import com.amazonaws.services.dynamodbv2.model.AttributeDefinition
 
 trait DeleteTableAux extends AnyAction {
   override type Input <: AnyTable with Singleton
@@ -67,7 +68,7 @@ class CreateHashKeyTable[HK <: AnyAttribute, R <: AnyRegion, T <: HashKeyTable[H
 
 object CreateHashKeyTable {
 
-  implicit class CreateTableExecute[A <: CreateHashKeyTableAux](ac: A)(implicit dynamoClient: DynamoDBClient) extends Execute {
+  implicit class CreateTableExecute[A <: CreateHashKeyTableAux](ac: A)(implicit dynamoClient: DynamoDBClient, getHashDefinition: A#HashKey => AttributeDefinition) extends Execute {
 
     override type Action = A
     override val action = ac
@@ -75,12 +76,14 @@ object CreateHashKeyTable {
 
     override def apply(): (action.Input, action.OutputState) = {
       println("executing: " + action)
+      println(getHashDefinition(ac.input.hashKey))
     //  ac.input.hashKey
 
 //      action.Input match {
 //
 //      }
      // ac.input.
+     // action.state.
       (action.input, action.state.creating)
     }
 
