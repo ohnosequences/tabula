@@ -2,6 +2,8 @@ package ohnosequences.tabula.impl
 
 import ohnosequences.tabula._
 import ohnosequences.tabula.InitialState
+import ohnosequences.tabula.Deleting
+import ohnosequences.tabula.Creating
 
 trait DeleteTableAux extends AnyAction {
   override type Input <: AnyTable with Singleton
@@ -41,35 +43,48 @@ object DeleteTable {
 }
 
 
-//trait CreateTableAux extends AnyDeleteTable {
-//  override type Input <: AnyTable with Singleton
-//  val state: InitialState[Input]
-//  override val input: Input //table
-//  override type InputState = InitialState[Input]
-//  override type OutputState = Deleting[Input]
+trait CreateHashKeyTableAux extends AnyAction {
+  type HashKey <: AnyAttribute
+  type Region <: AnyRegion
+
+  override type Input <: HashKeyTable[HashKey, Region] with Singleton
+  val state: InitialState[Input]
+  override val input: Input //table
+  override type InputState = InitialState[Input]
+  override type OutputState = Creating[Input]
+
+
+
+}
+
+class CreateHashKeyTable[HK <: AnyAttribute, R <: AnyRegion, T <: HashKeyTable[HK, R] with Singleton]  ( table: T,  val state: InitialState[T]) extends CreateHashKeyTableAux {
+  override val input: Input = table
+  override type Input = T
+
+  override type Region = R
+  override type HashKey = HK
+}
+
+object CreateHashKeyTable {
+
+  implicit class CreateTableExecute[A <: CreateHashKeyTableAux](ac: A)(implicit dynamoClient: DynamoDBClient) extends Execute {
+
+    override type Action = A
+    override val action = ac
+
+
+    override def apply(): (action.Input, action.OutputState) = {
+      println("executing: " + action)
+    //  ac.input.hashKey
+
+//      action.Input match {
 //
-//
-//}
-//
-//class DeleteTable[T <: AnyTable with Singleton]  ( table: T,  val state: InitialState[T]) extends DeleteTableAux {
-//  override val input: Input = table
-//  override type Input = T
-//}
-//
-//object DeleteTable {
-//
-//  implicit class DeleteTableExecute[D <: DeleteTableAux](ac: D)(implicit dynamoClient: DynamoDBClient) extends Execute {
-//
-//    override type Action = D
-//    override val action = ac
-//
-//
-//    override def apply(): (action.Input, action.OutputState) = {
-//      println("executing: " + action)
-//      (action.input, action.state.deleting)
-//    }
-//
-//    override type C[+X] = X
-//
-//  }
-//}
+//      }
+     // ac.input.
+      (action.input, action.state.creating)
+    }
+
+    override type C[+X] = X
+
+  }
+}
