@@ -83,8 +83,13 @@ sealed trait AnyTableState extends AnyDynamoDBState {
   
   val throughputStatus: ThroughputStatus
 
+  def deleting = Deleting(resource, account, throughputStatus)
 
   // TODO table ARN  
+}
+
+object AnyTableState {
+  type For[T] = AnyTableState {type Resource = T}
 }
 
 sealed trait ThroughputStatus {
@@ -118,7 +123,7 @@ extends AnyTableState {
   val throughputStatus = initialThroughput
 
   def creating = Creating(resource, account, initialThroughput)
-  
+
 }
 
 
@@ -148,7 +153,7 @@ case class Active[T <: Singleton with AnyTable](
   type Resource = T
   //val throughputStatus = initialThroughput
 
-  def deleting = Deleting(resource, account, throughputStatus)
+ // def deleting = Deleting(resource, account, throughputStatus)
 }
 
 case class Deleting[T <: Singleton with AnyTable](
