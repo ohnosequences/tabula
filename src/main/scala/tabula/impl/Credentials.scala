@@ -3,17 +3,22 @@ package ohnosequences.tabula.impl
 import com.amazonaws.auth.{PropertiesFileCredentialsProvider, EnvironmentVariableCredentialsProvider, InstanceProfileCredentialsProvider, AWSCredentialsProviderChain}
 import java.io.File
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
-import com.amazonaws.regions.{Regions, Region}
-import ohnosequences.tabula.Attribute
+// import com.amazonaws.regions.{Regions, Region}
+import ohnosequences.tabula._
 import com.amazonaws.services.dynamodbv2.model.{ScalarAttributeType, AttributeDefinition}
 
-trait DynamoDBClient {
+trait AnyDynamoDBClient {
+  type Region <: AnyRegion
+  val  region: Region
+
   val client: AmazonDynamoDBClient
 }
 
-object DefaultDynamoDBClient extends DynamoDBClient {
-  val client = new AmazonDynamoDBClient(CredentialProviderChains.default)
-  client.setRegion(Region.getRegion(Regions.EU_WEST_1))
+class DynamoDBClient[R <: AnyRegion](val region: R, val client: AmazonDynamoDBClient) 
+  extends AnyDynamoDBClient { type Region = R }
+
+object AnyDynamoDBClient {
+  type inRegion[R <: AnyRegion] = AnyDynamoDBClient { type Region = R }
 }
 
 trait Credentials {

@@ -16,29 +16,44 @@ trait AnyAction {
 // actions
 
 trait AnyCreateTable extends AnyAction {
+  override type Input <: AnyTable with Singleton
+  override type Output = Input
+  type HashKey = input.HashKey
 
-  type Input <: Singleton with AnyTable
-  type InputState = InitialState[Input]
-
-  type Output = Input
-  // TODO this should be something concrete
-  type OutputState = AnyTableState { type Resource = Input }
+  override type InputState = InitialState[Input]
+  override type OutputState = Creating[Input]
 }
 
-case class CreateTable[T <: Singleton with AnyTable](val input: T, val state: InitialState[T]) extends AnyCreateTable {
+case class CreateTable[T <: AnyTable with Singleton](input: T, state: InitialState[T]) 
+  extends AnyCreateTable { override type Input = T }
 
-  type Input = T
+object AnyCreateTable {
+  type withHashKeyTable = AnyCreateTable { type Input <: Singleton with AnyHashKeyTable }
 }
+
 
 trait AnyDeleteTable extends AnyAction {
+  override type Input <: AnyTable with Singleton
+  override type Output = Input
 
-  type Input <: Singleton with AnyTable
-  type InputState <: AnyTableState { type Resource = Input }
-
-  type Output = Input
-  // TODO this should be something concrete
-  type OutputState <: AnyTableState { type Resource = Input }
+  override type InputState = AnyTableState.For[Input]
+  override type OutputState = Deleting[Output]
 }
+
+case class DeleteTable[T <: AnyTable with Singleton](input: T, state: AnyTableState.For[T]) 
+  extends AnyDeleteTable { override type Input = T }
+
+
+trait AnyDescribeTable extends AnyAction {
+  override type Input <: AnyTable with Singleton
+  override type Output = Input
+
+  override type InputState  = AnyTableState.For[Input]
+  override type OutputState = AnyTableState.For[Input]
+}
+
+case class DescribeTable[T <: AnyTable with Singleton](input: T, state: AnyTableState.For[T]) 
+  extends AnyDescribeTable { override type Input = T }
 
 /*
   #### GetItem
@@ -84,26 +99,3 @@ trait AnyGetItem extends AnyAction {
   - _optional_ a predicate over it for filtering results service-side
 */
 trait AnyQuery extends AnyAction {}
-
-
-trait Execute {
-
-  type Action <: AnyAction
-  // val action: Action
-
-  type C[+X]
-
-  def apply(action: Action): Out
-
-  type Out = C[(Action#Output ,Action#OutputState)]
-}
-
-
-
-
-object Execute {
-  
-  type For[A <: AnyAction] = Execute { type Action = A }
-  type For2[A <: AnyAction, B[_]] = Execute { type Action = A; type  C[X] = B[X]  }
-}
-

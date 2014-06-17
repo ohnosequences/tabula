@@ -10,6 +10,9 @@ import ohnosequences.scarph._
 */
 trait AnyTable extends AnyDynamoDBResource {
 
+  type HashKey <: AnyAttribute
+  val hashKey: HashKey
+
   type ResourceType = Table.type
   val resourceType = Table
 
@@ -23,15 +26,9 @@ trait AnyTable extends AnyDynamoDBResource {
   Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation only makes sense on a table with a composite key.
 */
 sealed trait AnyHashKeyTable extends AnyTable { 
-
-  type HashKey <: AnyAttribute
-  val hashKey: HashKey
 }
 
 sealed trait AnyCompositeKeyTable extends AnyTable { 
-
-  type HashKey <: AnyAttribute
-  val hashKey: HashKey
 
   type RangeKey <: AnyAttribute
   val rangeKey: RangeKey
