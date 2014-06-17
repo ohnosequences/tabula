@@ -27,7 +27,7 @@ object DeleteTable {
     override val action = ac
 
 
-    override def apply(): (action.Input, Deleting[action.Input]) = {
+    override def apply(): (action.Output, Deleting[action.Input]) = {
       println("executing: " + action)
 //      action.state match {
 //        case c: Creating[_] => c.deleting
@@ -49,6 +49,7 @@ trait CreateHashKeyTableAux extends AnyAction {
   type Region <: AnyRegion
 
   override type Input <: HashKeyTable[HashKey, Region] with Singleton
+  override type Output = Input
   val state: InitialState[Input]
   override val input: Input //table
   override type InputState = InitialState[Input]
@@ -71,7 +72,7 @@ object CreateHashKeyTable {
     override val action = ac
 
 
-    override def apply(): (action.Input, action.OutputState) = {
+    override def apply(): (action.Output, action.OutputState) = {
 
       val table = ac.input
       println("executing: " + action)
@@ -101,6 +102,8 @@ object CreateHashKeyTable {
     override type Input <: AnyTable with Singleton
     val state: InitialState[Input]
     override val input: Input //table
+    override type Output = Input
+
     override type InputState =  AnyTableState.For[Input]
     override type OutputState =  AnyTableState.For[Input]
   }
@@ -118,7 +121,7 @@ object CreateHashKeyTable {
       override val action = ac
 
 
-      override def apply(): (action.Input, AnyTableState.For[action.Input]) = {
+      override def apply(): (action.Output, AnyTableState.For[action.Input]) = {
         println("executing: " + action)
         val table = ac.input
         //CREATING, UPDATING, DELETING, ACTIVE

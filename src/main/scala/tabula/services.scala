@@ -26,8 +26,8 @@ trait AnyDynamoDBService { thisService =>
     exec: A => Execute.For[A]
   ): Execute.For[A]#Out = exec(action).apply()
 
-  def apply[A <: AnyAction](action: A)(implicit
-    exec: A => Execute.For[A]
-  ): Execute.For[A]#Out = exec(action).apply()
+  def apply[A <: AnyAction, B[+_]](action: A)(implicit
+    exec: A => Execute.For2[A, B]
+  ): B[(A#Output, A#OutputState)] = exec(action).apply()
 
 }

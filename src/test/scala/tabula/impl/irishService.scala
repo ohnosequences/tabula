@@ -11,6 +11,8 @@ import ohnosequences.tabula.impl.CreateHashKeyTable.GetTable
 class irishService extends FunSuite {
   import Implicits._
 
+  type Id[+X] = X
+
   test("test credentials") {
     val service = new IrishDynamoDBService(CredentialProviderChains.default)
 
@@ -27,7 +29,7 @@ class irishService extends FunSuite {
 
 
 
-    service.apply( new DeleteTable(table, Active(table, service.account, InitialThroughput(0, 0))))
+    service.apply[DeleteTable[table.type], Id]( new DeleteTable(table, Active(table, service.account, InitialThroughput(0, 0))))
   }
 
   test("creating table") {
@@ -36,9 +38,9 @@ class irishService extends FunSuite {
 
 
     val service = new IrishDynamoDBService(CredentialProviderChains.default)
-    object table extends HashKeyTable("tabula_test", id, service.region)
+    object table extends HashKeyTable("tabula_test2", id, service.region)
 
-    service apply new CreateHashKeyTable[id.type, service.Region, table.type](table, InitialState(table, service.account, InitialThroughput(1, 1)))
+    service.apply[CreateHashKeyTable[id.type, service.Region, table.type], Id](new CreateHashKeyTable[id.type, service.Region, table.type](table, InitialState(table, service.account, InitialThroughput(1, 1))))
   }
 
   test("complex example") {
@@ -49,24 +51,25 @@ class irishService extends FunSuite {
     object table extends HashKeyTable("tabula_test", id, service.region)
 
     println("creating table tabula_test")
-    val (in, sta) = service apply new CreateHashKeyTable[id.type, service.Region, table.type](table, InitialState(table, service.account, InitialThroughput(1, 1)))
+    val (in, sta): (table.type, AnyTableState.For[table.type]) = service.apply[CreateHashKeyTable[id.type, service.Region, table.type], Id](new CreateHashKeyTable[id.type, service.Region, table.type](table, InitialState(table, service.account, InitialThroughput(1, 1))))
+
 
     println("tabula_test status: " + sta)
 
-    var status = sta
-    var deleted = false
-    while (!deleted) {
-      status = (service apply new GetTable(table, status))._2
-      println("tabula_test status: " + status)
-
-      status match {
-        case active: Active[table.type] => {
-          println("deleting tabula_test")
-          service apply new DeleteTable(table, active)
-        }
-      }
-      Thread.sleep(5000)
-    }
+//    var status = sta
+//    var deleted = false
+//    while (!deleted) {
+//      status = (service apply new GetTable(table, status))._2
+//      println("tabula_test status: " + status)
+//
+//      status match {
+//        case active: Active[table.type] => {
+//          println("deleting tabula_test")
+//          service apply new DeleteTable(table, active)
+//        }
+//      }
+//      Thread.sleep(5000)
+//    }
   }
 
 

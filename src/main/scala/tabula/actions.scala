@@ -95,7 +95,7 @@ trait Execute {
 
   def apply(): Out
 
-  type Out = C[(action.Input ,action.OutputState)]
+  type Out = C[(action.Output ,action.OutputState)]
 }
 
 
@@ -104,5 +104,6 @@ trait Execute {
 object Execute {
   
   type For[A <: AnyAction] = Execute { type Action = A }
+  type For2[A <: AnyAction, B[_]] = Execute { type Action = A; type  C[X] = B[X]  }
 }
 
