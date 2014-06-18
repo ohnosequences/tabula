@@ -8,7 +8,7 @@ sealed trait AnyTableState extends AnyDynamoDBState {
 
   type Resource <: Singleton with AnyTable
   
-  val throughputStatus: ThroughputStatus
+  val throughputStatus: AnyThroughputStatus
 
   def deleting = Deleting(resource, account, throughputStatus)
 
@@ -19,7 +19,7 @@ object AnyTableState {
   type For[T] = AnyTableState {type Resource = T}
 }
 
-sealed trait ThroughputStatus {
+sealed trait AnyThroughputStatus {
 
   val readCapacity: Int
   val writeCapacity: Int
@@ -27,15 +27,23 @@ sealed trait ThroughputStatus {
   val lastDecrease: java.util.Date
   val numberOfDecreasesToday: Int
 }
+
+case class ThroughputStatus(
+  readCapacity: Int,
+  writeCapacity: Int,
+  lastIncrease: java.util.Date = new java.util.Date(),
+  lastDecrease: java.util.Date = new java.util.Date(),
+  numberOfDecreasesToday: Int = 0
+) extends AnyThroughputStatus
   
 case class InitialThroughput(
-  val readCapacity: Int,
-  val writeCapacity: Int,
-  val lastIncrease: java.util.Date = new java.util.Date(),
-  val lastDecrease: java.util.Date = new java.util.Date(),
-  val numberOfDecreasesToday: Int = 0
+  readCapacity: Int,
+  writeCapacity: Int,
+  lastIncrease: java.util.Date = new java.util.Date(),
+  lastDecrease: java.util.Date = new java.util.Date(),
+  numberOfDecreasesToday: Int = 0
 ) 
-extends ThroughputStatus {}
+extends AnyThroughputStatus {}
 
 case class InitialState[T <: Singleton with AnyTable](
   resource: T,
@@ -57,7 +65,7 @@ extends AnyTableState {
 case class Updating[T <: Singleton with AnyTable](
   resource: T,
   account: Account,
-  throughputStatus: ThroughputStatus
+  throughputStatus: AnyThroughputStatus
 ) extends AnyTableState {
   type Resource = T
   //val throughputStatus = initialThroughput
@@ -66,7 +74,7 @@ case class Updating[T <: Singleton with AnyTable](
 case class Creating[T <: Singleton with AnyTable](
   resource: T,
   account: Account,
-  throughputStatus: ThroughputStatus
+  throughputStatus: AnyThroughputStatus
 ) extends AnyTableState {
   type Resource = T
  // val throughputStatus = ThroughputStatus
@@ -75,7 +83,7 @@ case class Creating[T <: Singleton with AnyTable](
 case class Active[T <: Singleton with AnyTable](
   resource: T,
   account: Account,
-  throughputStatus: ThroughputStatus
+  throughputStatus: AnyThroughputStatus
 ) extends AnyTableState {
   type Resource = T
   //val throughputStatus = initialThroughput
@@ -86,7 +94,7 @@ case class Active[T <: Singleton with AnyTable](
 case class Deleting[T <: Singleton with AnyTable](
   resource: T,
   account: Account,
-  throughputStatus: ThroughputStatus
+  throughputStatus: AnyThroughputStatus
 ) extends AnyTableState {
   type Resource = T
  // val throughputStatus = initialThroughput

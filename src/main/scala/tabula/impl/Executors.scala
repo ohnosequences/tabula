@@ -2,6 +2,8 @@ package ohnosequences.tabula.impl
 
 import ohnosequences.tabula._
 import com.amazonaws.services.dynamodbv2.model._
+import java.util.Date
+import ohnosequences.tabula
 
 object Executors {
 
@@ -112,13 +114,24 @@ object Executors {
       println("executing: " + action)
       val table = action.input
       //CREATING, UPDATING, DELETING, ACTIVE
-      val newState = dynamoClient.client.describeTable(table.name).getTable.getTableStatus match {
-        case "ACTIVE" => Active(table, action.state.account, action.state.throughputStatus)
-        case "CREATING" => Creating(table, action.state.account, action.state.throughputStatus)
-        case "DELETING" => Deleting(table, action.state.account, action.state.throughputStatus)
-        case "UPDATING" => Updating(table, action.state.account, action.state.throughputStatus)
-      }
 
+      val tableDescription = dynamoClient.client.describeTable(table.name).getTable
+      val throughputDescription = tableDescription.getProvisionedThroughput
+
+      val throughput = ohnosequences.tabula.ThroughputStatus (
+        readCapacity = throughputDescription.getReadCapacityUnits.toInt,
+        writeCapacity = throughputDescription.getWriteCapacityUnits.toInt,
+        lastIncrease = throughputDescription.getLastIncreaseDateTime,
+        lastDecrease = throughputDescription.getLastDecreaseDateTime,
+        numberOfDecreasesToday = throughputDescription.getNumberOfDecreasesToday.toInt
+      )
+
+      val newState = dynamoClient.client.describeTable(table.name).getTable.getTableStatus match {
+        case "ACTIVE" =>     Active(table, action.state.account, throughput)
+        case "CREATING" => Creating(table, action.state.account, throughput)
+        case "DELETING" => Deleting(table, action.state.account, throughput)
+        case "UPDATING" => Updating(table, action.state.account, throughput)
+      }
       (action.input, newState)
     }
 
