@@ -3,7 +3,7 @@ package ohnosequences.tabula.impl
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.amazonaws.regions._
 import ohnosequences.tabula._
-import com.amazonaws.services.dynamodbv2.model.{ScalarAttributeType, AttributeDefinition}
+import com.amazonaws.services.dynamodbv2.model.{AttributeValue, ScalarAttributeType, AttributeDefinition}
 
 
 object Implicits {
@@ -20,5 +20,9 @@ object Implicits {
     new AttributeDefinition()
       .withAttributeName(attr.label)
       .withAttributeType(ScalarAttributeType.N)
+  }
+
+  implicit def getAttributeValue(attr: Int): AttributeValue = {
+    new AttributeValue().withN(attr.toString)
   }
 }

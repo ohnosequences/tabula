@@ -79,6 +79,24 @@ trait AnyUpdateTable extends AnyAction {
 case class UpdateTable[T <: AnyTable with Singleton](input: T, state: AnyTableState.For[T] with ReadyTable, newReadThroughput: Int, newWriteThroughput: Int)
   extends AnyUpdateTable { override type Input = T }
 
+
+trait AnyDeleteItemHashKey extends AnyAction {
+
+  override type Input <: AnyTable with Singleton
+  override type Output = Input
+
+  //require updating or creating
+  override type InputState  = AnyTableState.For[Input] with ReadyTable
+  override type OutputState = InputState
+
+ // val hashKeyValue: input.hashKey.Raw
+  val hashKeyValue: Input#HashKey#Raw
+}
+
+
+case class DeleteItemHashKey[T <: AnyTable with Singleton](input: T, state: AnyTableState.For[T] with ReadyTable, hashKeyValue: T#HashKey#Raw)
+  extends AnyDeleteItemHashKey { override type Input = T }
+
 /*
   #### GetItem
 

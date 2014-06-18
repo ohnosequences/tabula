@@ -214,4 +214,31 @@ object Executors {
   (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region]): UpdateTableExecute[A] =
     UpdateTableExecute[A](dynamoClient)
 
+  case class DeleteItemHashKeyExecutor[A <: AnyDeleteItemHashKey](dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region], getAttributeValue: A#Input#HashKey#Raw => AttributeValue) extends Executor {
+
+    import scala.collection.JavaConversions._
+    override type Action = A
+
+    override def apply(action: A): Out = {
+
+      try {
+
+        val table = action.input
+        dynamoClient.client.deleteItem(table.name, Map(table.hashKey.label -> getAttributeValue(action.hashKeyValue)))
+      } catch {
+        case t: Throwable => t.printStackTrace()
+      }
+
+
+      (action.input, action.state)
+    }
+
+    override type C[+X] = X
+
+  }
+
+  implicit def deleteItemHashKeyExecutor[A <: AnyDeleteItemHashKey]
+  (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region], getAttributeValue: A#Input#HashKey#Raw => AttributeValue): DeleteItemHashKeyExecutor[A] =
+    DeleteItemHashKeyExecutor[A](dynamoClient, getAttributeValue)
+
 }

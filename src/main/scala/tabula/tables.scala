@@ -11,6 +11,7 @@ import ohnosequences.scarph._
 trait AnyTable extends AnyDynamoDBResource {
 
   type HashKey <: AnyAttribute
+
   val hashKey: HashKey
 
   type ResourceType = Table.type

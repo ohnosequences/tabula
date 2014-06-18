@@ -67,9 +67,14 @@ class irishService extends FunSuite {
       service(CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1))))
 
 
+
     waitFor(table, sta).foreach { a =>
-      service please UpdateTable(table, a, 3, 3)
+
+      service please DeleteItemHashKey[table.type](table, a, 213)
+      service please UpdateTable(table, a, 2, 2)
       waitFor(table, a).foreach(service please DeleteTable(table, _))
     }
   }
+
+
 }
