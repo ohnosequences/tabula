@@ -90,11 +90,12 @@ trait AnyDeleteItemHashKey extends AnyAction {
   override type OutputState = InputState
 
  // val hashKeyValue: input.hashKey.Raw
+  // type Foo = input.hashKey.Raw
   val hashKeyValue: Input#HashKey#Raw
 }
 
 
-case class DeleteItemHashKey[T <: AnyTable with Singleton](input: T, state: AnyTableState.For[T] with ReadyTable, hashKeyValue: T#HashKey#Raw)
+case class DeleteItemHashKey[T <: AnyTable with Singleton, R <: T#HashKey#Raw](input: T, state: AnyTableState.For[T] with ReadyTable, hashKeyValue: R)
   extends AnyDeleteItemHashKey { override type Input = T }
 
 /*

@@ -70,7 +70,7 @@ class irishService extends FunSuite {
 
     waitFor(table, sta).foreach { a =>
 
-      service please DeleteItemHashKey[table.type](table, a, 213)
+      service please DeleteItemHashKey(table, a, 213)
       service please UpdateTable(table, a, 2, 2)
       waitFor(table, a).foreach(service please DeleteTable(table, _))
     }
