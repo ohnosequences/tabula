@@ -61,12 +61,13 @@ extends AnyTableState {
 
 }
 
+trait ReadyTable
 
 case class Updating[T <: Singleton with AnyTable](
   resource: T,
   account: Account,
   throughputStatus: AnyThroughputStatus
-) extends AnyTableState {
+) extends AnyTableState with ReadyTable {
   type Resource = T
   //val throughputStatus = initialThroughput
 }
@@ -84,7 +85,7 @@ case class Active[T <: Singleton with AnyTable](
   resource: T,
   account: Account,
   throughputStatus: AnyThroughputStatus
-) extends AnyTableState {
+) extends AnyTableState  with ReadyTable {
   type Resource = T
   //val throughputStatus = initialThroughput
 

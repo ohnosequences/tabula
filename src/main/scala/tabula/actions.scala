@@ -41,11 +41,11 @@ trait AnyDeleteTable extends AnyAction {
   override type Input <: AnyTable with Singleton
   override type Output = Input
 
-  override type InputState = AnyTableState.For[Input]
+  override type InputState = Active[Input]
   override type OutputState = Deleting[Output]
 }
 
-case class DeleteTable[T <: AnyTable with Singleton](input: T, state: AnyTableState.For[T]) 
+case class DeleteTable[T <: AnyTable with Singleton](input: T, state: Active[T])
   extends AnyDeleteTable { override type Input = T }
 
 
@@ -59,6 +59,25 @@ trait AnyDescribeTable extends AnyAction {
 
 case class DescribeTable[T <: AnyTable with Singleton](input: T, state: AnyTableState.For[T]) 
   extends AnyDescribeTable { override type Input = T }
+
+
+trait AnyUpdateTable extends AnyAction {
+  
+  override type Input <: AnyTable with Singleton
+  override type Output = Input
+
+  //require updating or creating
+  override type InputState  = AnyTableState.For[Input] with ReadyTable
+  override type OutputState = Updating[Input]
+
+  //todo move it to input
+  val newReadThroughput: Int
+  val newWriteThroughput: Int
+}
+
+
+case class UpdateTable[T <: AnyTable with Singleton](input: T, state: AnyTableState.For[T] with ReadyTable, newReadThroughput: Int, newWriteThroughput: Int)
+  extends AnyUpdateTable { override type Input = T }
 
 /*
   #### GetItem
