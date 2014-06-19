@@ -6,6 +6,7 @@ import ohnosequences.tabula._
 import ohnosequences.tabula.InitialThroughput
 import ohnosequences.tabula.Active
 import ohnosequences.tabula.InitialThroughput
+import com.amazonaws.services.dynamodbv2.model.AttributeValue
 
 class irishService extends FunSuite {
   import Implicits._
@@ -62,7 +63,7 @@ class irishService extends FunSuite {
 //    //service please UpdateTable(table, state, 2, 2)
 //  }
 
-  ignore("complex example") {
+  test("complex example") {
     case object id extends Attribute[Int]
     case object name extends Attribute[String]
     object table extends CompositeKeyTable("tabula_test", id, name, service.region)
@@ -95,17 +96,22 @@ class irishService extends FunSuite {
 
       }
 
-      def getTestItemId(rep: AnyDenotation.TaggedWith[TestItem.type]): id.Raw = {
-        rep get id
-      }
+      // def getTestItemId(rep: AnyDenotation.TaggedWith[TestItem.type]): id.Raw = {
+      //   rep get id
+      // }
 
       val myItem = TestItem ->> ((3, "foo"))
-      val myId = getTestItemId(myItem)
-      assert(myId === 3)
+      // val myId = getTestItemId(myItem)
+      // assert(myId === 3)
 
-      PutItemCompositeKey(table, a, TestItem)
+      implicit def getSDKRep(rep: TestItem.Rep): Map[String, AttributeValue] = {
+        Map[String, AttributeValue](
+          id.label -> rep._1,
+          name.label -> rep._2
+        )
+      }
 
-
+      service.please(PutItemCompositeKey(table, a, myItem)(TestItemType_id, TestItemType_name)) //(putItemCompositeKeyExecutor(defaultDynamoDBClient, getSDKRep))
       service please DeleteItemCompositeKey(table, a, 213, "test")
       //service please UpdateTable(table, a, 2, 2)
       waitFor(table, a).foreach(service please DeleteTable(table, _))
