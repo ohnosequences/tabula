@@ -17,7 +17,11 @@ class irishService extends FunSuite {
 
   val service = IrishDynamoDBService
 
-  def waitFor[T <: AnyTable with Singleton with AnyDynamoDBResource.inRegion[service.Region], S <: AnyTableState.For[T]](table: T, initialState: S): Option[Active[T]] = {
+  def waitFor[
+    T <: Singleton with AnyTable.inRegion[service.Region], 
+    S <: AnyTableState.For[T]
+  ](table: T, initialState: S): Option[Active[T]] = {
+
     var active = false
     var state: AnyTableState.For[T] = initialState
 
@@ -80,38 +84,41 @@ class irishService extends FunSuite {
 
       import ohnosequences.scarph._
 
-      case class ItemRep(id: Int, name: String)
-
       case object TestItem extends AnyItem {
         type Tpe = TestItemType.type
         val  tpe = TestItemType
 
-        type Raw = ItemRep
+        type Raw = (Int, String)
 
-//        implicit def getId: GetProperty[id.type] = new GetProperty(id) {
-//          def apply(rep: Rep): id.Raw = rep._1
-//        }
+        implicit def getId: GetProperty[id.type] = new GetProperty(id) {
+          def apply(rep: Rep): id.Raw = rep._1
+        }
 
       }
 
-      implicit def getSDKRep(rep: ItemRep): Map[String, AttributeValue] = {
+
+
+      implicit def getSDKRep(rep: TestItem.Rep): Map[String, AttributeValue] = {
+
         Map[String, AttributeValue](
-          id.label -> rep.id,
-          name.label -> rep.name
+          id.label -> rep._1,
+          name.label -> rep._2
         )
       }
+
 
 
 //      def getTestItemId(rep: AnyDenotation.TaggedWith[TestItem.type]): id.Raw = {
 //        rep get id
 //      }
 
-      val myItem = TestItem ->> (ItemRep(1, "yeah"))
+      val myItem = TestItem ->> ((1, "yeah"))
 //      val myId = getTestItemId(myItem)
 //      assert(myId === 3)
 
-      service.please(PutItemCompositeKey(table, a, TestItem, myItem)(TestItemType_id, TestItemType_name))
-      service please DeleteItemCompositeKey(table, a, 1, "yeah")
+
+      service.please(PutItemCompositeKey(table, a, myItem)(TestItemType_id, TestItemType_name)) //(putItemCompositeKeyExecutor(defaultDynamoDBClient, getSDKRep))
+      service please DeleteItemCompositeKey(table, a, 213, "test")
       //service please UpdateTable(table, a, 2, 2)
       waitFor(table, a).foreach(service please DeleteTable(table, _))
     }

@@ -71,7 +71,9 @@ extends AnyCompositeKeyTable {
   type RangeKey = RK
 }
 
-object AnyTable {}
+object AnyTable {
+  type inRegion[R <: AnyRegion] = AnyTable { type Region = R }
+}
 
 
 // trait AnyHashKeyTable extends AnyTable { table =>

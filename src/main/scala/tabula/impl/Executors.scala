@@ -6,45 +6,45 @@ import java.util.Date
 
 object Executors {
 
-  case class DeleteTableExecute[A <: AnyDeleteTable](dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region]) extends Executor {
+  case class DeleteTableExecute[A <: AnyDeleteTable](dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region]) extends Executor {
     type Action = A
 
-    override type C[+X] = X
+    type C[+X] = X
 
-    override def apply(action: A): Out = {
+    def apply(action: A): Out = {
       println("executing: " + action)
       try { 
-        dynamoClient.client.deleteTable(action.input.name)
+        dynamoClient.client.deleteTable(action.table.name)
       } catch {
-        case r: ResourceNotFoundException => println("warning: table " + action.input.name + " doesn't exist")
+        case r: ResourceNotFoundException => println("warning: table " + action.table.name + " doesn't exist")
       }
-      (action.input, action.state.deleting)
+      (action.table, action.inputState.deleting)
     }
   }
 
   implicit def deleteTableExecute[A <: AnyDeleteTable]
-    (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region]): DeleteTableExecute[A] = DeleteTableExecute[A](dynamoClient)
+    (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region]): DeleteTableExecute[A] = DeleteTableExecute[A](dynamoClient)
 
 
   case class CreateHashKeyTableExecute[A <: AnyCreateTable.withHashKeyTable](
-      dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
-      getAttributeDefinition: A#Input#HashKey => AttributeDefinition
+      dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
+      getAttributeDefinition: A#Table#HashKey => AttributeDefinition
     ) extends Executor {
 
-    override type Action = A
+    type Action = A
+    type C[+X] = X
 
-    override def apply(ac: A): Out = {
+    def apply(ac: A): Out = {
 
-      val table = ac.input
       println("executing: " + ac)
-     // println(getHashDefinition(ac.input.hashKey))
+     // println(getHashDefinition(ac.table.hashKey))
 
-      val attributeDefinition = getAttributeDefinition(ac.input.hashKey)
-      val keySchemaElement = new KeySchemaElement(ac.input.hashKey.label, "HASH")
-      val throughput = new ProvisionedThroughput(ac.state.initialThroughput.readCapacity, ac.state.initialThroughput.writeCapacity)
+      val attributeDefinition = getAttributeDefinition(ac.table.hashKey)
+      val keySchemaElement = new KeySchemaElement(ac.table.hashKey.label, "HASH")
+      val throughput = new ProvisionedThroughput(ac.inputState.initialThroughput.readCapacity, ac.inputState.initialThroughput.writeCapacity)
 
       val request = new CreateTableRequest()
-        .withTableName(table.name)
+        .withTableName(ac.table.name)
         .withProvisionedThroughput(throughput)
         .withKeySchema(keySchemaElement)
         .withAttributeDefinitions(attributeDefinition)
@@ -52,45 +52,41 @@ object Executors {
       try {
         dynamoClient.client.createTable(request)
       } catch {
-        case e: ResourceInUseException => println("warning: table " + table.name + " is in use")
+        case e: ResourceInUseException => println("warning: table " + ac.table.name + " is in use")
       }
 
-
-      (ac.input, ac.state.creating)
+      (ac.table, ac.inputState.creating)
     }
-
-    override type C[+X] = X
   }
 
   implicit def createHashKeyTableExecute[A <: AnyCreateTable.withHashKeyTable](implicit 
-      dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
-      getAttributeDefinition: A#Input#HashKey => AttributeDefinition
+      dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
+      getAttributeDefinition: A#Table#HashKey => AttributeDefinition
     ): CreateHashKeyTableExecute[A] =
        CreateHashKeyTableExecute[A](dynamoClient, getAttributeDefinition)
 
 
   case class CreateCompositeKeyTableExecute[A <: AnyCreateTable.withCompositeKeyTable](
-      dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
-      getHashKeyAttributeDefinition: A#Input#HashKey => AttributeDefinition,
-      getRangeKeyAttributeDefinition: A#Input#RangeKey => AttributeDefinition
+      dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
+      getHashKeyAttributeDefinition: A#Table#HashKey => AttributeDefinition,
+      getRangeKeyAttributeDefinition: A#Table#RangeKey => AttributeDefinition
     ) extends Executor {
 
-    override type Action = A
+    type Action = A
 
-    override def apply(ac: A): Out = {
+    def apply(ac: A): Out = {
 
-      val table = ac.input
       println("executing: " + ac)
-     // println(getHashDefinition(ac.input.hashKey))
+     // println(getHashDefinition(ac.table.hashKey))
 
-      val hashAttributeDefinition = getHashKeyAttributeDefinition(ac.input.hashKey)
-      val rangeAttributeDefinition = getRangeKeyAttributeDefinition(ac.input.rangeKey)
-      val hashSchemaElement = new KeySchemaElement(ac.input.hashKey.label, "HASH")
-      val rangeSchemaElement = new KeySchemaElement(ac.input.rangeKey.label, "RANGE")
-      val throughput = new ProvisionedThroughput(ac.state.initialThroughput.readCapacity, ac.state.initialThroughput.writeCapacity)
+      val hashAttributeDefinition = getHashKeyAttributeDefinition(ac.table.hashKey)
+      val rangeAttributeDefinition = getRangeKeyAttributeDefinition(ac.table.rangeKey)
+      val hashSchemaElement = new KeySchemaElement(ac.table.hashKey.label, "HASH")
+      val rangeSchemaElement = new KeySchemaElement(ac.table.rangeKey.label, "RANGE")
+      val throughput = new ProvisionedThroughput(ac.inputState.initialThroughput.readCapacity, ac.inputState.initialThroughput.writeCapacity)
 
       val request = new CreateTableRequest()
-        .withTableName(table.name)
+        .withTableName(ac.table.name)
         .withProvisionedThroughput(throughput)
         .withKeySchema(hashSchemaElement, rangeSchemaElement)
         .withAttributeDefinitions(hashAttributeDefinition, rangeAttributeDefinition)
@@ -102,29 +98,29 @@ object Executors {
       }
 
 
-      (ac.input, ac.state.creating)
+      (ac.table, ac.inputState.creating)
     }
 
-    override type C[+X] = X
+    type C[+X] = X
   }
 
   implicit def createCompositeKeyTableExecute[A <: AnyCreateTable.withCompositeKeyTable](implicit 
-      dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
-      getHashKeyAttributeDefinition: A#Input#HashKey => AttributeDefinition,
-      getRangeKeyAttributeDefinition: A#Input#RangeKey => AttributeDefinition
+      dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
+      getHashKeyAttributeDefinition: A#Table#HashKey => AttributeDefinition,
+      getRangeKeyAttributeDefinition: A#Table#RangeKey => AttributeDefinition
     ): CreateCompositeKeyTableExecute[A] =
        CreateCompositeKeyTableExecute[A](dynamoClient, getHashKeyAttributeDefinition, getRangeKeyAttributeDefinition)
 
-  case class DescribeTableExecute[A <: AnyDescribeTable](dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region]) extends Executor {
+  case class DescribeTableExecute[A <: AnyDescribeTable](dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region]) extends Executor {
 
-    override type Action = A
+    type Action = A
 
-    override def apply(action: A): Out = {
-      println("executing: " + action)
-      val table = action.input
+    def apply(ac: A): Out = {
+      println("executing: " + ac)
+      val table = ac.input
       //CREATING, UPDATING, DELETING, ACTIVE
 
-      val tableDescription = dynamoClient.client.describeTable(table.name).getTable
+      val tableDescription = dynamoClient.client.describeTable(ac.table.name).getTable
       val throughputDescription = tableDescription.getProvisionedThroughput
 
       val throughput = ohnosequences.tabula.ThroughputStatus (
@@ -135,49 +131,49 @@ object Executors {
         numberOfDecreasesToday = throughputDescription.getNumberOfDecreasesToday.toInt
       )
 
-      val newState = dynamoClient.client.describeTable(table.name).getTable.getTableStatus match {
-        case "ACTIVE" =>     Active(table, action.state.account, throughput)
-        case "CREATING" => Creating(table, action.state.account, throughput)
-        case "DELETING" => Deleting(table, action.state.account, throughput)
-        case "UPDATING" => Updating(table, action.state.account, throughput)
+      val newState = dynamoClient.client.describeTable(ac.table.name).getTable.getTableStatus match {
+        case "ACTIVE" =>     Active(ac.table, ac.inputState.account, throughput)
+        case "CREATING" => Creating(ac.table, ac.inputState.account, throughput)
+        case "DELETING" => Deleting(ac.table, ac.inputState.account, throughput)
+        case "UPDATING" => Updating(ac.table, ac.inputState.account, throughput)
       }
-      (action.input, newState)
+      (ac.table, newState)
     }
 
-    override type C[+X] = X
+    type C[+X] = X
 
   }
 
   implicit def describeTableExecute[A <: AnyDescribeTable]
-    (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region]): DescribeTableExecute[A] =
+    (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region]): DescribeTableExecute[A] =
       DescribeTableExecute[A](dynamoClient)
 
 
-  case class UpdateTableExecute[A <: AnyUpdateTable](dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region]) extends Executor {
+  case class UpdateTableExecute[A <: AnyUpdateTable](dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region]) extends Executor {
 
-    override type Action = A
+    type Action = A
 
-    override def apply(action: A): Out = {
-      println("executing: " + action)
-      val table = action.input
+    def apply(ac: A): Out = {
+      println("executing: " + ac)
+      val table = ac.input
       //CREATING, UPDATING, DELETING, ACTIVE
 
-      //todo add checks for state!!!
-      dynamoClient.client.updateTable(table.name, new ProvisionedThroughput(action.newReadThroughput, action.newWriteThroughput))
+      //todo add checks for inputState!!!
+      dynamoClient.client.updateTable(ac.table.name, new ProvisionedThroughput(ac.newReadThroughput, ac.newWriteThroughput))
 
 
-      val oldThroughputStatus =  action.state.throughputStatus
+      val oldThroughputStatus =  ac.inputState.throughputStatus
 
       var throughputStatus = ohnosequences.tabula.ThroughputStatus (
-        readCapacity = action.newReadThroughput,
-        writeCapacity = action.newWriteThroughput
+        readCapacity = ac.newReadThroughput,
+        writeCapacity = ac.newWriteThroughput
       )
 
 
       //todo check it in documentation
 
       //decrease
-      if (oldThroughputStatus.readCapacity > action.newReadThroughput) {
+      if (oldThroughputStatus.readCapacity > ac.newReadThroughput) {
         throughputStatus = throughputStatus.copy(
           numberOfDecreasesToday = throughputStatus.numberOfDecreasesToday + 1,
             lastDecrease = new Date()
@@ -185,7 +181,7 @@ object Executors {
       }
 
       //decrease
-      if (oldThroughputStatus.writeCapacity > action.newWriteThroughput) {
+      if (oldThroughputStatus.writeCapacity > ac.newWriteThroughput) {
         throughputStatus = throughputStatus.copy(
           numberOfDecreasesToday = throughputStatus.numberOfDecreasesToday + 1,
           lastDecrease = new Date()
@@ -193,113 +189,98 @@ object Executors {
       }
 
       //increase
-      if (oldThroughputStatus.readCapacity < action.newReadThroughput) {
+      if (oldThroughputStatus.readCapacity < ac.newReadThroughput) {
         throughputStatus = throughputStatus.copy(
           lastIncrease = new Date()
         )
       }
 
       //increase
-      if (oldThroughputStatus.writeCapacity < action.newWriteThroughput) {
+      if (oldThroughputStatus.writeCapacity < ac.newWriteThroughput) {
         throughputStatus = throughputStatus.copy(
           lastIncrease = new Date()
         )
       }
 
-      val newState = Updating(table, action.state.account, throughputStatus)
+      val newState = Updating(ac.table, ac.inputState.account, throughputStatus)
 
-      (action.input, newState)
+      (ac.table, newState)
     }
 
-    override type C[+X] = X
+    type C[+X] = X
 
   }
 
   implicit def updateTableExecute[A <: AnyUpdateTable]
-  (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region]): UpdateTableExecute[A] =
+  (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region]): UpdateTableExecute[A] =
     UpdateTableExecute[A](dynamoClient)
 
-  case class DeleteItemHashKeyExecutor[A <: AnyDeleteItemHashKey](dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region], getAttributeValue: A#Input#HashKey#Raw => AttributeValue) extends Executor {
+  case class DeleteItemHashKeyExecutor[A <: AnyDeleteItemHashKey](dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region], getAttributeValue: A#Table#HashKey#Raw => AttributeValue) extends Executor {
 
     import scala.collection.JavaConversions._
-    override type Action = A
+    type Action = A
+    type C[+X] = X
 
-    override def apply(action: A): Out = {
-
+    def apply(ac: A): Out = {
       try {
-
-        val table = action.input
-        dynamoClient.client.deleteItem(table.name, Map(table.hashKey.label -> getAttributeValue(action.hashKeyValue)))
+        dynamoClient.client.deleteItem(ac.table.name, Map(ac.table.hashKey.label -> getAttributeValue(ac.hashKeyValue)))
       } catch {
         case t: Throwable => t.printStackTrace()
       }
-
-
-      (action.input, action.state)
+      (ac.table, ac.inputState)
     }
-
-    override type C[+X] = X
-
   }
 
   implicit def deleteItemHashKeyExecutor[A <: AnyDeleteItemHashKey]
-  (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region], getAttributeValue: A#Input#HashKey#Raw => AttributeValue): DeleteItemHashKeyExecutor[A] =
+  (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region], getAttributeValue: A#Table#HashKey#Raw => AttributeValue): DeleteItemHashKeyExecutor[A] =
     DeleteItemHashKeyExecutor[A](dynamoClient, getAttributeValue)
 
   case class DeleteItemCompositeKeyExecutor[A <: AnyDeleteItemCompositeKey](
-    dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
-    getHashAttributeValue: A#Input#HashKey#Raw => AttributeValue,
-    getRangeAttributeValue: A#Input#RangeKey#Raw => AttributeValue
+    dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
+    getHashAttributeValue: A#Table#HashKey#Raw => AttributeValue,
+    getRangeAttributeValue: A#Table#RangeKey#Raw => AttributeValue
   ) extends Executor {
 
     import scala.collection.JavaConversions._
-    override type Action = A
+    type Action = A
+    type C[+X] = X
 
-    override def apply(action: A): Out = {
-
+    def apply(ac: A): Out = {
       try {
-
-        val table = action.input
-        dynamoClient.client.deleteItem(table.name, Map(
-          table.hashKey.label -> getHashAttributeValue(action.hashKeyValue),
-          table.rangeKey.label -> getRangeAttributeValue(action.rangeKeyValue)
+        dynamoClient.client.deleteItem(ac.table.name, Map(
+          ac.table.hashKey.label -> getHashAttributeValue(ac.hashKeyValue),
+          ac.table.rangeKey.label -> getRangeAttributeValue(ac.rangeKeyValue)
         ))
       } catch {
         case t: Throwable => t.printStackTrace()
       }
-
-
-      (action.input, action.state)
+      (ac.table, ac.inputState)
     }
-
-    override type C[+X] = X
-
   }
 
   implicit def deleteItemCompositeKeyExecutor[A <: AnyDeleteItemCompositeKey]
-  (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
-   getHashAttributeValue: A#Input#HashKey#Raw => AttributeValue,
-   getRangeAttributeValue: A#Input#RangeKey#Raw => AttributeValue): DeleteItemCompositeKeyExecutor[A] =
+  (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
+   getHashAttributeValue: A#Table#HashKey#Raw => AttributeValue,
+   getRangeAttributeValue: A#Table#RangeKey#Raw => AttributeValue): DeleteItemCompositeKeyExecutor[A] =
     DeleteItemCompositeKeyExecutor[A](dynamoClient, getHashAttributeValue, getRangeAttributeValue)
 
 
   case class PutItemCompositeKeyExecutor[A <: AnyPutItemCompositeKey](
-    dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
+    dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
     getSDKRep: A#ItemRep => Map[String, AttributeValue]
   ) extends Executor {
 
     import scala.collection.JavaConversions._
     override type Action = A
 
-    override def apply(action: A): Out = {
+    override def apply(ac: A): Out = {
 
       try {
-        val table = action.input
-        dynamoClient.client.putItem(table.name, getSDKRep(action.itemRep))
+        dynamoClient.client.putItem(ac.table.name, getSDKRep(ac.itemRep))
       } catch {
         case t: Throwable => t.printStackTrace()
       }
-      (action.input, action.state)
+      (ac.table, ac.inputState)
     }
 
     override type C[+X] = X
@@ -307,7 +288,7 @@ object Executors {
   }
 
   implicit def putItemCompositeKeyExecutor[A <: AnyPutItemCompositeKey]
-  (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
+  (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
    getSDKRep: A#ItemRep => Map[String, AttributeValue]): PutItemCompositeKeyExecutor[A] =
     PutItemCompositeKeyExecutor[A](dynamoClient, getSDKRep)
 

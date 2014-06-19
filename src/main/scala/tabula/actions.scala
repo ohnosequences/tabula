@@ -4,138 +4,163 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import ohnosequences.scarph.HasProperty
 
 trait AnyAction {
-
   // this should be an HList of Resources; it is hard to express though
-  type Input <: AnyDynamoDBResource
-  val input: Input
-  // same for this
-  type Output
+  type Resources
+  val  resources: Resources
 
   type InputState
-  val state: InputState
+  val  inputState: InputState
+
   type OutputState
+
+  // these are input and output that are not resources
+  type Input
+  val  input: Input
+
+  type Output
 }
 
 object AnyAction {
-  type inRegion[R <: AnyRegion] = AnyAction { type Input <: AnyDynamoDBResource.inRegion[R] }
+  // TODO: this won't work with ResourcesList
+  type inRegion[R <: AnyRegion] = AnyAction { type Resources <: AnyDynamoDBResource.inRegion[R] }
+}
+
+trait AnyTableAction extends AnyAction {
+  type Table <: Singleton with AnyTable
+  val  table: Table
+
+  // TODO: change this to ResourcesList
+  type Resources = Table //:+: RNil
+  val  resources = table
 }
 
 // actions
 
-trait AnyCreateTable extends AnyAction {
-  override type Input <: AnyTable with Singleton
-  override type Output = Input
-  // type HashKey = input.HashKey
+trait AnyCreateTable extends AnyTableAction {
+  type InputState = InitialState[Table]
+  type OutputState = Creating[Table]
 
-  override type InputState = InitialState[Input]
-  override type OutputState = Creating[Input]
+  type Input = None.type
+  val  input = None
+  type Output = None.type
 }
 
-case class CreateTable[T <: AnyTable with Singleton](input: T, state: InitialState[T]) 
-  extends AnyCreateTable { override type Input = T }
+case class CreateTable[T <: Singleton with AnyTable](table: T, inputState: InitialState[T]) 
+  extends AnyCreateTable { type Table = T }
 
 object AnyCreateTable {
-  type withHashKeyTable = AnyCreateTable { type Input <: Singleton with AnyHashKeyTable }
-  type withCompositeKeyTable = AnyCreateTable { type Input <: Singleton with AnyCompositeKeyTable }
+  type withHashKeyTable      = AnyCreateTable { type Table <: Singleton with AnyHashKeyTable }
+  type withCompositeKeyTable = AnyCreateTable { type Table <: Singleton with AnyCompositeKeyTable }
 }
 
 
-trait AnyDeleteTable extends AnyAction {
-  override type Input <: AnyTable with Singleton
-  override type Output = Input
+trait AnyDeleteTable extends AnyTableAction {
+  type InputState = Active[Table]
+  type OutputState = Deleting[Table]
 
-  override type InputState = Active[Input]
-  override type OutputState = Deleting[Output]
+  type Input = None.type
+  val  input = None
+  type Output = None.type
 }
 
-case class DeleteTable[T <: AnyTable with Singleton](input: T, state: Active[T])
-  extends AnyDeleteTable { override type Input = T }
+case class DeleteTable[T <: Singleton with AnyTable](table: T, inputState: Active[T])
+  extends AnyDeleteTable { type Table = T }
 
 
-trait AnyDescribeTable extends AnyAction {
-  override type Input <: AnyTable with Singleton
-  override type Output = Input
+trait AnyDescribeTable extends AnyTableAction {
+  type InputState  = AnyTableState.For[Table]
+  type OutputState = AnyTableState.For[Table]
 
-  override type InputState  = AnyTableState.For[Input]
-  override type OutputState = AnyTableState.For[Input]
+  type Input = None.type
+  val  input = None
+  type Output = None.type
 }
 
-case class DescribeTable[T <: AnyTable with Singleton](input: T, state: AnyTableState.For[T]) 
-  extends AnyDescribeTable { override type Input = T }
+case class DescribeTable[T <: Singleton with AnyTable](table: T, inputState: AnyTableState.For[T]) 
+  extends AnyDescribeTable { type Table = T }
 
 
-trait AnyUpdateTable extends AnyAction {
-  
-  override type Input <: AnyTable with Singleton
-  override type Output = Input
-
+trait AnyUpdateTable extends AnyTableAction {
   //require updating or creating
-  override type InputState  = AnyTableState.For[Input] with ReadyTable
-  override type OutputState = Updating[Input]
+  type InputState  = AnyTableState.For[Table] with ReadyTable
+  type OutputState = Updating[Table]
 
-  //todo move it to input
+  type Input = (Int, Int)
   val newReadThroughput: Int
   val newWriteThroughput: Int
+  val input = (newReadThroughput, newWriteThroughput)
+
+  type Output = None.type
 }
 
+case class UpdateTable[T <: Singleton with AnyTable](
+    table: T, 
+    inputState: AnyTableState.For[T] with ReadyTable, 
+    newReadThroughput: Int, 
+    newWriteThroughput: Int
+  ) extends AnyUpdateTable {
+    type Table = T 
+  }
 
-case class UpdateTable[T <: AnyTable with Singleton](input: T, state: AnyTableState.For[T] with ReadyTable, newReadThroughput: Int, newWriteThroughput: Int)
-  extends AnyUpdateTable { override type Input = T }
+
+trait AnyDeleteItemHashKey extends AnyTableAction {
+  //require updating or creating
+  type InputState  = AnyTableState.For[Table] with ReadyTable
+  type OutputState = InputState
+
+  type Input = Table#HashKey#Raw
+  val  hashKeyValue: Input
+  val  input = hashKeyValue
+
+  type Output = None.type
+}
+
+case class DeleteItemHashKey[
+    T <: AnyHashKeyTable with Singleton, 
+    H <: T#HashKey#Raw
+  ](table: T, 
+    inputState: AnyTableState.For[T] with ReadyTable, 
+    hashKeyValue: H
+  ) extends AnyDeleteItemHashKey { type Table = T }
 
 
-trait AnyDeleteItemHashKey extends AnyAction {
-
-  override type Input <: AnyHashKeyTable with Singleton
-  override type Output = Input
+trait AnyDeleteItemCompositeKey extends AnyTableAction {
+  type Table <: Singleton with AnyCompositeKeyTable
 
   //require updating or creating
-  override type InputState  = AnyTableState.For[Input] with ReadyTable
-  override type OutputState = InputState
+  type InputState  = AnyTableState.For[Table] with ReadyTable
+  type OutputState = InputState
 
- // val hashKeyValue: input.hashKey.Raw
-  // type Foo = input.hashKey.Raw
-  val hashKeyValue: Input#HashKey#Raw
+  type Input = (Table#HashKey#Raw, Table#RangeKey#Raw)
+  val hashKeyValue: Table#HashKey#Raw
+  val rangeKeyValue: Table#RangeKey#Raw
+  val  input = (hashKeyValue, rangeKeyValue)
+
+  type Output = None.type
 }
 
-
-case class DeleteItemHashKey[T <: AnyHashKeyTable with Singleton, R <: T#HashKey#Raw](input: T, state: AnyTableState.For[T] with ReadyTable, hashKeyValue: R)
-  extends AnyDeleteItemHashKey { override type Input = T }
-
-
-trait AnyDeleteItemCompositeKey extends AnyAction {
-
-  override type Input <: AnyCompositeKeyTable with Singleton
-  override type Output = Input
-
-  //require updating or creating
-  override type InputState  = AnyTableState.For[Input] with ReadyTable
-  override type OutputState = InputState
-
-  // val hashKeyValue: input.hashKey.Raw
-  // type Foo = input.hashKey.Raw
-  val hashKeyValue: Input#HashKey#Raw
-  val rangeKeyValue: Input#RangeKey#Raw
-
-}
-
-
-case class DeleteItemCompositeKey[T <: AnyCompositeKeyTable with Singleton, RH <: T#HashKey#Raw, RR <: T#RangeKey#Raw](input: T, state: AnyTableState.For[T] with ReadyTable, hashKeyValue: RH, rangeKeyValue: RR)
-  extends AnyDeleteItemCompositeKey { override type Input = T }
+case class DeleteItemCompositeKey[
+    T <: AnyCompositeKeyTable with Singleton, 
+    RH <: T#HashKey#Raw, 
+    RR <: T#RangeKey#Raw
+  ](table: T, 
+    inputState: AnyTableState.For[T] with ReadyTable, 
+    hashKeyValue: RH, 
+    rangeKeyValue: RR
+  ) extends AnyDeleteItemCompositeKey { type Table = T }
 
 
 //todo conditional part
-trait AnyPutItemHashKey extends AnyAction {
-
-  override type Input <: AnyHashKeyTable with Singleton
-  override type Output = Input
+trait AnyPutItemHashKey extends AnyTableAction {
+  type Table <: Singleton with AnyHashKeyTable
 
   //require updating or creating
-  override type InputState  = AnyTableState.For[Input] with ReadyTable
-  override type OutputState = InputState
+  type InputState  = AnyTableState.For[Table] with ReadyTable
+  type OutputState = InputState
 
-  // val hashKeyValue: input.hashKey.Raw
-  // type Foo = input.hashKey.Raw
- // val hashKeyValue: Input#HashKey#Raw
+  type Input = None.type
+  val  input = None
+  type Output = None.type
 
   //item type has to have hashkey attribute
   type Item <: AnyItem //.ofTable[Input]
@@ -143,52 +168,49 @@ trait AnyPutItemHashKey extends AnyAction {
 
   val itemRep: Item#Raw
 
-  val hasHashKey: HasProperty[Item#Tpe, Input#HashKey]
+  val hasHashKey: HasProperty[Item#Tpe, Table#HashKey]
 }
 
 
+// case class PutItemHashKey[T <: AnyHashKeyTable with Singleton, R <: T#HashKey#Raw, IT <: AnyItemType.of[T]](table: T, inputState: AnyTableState.For[T] with ReadyTable, itemType: IT)(implicit val hasHashKey: HasProperty[IT, T#HashKey])
+//   extends AnyPutItemHashKey { type Table = T; type ItemType = IT }
 case class PutItemHashKey[T <: AnyHashKeyTable with Singleton, I <: AnyItem, R <: I#Raw](
-  input: T,
-  state: AnyTableState.For[T] with ReadyTable,
+  table: T,
+  inputState: AnyTableState.For[T] with ReadyTable,
   item: I,
   itemRep: R
 )(implicit val hasHashKey: HasProperty[I#Tpe, T#HashKey])
-  extends AnyPutItemHashKey { override type Input = T; override type Item = I  }
+  extends AnyPutItemHashKey { override type Table = T; override type Item = I  }
 
-trait AnyPutItemCompositeKey extends AnyAction {
-
-  override type Input <: AnyCompositeKeyTable with Singleton
-  override type Output = Input
+trait AnyPutItemCompositeKey extends AnyTableAction {
+  type Table <: Singleton with AnyCompositeKeyTable
 
   //require updating or creating
-  override type InputState  = AnyTableState.For[Input] with ReadyTable
-  override type OutputState = InputState
+  type InputState  = AnyTableState.For[Table] with ReadyTable
+  type OutputState = InputState
 
-  // val hashKeyValue: input.hashKey.Raw
-  // type Foo = input.hashKey.Raw
-  // val hashKeyValue: Input#HashKey#Raw
+  type Input = None.type
+  val  input = None
+  type Output = None.type
 
-  //item type has to have hashkey attribute
   // FIXME: add restriction on the table
-  type Item <: AnyItem //.ofTable[Input]
-  val item: Item
-
-  type ItemRep <: Item#Rep
-
-  val itemRep: ItemRep
-
-
-  val hasHashKey: HasProperty[Item#Tpe, Input#HashKey]
-  val hasRangeKey: HasProperty[Item#Tpe, Input#RangeKey]
+  type ItemRep <: AnyItem.Rep
+  val  itemRep: ItemRep
+  val hasHashKey: HasProperty[ItemRep#DenotedType, Table#HashKey]
+  val hasRangeKey: HasProperty[ItemRep#DenotedType, Table#RangeKey]
 }
 
-
-case class PutItemCompositeKey[T <: AnyCompositeKeyTable with Singleton, I <: AnyItem, R<: I#Rep](
-    input: T,
-    state: AnyTableState.For[T] with ReadyTable,
-    item: I, itemRep: R)
-  (implicit val hasHashKey: HasProperty[I#Tpe, T#HashKey], val hasRangeKey: HasProperty[I#Tpe, T#RangeKey])
-  extends AnyPutItemCompositeKey { override type Input = T; override type Item = I ; override type ItemRep = R}
+case class PutItemCompositeKey[T <: AnyCompositeKeyTable with Singleton, R <: AnyItem.Rep](
+    table: T,
+    inputState: AnyTableState.For[T] with ReadyTable,
+    itemRep: R
+  )(implicit
+    val hasHashKey: HasProperty[R#DenotedType, T#HashKey], 
+    val hasRangeKey: HasProperty[R#DenotedType, T#RangeKey]
+  ) extends AnyPutItemCompositeKey {
+    type Table = T
+    type ItemRep = R
+  }
 
 /*
   #### GetItem
@@ -216,7 +238,7 @@ case class PutItemCompositeKey[T <: AnyCompositeKeyTable with Singleton, I <: An
   This sounds like more orthodox in principle, but it could be confusing _if_ the action class mirrors this in its parameters: `service getItem(table, otherStuff(key, item))`. But this does not need to be so: just use the table inside `item` to set the input, and use a more intuitive set of parameters: `service getItem(item, key)`. Actually, as a table is the only resource in DynamoDB, for all DynamoDB actions the input is going to be formed by tables.
 
 */
-// trait AnyGetItem extends AnyAction {
+// trait AnyGetItem extends AnyTableAction {
 
 //   type Input <: AnyItemType
 // }
@@ -233,4 +255,4 @@ case class PutItemCompositeKey[T <: AnyCompositeKeyTable with Singleton, I <: An
   - the item type over which we want to query
   - _optional_ a predicate over it for filtering results service-side
 */
-trait AnyQuery extends AnyAction {}
+trait AnyQuery extends AnyTableAction {}
