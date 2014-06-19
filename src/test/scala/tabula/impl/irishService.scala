@@ -94,7 +94,7 @@ class irishService extends FunSuite {
 
       }
 
-      def getSDKRep(rep: ItemRep): Map[String, AttributeValue] = {
+      implicit def getSDKRep(rep: ItemRep): Map[String, AttributeValue] = {
         Map[String, AttributeValue](
           id.label -> rep.id,
           name.label -> rep.name
@@ -110,7 +110,7 @@ class irishService extends FunSuite {
 //      val myId = getTestItemId(myItem)
 //      assert(myId === 3)
 
-      service.please(PutItemCompositeKey(table, a, TestItem, myItem)(TestItemType_id, TestItemType_name))(putItemCompositeKeyExecutor(defaultDynamoDBClient, getSDKRep))
+      service.please(PutItemCompositeKey(table, a, TestItem, myItem)(TestItemType_id, TestItemType_name))
       service please DeleteItemCompositeKey(table, a, 1, "yeah")
       //service please UpdateTable(table, a, 2, 2)
       waitFor(table, a).foreach(service please DeleteTable(table, _))
