@@ -63,6 +63,8 @@ class irishService extends FunSuite {
     case object name extends Attribute[String]
     object table extends CompositeKeyTable("tabula_test", id, name, service.region)
 
+
+
     println("creating table")
     val (_, sta): (table.type, AnyTableState.For[table.type]) = 
       service(CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1))))
@@ -70,6 +72,13 @@ class irishService extends FunSuite {
 
 
     waitFor(table, sta).foreach { a =>
+
+      object TestItem extends ItemType(table)
+      implicit val TestItem_id = TestItem has id
+      implicit val TestItem_name = TestItem has name
+
+      PutItemCompositeKey(table, a, TestItem)
+
 
       service please DeleteItemCompositeKey(table, a, 213, "test")
       service please UpdateTable(table, a, 2, 2)

@@ -1,5 +1,8 @@
 package ohnosequences.tabula
 
+import com.amazonaws.services.dynamodbv2.model.AttributeValue
+import ohnosequences.scarph.HasProperty
+
 trait AnyAction {
 
   // this should be an HList of Resources; it is hard to express though
@@ -118,6 +121,61 @@ trait AnyDeleteItemCompositeKey extends AnyAction {
 
 case class DeleteItemCompositeKey[T <: AnyCompositeKeyTable with Singleton, RH <: T#HashKey#Raw, RR <: T#RangeKey#Raw](input: T, state: AnyTableState.For[T] with ReadyTable, hashKeyValue: RH, rangeKeyValue: RR)
   extends AnyDeleteItemCompositeKey { override type Input = T }
+
+
+//todo conditional part
+trait AnyPutItemHashKey extends AnyAction {
+
+  override type Input <: AnyHashKeyTable with Singleton
+  override type Output = Input
+
+  //require updating or creating
+  override type InputState  = AnyTableState.For[Input] with ReadyTable
+  override type OutputState = InputState
+
+  // val hashKeyValue: input.hashKey.Raw
+  // type Foo = input.hashKey.Raw
+ // val hashKeyValue: Input#HashKey#Raw
+
+  //item type has to have hashkey attribute
+  type ItemType <: AnyItemType.of[Input]
+  val itemType: ItemType
+
+  val hasHashKey: HasProperty[ItemType, Input#HashKey]
+}
+
+
+case class PutItemHashKey[T <: AnyHashKeyTable with Singleton, R <: T#HashKey#Raw, IT <: AnyItemType.of[T]](input: T, state: AnyTableState.For[T] with ReadyTable, itemType: IT)(implicit val hasHashKey: HasProperty[IT, T#HashKey])
+  extends AnyPutItemHashKey { override type Input = T; override type ItemType = IT }
+
+trait AnyPutItemCompositeKey extends AnyAction {
+
+  override type Input <: AnyCompositeKeyTable with Singleton
+  override type Output = Input
+
+  //require updating or creating
+  override type InputState  = AnyTableState.For[Input] with ReadyTable
+  override type OutputState = InputState
+
+  // val hashKeyValue: input.hashKey.Raw
+  // type Foo = input.hashKey.Raw
+  // val hashKeyValue: Input#HashKey#Raw
+
+  //item type has to have hashkey attribute
+  type ItemType <: AnyItemType.of[Input]
+  val itemType: ItemType
+
+  val hasHashKey: HasProperty[ItemType, Input#HashKey]
+  val hasRangeKey: HasProperty[ItemType, Input#RangeKey]
+}
+
+
+case class PutItemCompositeKey[T <: AnyCompositeKeyTable with Singleton, IT <: AnyItemType.of[T]](
+  input: T,
+  state: AnyTableState.For[T] with ReadyTable,
+  itemType: IT)
+  (implicit val hasHashKey: HasProperty[IT, T#HashKey], val hasRangeKey: HasProperty[IT, T#RangeKey])
+  extends AnyPutItemCompositeKey { override type Input = T; override type ItemType = IT }
 
 /*
   #### GetItem
