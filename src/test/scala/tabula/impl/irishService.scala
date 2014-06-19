@@ -76,7 +76,7 @@ class irishService extends FunSuite {
 
 
     println("creating table")
-    val (_, _, sta) =  service(CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1))))
+    val (_, _, sta) =  service please (CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1))))
 
 
 
@@ -98,7 +98,7 @@ class irishService extends FunSuite {
         }
       }
 
-      val myItem: TestItem.Rep = TestItem ->> ((3, "foo"): (Int, String))
+      val myItem: TestItem.Rep = TestItem ->> ((213, "test"): (Int, String))
       // val myId = getTestItemId(myItem)
       // assert(myId === 3)
 
@@ -109,13 +109,16 @@ class irishService extends FunSuite {
         )
       }
 
+      service please  PutItemCompositeKey(table, a, TestItem, myItem)
+
       implicit val ac = GetItemCompositeKey(table, a, TestItem, 213, "test")(TestItemType_id, TestItemType_name)
 
       implicit def parseSDKRep(rep:  Map[String, AttributeValue]): TestItem.Rep = {
         TestItem ->> ((rep(id.label).getN.toInt, rep(name.label).getS.toString))
       }
-      implicit val p = new RepFromMap[GetItemCompositeKey[table.type,TestItem.type,Int,String]] {
-        val a = ac
+      implicit val p: RepFromMap.Aux[ac.type, TestItem.Rep] = new RepFromMap[ac.type] {
+        // val a = ac
+        type Out = TestItem.Rep
         def apply(m: Map[String, AttributeValue]): Out =
           TestItem ->> ((m(id.label).getN.toInt, m(name.label).getS.toString))
       }
@@ -123,18 +126,17 @@ class irishService extends FunSuite {
       // println((myItem: TestItem.Rep).getClass)
       // [table.type, TestItem.Rep, TestItem.type]
 
-      service please  PutItemCompositeKey(table, a, TestItem, myItem)
+      // FIXME!!!! (nothing works)
+      // val (output, _, _) = service.apply(ac)(getItemCompositeKeyExecutor_(defaultDynamoDBClient, p, getAttributeValue, getAttributeValueS))
 
-      val (output, _, _) = service.please(ac) //(getItemCompositeKeyExecutor(ac, defaultDynamoDBClient, p, getAttributeValue, getAttributeValueS))
-
-      println(output)
+      // println(output)
       // assert(output._1 === 213)
       // assert(output._2 === "test")
 
-      service please DeleteItemCompositeKey(table, a, 213, "test")
+      // service please DeleteItemCompositeKey(table, a, 213, "test")
 
       //service please UpdateTable(table, a, 2, 2)
-      waitFor(table, a).foreach(service please DeleteTable(table, _))
+      waitFor(table, a).foreach{ x => service.apply(DeleteTable(table, x)) }
     }
   }
 

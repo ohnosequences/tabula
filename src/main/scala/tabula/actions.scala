@@ -228,16 +228,20 @@ trait AnyGetItemCompositeKey extends AnyTableAction {
   type ItemRep = Item#Rep
 
   type Input = (Table#HashKey#Raw, Table#RangeKey#Raw)
-  type Output = Either[ItemRep, GetItemFail.type]
+  type Output = GetItemResult
 
   // val hasHashKey: HasProperty[ItemRep#DenotedType, Table#HashKey]
   // val hasRangeKey: HasProperty[ItemRep#DenotedType, Table#RangeKey]
 }
 
-sealed trait GetItemResult[+R]
+sealed trait GetItemResult {
+  type Item <: AnyItem
+}
 
-case object GetItemFail extends GetItemResult[Nothing]
-case class GetItemSuccess[+R](item: R) extends GetItemResult[R]
+case class GetItemFail[I <: AnyItem]() 
+  extends GetItemResult { type Item = I }
+case class GetItemSuccess[I <: Singleton with AnyItem](val item: I#Rep) 
+  extends GetItemResult { type Item = I }
 
 case class GetItemCompositeKey[
   T <: Singleton with AnyCompositeKeyTable,

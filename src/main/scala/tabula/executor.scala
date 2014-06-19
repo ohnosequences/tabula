@@ -14,3 +14,12 @@ object Executor {
   type inRegion[R <: AnyRegion] = Executor { type Action <: AnyAction.inRegion[R] }
 }
 
+trait ExecutorFrom[A <: AnyAction] {
+  type Exec <: Executor.For[A]
+  type Out = Exec#Out
+  def apply(a: A): Exec
+}
+
+object ExecutorFrom {
+  type Aux[A <: AnyAction, E <: Executor.For[A]] = ExecutorFrom[A] { type Exec = E }
+}
