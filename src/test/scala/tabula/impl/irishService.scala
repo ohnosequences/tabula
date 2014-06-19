@@ -16,7 +16,11 @@ class irishService extends FunSuite {
 
   val service = IrishDynamoDBService
 
-  def waitFor[T <: AnyTable with Singleton with AnyDynamoDBResource.inRegion[service.Region], S <: AnyTableState.For[T]](table: T, initialState: S): Option[Active[T]] = {
+  def waitFor[
+    T <: Singleton with AnyTable.inRegion[service.Region], 
+    S <: AnyTableState.For[T]
+  ](table: T, initialState: S): Option[Active[T]] = {
+
     var active = false
     var state: AnyTableState.For[T] = initialState
 
