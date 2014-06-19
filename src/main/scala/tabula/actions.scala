@@ -234,10 +234,19 @@ trait AnyGetItemCompositeKey extends AnyTableAction {
   // val hasRangeKey: HasProperty[ItemRep#DenotedType, Table#RangeKey]
 }
 
-sealed trait GetItemResult
+sealed trait GetItemResult {
 
-case object GetItemFail extends GetItemResult
-case class GetItemSuccess[I <: AnyItem](item: I#Rep) extends GetItemResult
+  type Item <: AnyItem
+}
+
+case class GetItemFail[I <: AnyItem]() extends GetItemResult {
+
+  type Item = I
+}
+case class GetItemSuccess[I <: Singleton with AnyItem](val item: I#Rep) extends GetItemResult {
+
+  type Item = I
+}
 
 case class GetItemCompositeKey[
   T <: Singleton with AnyCompositeKeyTable,

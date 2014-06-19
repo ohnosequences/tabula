@@ -308,7 +308,7 @@ object Executors {
         )).getItem
         GetItemSuccess(parseSDKItem(sdkRep.toMap))
       } catch {
-        case t: Throwable => t.printStackTrace(); GetItemFail
+        case t: Throwable => t.printStackTrace(); GetItemFail[ac.Item]
       }
       (res, ac.table, ac.inputState)
     }
