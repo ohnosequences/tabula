@@ -6,6 +6,7 @@ import ohnosequences.tabula._
 import ohnosequences.tabula.InitialThroughput
 import ohnosequences.tabula.Active
 import ohnosequences.tabula.InitialThroughput
+import com.amazonaws.services.dynamodbv2.model.AttributeValue
 
 class irishService extends FunSuite {
   import Implicits._
@@ -79,30 +80,38 @@ class irishService extends FunSuite {
 
       import ohnosequences.scarph._
 
+      case class ItemRep(id: Int, name: String)
+
       case object TestItem extends AnyItem {
         type Tpe = TestItemType.type
         val  tpe = TestItemType
 
-        type Raw = (Int, String)
+        type Raw = ItemRep
 
-        implicit def getId: GetProperty[id.type] = new GetProperty(id) {
-          def apply(rep: Rep): id.Raw = rep._1
-        }
+//        implicit def getId: GetProperty[id.type] = new GetProperty(id) {
+//          def apply(rep: Rep): id.Raw = rep._1
+//        }
 
       }
 
-      def getTestItemId(rep: AnyDenotation.TaggedWith[TestItem.type]): id.Raw = {
-        rep get id
+      def getSDKRep(rep: ItemRep): Map[String, AttributeValue] = {
+        Map[String, AttributeValue](
+          id.label -> rep.id,
+          name.label -> rep.name
+        )
       }
 
-      val myItem = TestItem ->> ((3, "foo"))
-      val myId = getTestItemId(myItem)
-      assert(myId === 3)
 
-      PutItemCompositeKey(table, a, TestItem)
+//      def getTestItemId(rep: AnyDenotation.TaggedWith[TestItem.type]): id.Raw = {
+//        rep get id
+//      }
 
+      val myItem = TestItem ->> (ItemRep(1, "yeah"))
+//      val myId = getTestItemId(myItem)
+//      assert(myId === 3)
 
-      service please DeleteItemCompositeKey(table, a, 213, "test")
+      service.please(PutItemCompositeKey(table, a, TestItem, myItem)(TestItemType_id, TestItemType_name))(putItemCompositeKeyExecutor(defaultDynamoDBClient, getSDKRep))
+      service please DeleteItemCompositeKey(table, a, 1, "yeah")
       //service please UpdateTable(table, a, 2, 2)
       waitFor(table, a).foreach(service please DeleteTable(table, _))
     }

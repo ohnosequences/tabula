@@ -95,7 +95,12 @@ object Executors {
         .withKeySchema(hashSchemaElement, rangeSchemaElement)
         .withAttributeDefinitions(hashAttributeDefinition, rangeAttributeDefinition)
 
-      dynamoClient.client.createTable(request)
+      try {
+        dynamoClient.client.createTable(request)
+      } catch {
+        case t: ResourceInUseException => println("already exists")
+      }
+
 
       (ac.input, ac.state.creating)
     }
@@ -276,5 +281,34 @@ object Executors {
    getHashAttributeValue: A#Input#HashKey#Raw => AttributeValue,
    getRangeAttributeValue: A#Input#RangeKey#Raw => AttributeValue): DeleteItemCompositeKeyExecutor[A] =
     DeleteItemCompositeKeyExecutor[A](dynamoClient, getHashAttributeValue, getRangeAttributeValue)
+
+
+  case class PutItemCompositeKeyExecutor[A <: AnyPutItemCompositeKey](
+    dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
+    getSDKRep: A#ItemRep => Map[String, AttributeValue]
+  ) extends Executor {
+
+    import scala.collection.JavaConversions._
+    override type Action = A
+
+    override def apply(action: A): Out = {
+
+      try {
+        val table = action.input
+        dynamoClient.client.putItem(table.name, getSDKRep(action.itemRep))
+      } catch {
+        case t: Throwable => t.printStackTrace()
+      }
+      (action.input, action.state)
+    }
+
+    override type C[+X] = X
+
+  }
+
+  implicit def putItemCompositeKeyExecutor[A <: AnyPutItemCompositeKey]
+  (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Input#Region],
+   getSDKRep: A#ItemRep => Map[String, AttributeValue]): PutItemCompositeKeyExecutor[A] =
+    PutItemCompositeKeyExecutor[A](dynamoClient, getSDKRep)
 
 }

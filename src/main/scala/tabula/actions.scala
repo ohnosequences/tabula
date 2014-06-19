@@ -138,15 +138,22 @@ trait AnyPutItemHashKey extends AnyAction {
  // val hashKeyValue: Input#HashKey#Raw
 
   //item type has to have hashkey attribute
-  type ItemType <: AnyItemType.of[Input]
-  val itemType: ItemType
+  type Item <: AnyItem //.ofTable[Input]
+  val item: Item
 
-  val hasHashKey: HasProperty[ItemType, Input#HashKey]
+  val itemRep: Item#Raw
+
+  val hasHashKey: HasProperty[Item#Tpe, Input#HashKey]
 }
 
 
-case class PutItemHashKey[T <: AnyHashKeyTable with Singleton, R <: T#HashKey#Raw, IT <: AnyItemType.of[T]](input: T, state: AnyTableState.For[T] with ReadyTable, itemType: IT)(implicit val hasHashKey: HasProperty[IT, T#HashKey])
-  extends AnyPutItemHashKey { override type Input = T; override type ItemType = IT }
+case class PutItemHashKey[T <: AnyHashKeyTable with Singleton, I <: AnyItem, R <: I#Raw](
+  input: T,
+  state: AnyTableState.For[T] with ReadyTable,
+  item: I,
+  itemRep: R
+)(implicit val hasHashKey: HasProperty[I#Tpe, T#HashKey])
+  extends AnyPutItemHashKey { override type Input = T; override type Item = I  }
 
 trait AnyPutItemCompositeKey extends AnyAction {
 
@@ -166,18 +173,22 @@ trait AnyPutItemCompositeKey extends AnyAction {
   type Item <: AnyItem //.ofTable[Input]
   val item: Item
 
+  type ItemRep <: Item#Rep
+
+  val itemRep: ItemRep
+
 
   val hasHashKey: HasProperty[Item#Tpe, Input#HashKey]
   val hasRangeKey: HasProperty[Item#Tpe, Input#RangeKey]
 }
 
 
-case class PutItemCompositeKey[T <: AnyCompositeKeyTable with Singleton, I <: AnyItem](
+case class PutItemCompositeKey[T <: AnyCompositeKeyTable with Singleton, I <: AnyItem, R<: I#Rep](
     input: T,
     state: AnyTableState.For[T] with ReadyTable,
-    item: I)
+    item: I, itemRep: R)
   (implicit val hasHashKey: HasProperty[I#Tpe, T#HashKey], val hasRangeKey: HasProperty[I#Tpe, T#RangeKey])
-  extends AnyPutItemCompositeKey { override type Input = T; override type Item = I }
+  extends AnyPutItemCompositeKey { override type Input = T; override type Item = I ; override type ItemRep = R}
 
 /*
   #### GetItem
