@@ -85,18 +85,22 @@ trait AnyUpdateTable extends AnyTableAction {
   type InputState  = AnyTableState.For[Table] with ReadyTable
   type OutputState = Updating[Table]
 
-  type Input = None.type
-  val  input = None
-  type Output = None.type
-
-  //todo move it to input
+  type Input = (Int, Int)
   val newReadThroughput: Int
   val newWriteThroughput: Int
+  val input = (newReadThroughput, newWriteThroughput)
+
+  type Output = None.type
 }
 
-
-case class UpdateTable[T <: Singleton with AnyTable](table: T, inputState: AnyTableState.For[T] with ReadyTable, newReadThroughput: Int, newWriteThroughput: Int)
-  extends AnyUpdateTable { type Table = T }
+case class UpdateTable[T <: Singleton with AnyTable](
+    table: T, 
+    inputState: AnyTableState.For[T] with ReadyTable, 
+    newReadThroughput: Int, 
+    newWriteThroughput: Int
+  ) extends AnyUpdateTable {
+    type Table = T 
+  }
 
 
 trait AnyDeleteItemHashKey extends AnyTableAction {
@@ -104,16 +108,20 @@ trait AnyDeleteItemHashKey extends AnyTableAction {
   type InputState  = AnyTableState.For[Table] with ReadyTable
   type OutputState = InputState
 
-  type Input = None.type
-  val  input = None
-  type Output = None.type
+  type Input = Table#HashKey#Raw
+  val  hashKeyValue: Input
+  val  input = hashKeyValue
 
-  val hashKeyValue: Table#HashKey#Raw
+  type Output = None.type
 }
 
-
-case class DeleteItemHashKey[T <: AnyHashKeyTable with Singleton, R <: T#HashKey#Raw](table: T, inputState: AnyTableState.For[T] with ReadyTable, hashKeyValue: R)
-  extends AnyDeleteItemHashKey { type Table = T }
+case class DeleteItemHashKey[
+    T <: AnyHashKeyTable with Singleton, 
+    H <: T#HashKey#Raw
+  ](table: T, 
+    inputState: AnyTableState.For[T] with ReadyTable, 
+    hashKeyValue: H
+  ) extends AnyDeleteItemHashKey { type Table = T }
 
 
 trait AnyDeleteItemCompositeKey extends AnyTableAction {
@@ -123,17 +131,23 @@ trait AnyDeleteItemCompositeKey extends AnyTableAction {
   type InputState  = AnyTableState.For[Table] with ReadyTable
   type OutputState = InputState
 
-  type Input = None.type
-  val  input = None
-  type Output = None.type
-
+  type Input = (Table#HashKey#Raw, Table#RangeKey#Raw)
   val hashKeyValue: Table#HashKey#Raw
   val rangeKeyValue: Table#RangeKey#Raw
+  val  input = (hashKeyValue, rangeKeyValue)
+
+  type Output = None.type
 }
 
-
-case class DeleteItemCompositeKey[T <: AnyCompositeKeyTable with Singleton, RH <: T#HashKey#Raw, RR <: T#RangeKey#Raw](table: T, inputState: AnyTableState.For[T] with ReadyTable, hashKeyValue: RH, rangeKeyValue: RR)
-  extends AnyDeleteItemCompositeKey { type Table = T }
+case class DeleteItemCompositeKey[
+    T <: AnyCompositeKeyTable with Singleton, 
+    RH <: T#HashKey#Raw, 
+    RR <: T#RangeKey#Raw
+  ](table: T, 
+    inputState: AnyTableState.For[T] with ReadyTable, 
+    hashKeyValue: RH, 
+    rangeKeyValue: RR
+  ) extends AnyDeleteItemCompositeKey { type Table = T }
 
 
 //todo conditional part

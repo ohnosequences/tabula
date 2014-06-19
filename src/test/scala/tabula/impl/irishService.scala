@@ -62,7 +62,7 @@ class irishService extends FunSuite {
 //    //service please UpdateTable(table, state, 2, 2)
 //  }
 
-  test("complex example") {
+  ignore("complex example") {
     case object id extends Attribute[Int]
     case object name extends Attribute[String]
     object table extends CompositeKeyTable("tabula_test", id, name, service.region)

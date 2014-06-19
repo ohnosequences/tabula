@@ -218,7 +218,6 @@ object Executors {
 
     def apply(ac: A): Out = {
       try {
-        val table = ac.input
         dynamoClient.client.deleteItem(ac.table.name, Map(ac.table.hashKey.label -> getAttributeValue(ac.hashKeyValue)))
       } catch {
         case t: Throwable => t.printStackTrace()
