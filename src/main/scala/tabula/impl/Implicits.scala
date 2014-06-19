@@ -33,7 +33,7 @@ object Implicits {
     new AttributeValue().withN(attr.toString)
   }
 
-  implicit def getAttributeValue(attr: String): AttributeValue = {
+  implicit def getAttributeValueS(attr: String): AttributeValue = {
     new AttributeValue().withS(attr.toString)
   }
 }

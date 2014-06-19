@@ -255,6 +255,7 @@ case class GetItemCompositeKey[
 ) extends AnyGetItemCompositeKey {
   type Table = T
   type Item = I
+  override type ItemRep = I#Rep
   val input = (hashKeyValue, rangeKeyValue)
 }
 /*

@@ -119,7 +119,8 @@ class irishService extends FunSuite {
 
       service please  PutItemCompositeKey(table, a, TestItem, myItem)
 
-      val (output, _, _) = service please GetItemCompositeKey(table, a, TestItem, 213, "test")
+      val (output, _, _) = service.please(GetItemCompositeKey(table, a, TestItem, 213, "test"))(
+        getItemCompositeKeyExecutor(defaultDynamoDBClient, parseSDKRep, getAttributeValue, getAttributeValueS))
 
       assert(output._1 === 213)
       assert(output._2 === "test")
