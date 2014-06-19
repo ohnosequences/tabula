@@ -73,9 +73,31 @@ class irishService extends FunSuite {
 
     waitFor(table, sta).foreach { a =>
 
-      object TestItem extends ItemType(table)
-      implicit val TestItem_id = TestItem has id
-      implicit val TestItem_name = TestItem has name
+      case object TestItemType extends ItemType(table)
+      implicit val TestItemType_id = TestItemType has id
+      implicit val TestItemType_name = TestItemType has name
+
+      import ohnosequences.scarph._
+
+      case object TestItem extends AnyItem {
+        type Tpe = TestItemType.type
+        val  tpe = TestItemType
+
+        type Raw = (Int, String)
+
+        implicit def getId: GetProperty[id.type] = new GetProperty(id) {
+          def apply(rep: Rep): id.Raw = rep._1
+        }
+
+      }
+
+      def getTestItemId(rep: AnyDenotation.TaggedWith[TestItem.type]): id.Raw = {
+        rep get id
+      }
+
+      val myItem = TestItem ->> ((3, "foo"))
+      val myId = getTestItemId(myItem)
+      assert(myId === 3)
 
       PutItemCompositeKey(table, a, TestItem)
 

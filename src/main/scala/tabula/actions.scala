@@ -162,22 +162,21 @@ trait AnyPutItemCompositeKey extends AnyAction {
   // val hashKeyValue: Input#HashKey#Raw
 
   //item type has to have hashkey attribute
-  //type ItemType <: AnyItemType.of[Input]
-  //val itemType: ItemType
-  type Item <: AnyItem
+  // FIXME: add restriction on the table
+  type Item <: AnyItem //.ofTable[Input]
   val item: Item
-  val itemRep: item.Rep
 
-  val hasHashKey: HasProperty[ItemType, Input#HashKey]
-  val hasRangeKey: HasProperty[ItemType, Input#RangeKey]
+
+  val hasHashKey: HasProperty[Item#Tpe, Input#HashKey]
+  val hasRangeKey: HasProperty[Item#Tpe, Input#RangeKey]
 }
 
 
-case class PutItemCompositeKey[T <: AnyCompositeKeyTable with Singleton, IT <: AnyItemType.of[T]](
-  input: T,
-  state: AnyTableState.For[T] with ReadyTable,
-  itemType: IT)
-  (implicit val hasHashKey: HasProperty[IT, T#HashKey ], val hasRangeKey: HasProperty[IT, T#RangeKey])
+case class PutItemCompositeKey[T <: AnyCompositeKeyTable with Singleton, I <: AnyItem](
+    input: T,
+    state: AnyTableState.For[T] with ReadyTable,
+    item: I)
+  (implicit val hasHashKey: HasProperty[I#Tpe, T#HashKey], val hasRangeKey: HasProperty[I#Tpe, T#RangeKey])
   extends AnyPutItemCompositeKey { override type Input = T; override type Item = I }
 
 /*

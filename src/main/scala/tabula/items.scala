@@ -38,3 +38,8 @@ case class ItemTypeOps[IT <: AnyItemType](val itemType: IT) {
   Items are denotations of an item type. the table is accessible through the item type.
 */
 trait AnyItem extends Denotation[AnyItemType] with HasProperties {}
+
+object AnyItem {
+  // type ofTable[T <: AnyTable] = AnyItem { type Table <: T }
+  type ofType[IT <: AnyItemType] = AnyItem { type Tpe = IT }
+}
