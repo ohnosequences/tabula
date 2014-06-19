@@ -4,7 +4,7 @@ trait Executor {
   type Action <: AnyAction
 
   type C[+X]
-  type Out = C[(Action#Resources, Action#OutputState)]
+  type Out = C[(Action#Output, Action#Resources, Action#OutputState)]
 
   def apply(action: Action): Out
 }

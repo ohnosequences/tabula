@@ -18,7 +18,7 @@ object Executors {
       } catch {
         case r: ResourceNotFoundException => println("warning: table " + action.table.name + " doesn't exist")
       }
-      (action.table, action.inputState.deleting)
+      (None, action.table, action.inputState.deleting)
     }
   }
 
@@ -55,7 +55,7 @@ object Executors {
         case e: ResourceInUseException => println("warning: table " + ac.table.name + " is in use")
       }
 
-      (ac.table, ac.inputState.creating)
+      (None, ac.table, ac.inputState.creating)
     }
   }
 
@@ -98,7 +98,7 @@ object Executors {
       }
 
 
-      (ac.table, ac.inputState.creating)
+      (None, ac.table, ac.inputState.creating)
     }
 
     type C[+X] = X
@@ -137,7 +137,7 @@ object Executors {
         case "DELETING" => Deleting(ac.table, ac.inputState.account, throughput)
         case "UPDATING" => Updating(ac.table, ac.inputState.account, throughput)
       }
-      (ac.table, newState)
+      (None, ac.table, newState)
     }
 
     type C[+X] = X
@@ -204,7 +204,7 @@ object Executors {
 
       val newState = Updating(ac.table, ac.inputState.account, throughputStatus)
 
-      (ac.table, newState)
+      (None, ac.table, newState)
     }
 
     type C[+X] = X
@@ -227,7 +227,7 @@ object Executors {
       } catch {
         case t: Throwable => t.printStackTrace()
       }
-      (ac.table, ac.inputState)
+      (None, ac.table, ac.inputState)
     }
   }
 
@@ -254,7 +254,7 @@ object Executors {
       } catch {
         case t: Throwable => t.printStackTrace()
       }
-      (ac.table, ac.inputState)
+      (None, ac.table, ac.inputState)
     }
   }
 
@@ -275,12 +275,12 @@ object Executors {
     type C[+X] = X
 
     def apply(ac: A): Out = {
-      try {
-        dynamoClient.client.putItem(ac.table.name, getSDKRep(ac.itemRep))
+      val res = try {
+        dynamoClient.client.putItem(ac.table.name, getSDKRep(ac.input._2)); PutItemSuccess
       } catch {
-        case t: Throwable => t.printStackTrace()
+        case t: Throwable => t.printStackTrace(); PutItemFail
       }
-      (ac.table, ac.inputState)
+      (res, ac.table, ac.inputState)
     }
   }
 
@@ -288,5 +288,38 @@ object Executors {
   (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
    getSDKRep: A#ItemRep => Map[String, AttributeValue]): PutItemCompositeKeyExecutor[A] =
     PutItemCompositeKeyExecutor[A](dynamoClient, getSDKRep)
+
+  case class GetItemCompositeKeyExecutor[A <: AnyGetItemCompositeKey](
+     dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
+     parseSDKItem :Map[String, AttributeValue] =>  A#ItemRep,
+     getHashAttributeValue: A#Table#HashKey#Raw => AttributeValue,
+     getRangeAttributeValue: A#Table#RangeKey#Raw => AttributeValue
+  ) extends Executor {
+
+    import scala.collection.JavaConversions._
+    type Action = A
+    type C[+X] = X
+
+    def apply(ac: A): Out = {
+      val res = try {
+        val sdkRep = dynamoClient.client.getItem(ac.table.name, Map(
+          ac.table.hashKey.label -> getHashAttributeValue(ac.input._1),
+          ac.table.rangeKey.label -> getRangeAttributeValue(ac.input._2)
+        )).getItem
+        GetItemSuccess(parseSDKItem(sdkRep.toMap))
+      } catch {
+        case t: Throwable => t.printStackTrace(); GetItemFail
+      }
+      (res, ac.table, ac.inputState)
+    }
+  }
+
+  implicit def getItemCompositeKeyExecutor[A <: AnyGetItemCompositeKey]
+  (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
+   parseSDKItem :Map[String, AttributeValue] =>  A#ItemRep,
+   getHashAttributeValue: A#Table#HashKey#Raw => AttributeValue,
+   getRangeAttributeValue: A#Table#RangeKey#Raw => AttributeValue): GetItemCompositeKeyExecutor[A] =
+    GetItemCompositeKeyExecutor[A](dynamoClient, parseSDKItem, getHashAttributeValue, getRangeAttributeValue)
+
 
 }

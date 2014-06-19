@@ -3,10 +3,15 @@ package ohnosequences.tabula.impl
 import org.scalatest.FunSuite
 import ohnosequences.tabula.impl._
 import ohnosequences.tabula._
-import ohnosequences.tabula.InitialThroughput
-import ohnosequences.tabula.Active
-import ohnosequences.tabula.InitialThroughput
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
+import ohnosequences.tabula.InitialState
+import ohnosequences.tabula.DeleteItemCompositeKey
+import scala.Some
+import ohnosequences.tabula.Active
+import ohnosequences.tabula.DescribeTable
+import ohnosequences.tabula.InitialThroughput
+import ohnosequences.tabula.CreateTable
+import ohnosequences.tabula.DeleteTable
 
 class irishService extends FunSuite {
   import Implicits._
@@ -27,7 +32,7 @@ class irishService extends FunSuite {
 
     var res: Option[Active[T]] = None
     while(!active) {
-      state = (service please DescribeTable(table, state))._2
+      state = (service please DescribeTable(table, state))._3
     //  println(">" + state)
       state match {
         case a: Active[T] => active = true; res = Some(a)
@@ -71,8 +76,7 @@ class irishService extends FunSuite {
 
 
     println("creating table")
-    val (_, sta): (table.type, AnyTableState.For[table.type]) = 
-      service(CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1))))
+    val (_, _, sta) =  service(CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1))))
 
 
 
@@ -100,19 +104,28 @@ class irishService extends FunSuite {
       // assert(myId === 3)
 
       implicit def getSDKRep(rep: TestItem.Rep): Map[String, AttributeValue] = {
-
         Map[String, AttributeValue](
           id.label -> rep._1,
           name.label -> rep._2
         )
       }
 
+      implicit def parseSDKRep(rep:  Map[String, AttributeValue]): TestItem.Rep = {
+        TestItem ->> (rep(id.label).getN.toInt, rep(name.label).getS.toString)
+      }
 
       // println((myItem: TestItem.Rep).getClass)
       // [table.type, TestItem.Rep, TestItem.type]
-      val ac = PutItemCompositeKey(table, a, TestItem, myItem)
-      service.please(ac) //(putItemCompositeKeyExecutor(defaultDynamoDBClient, getSDKRep))
+
+      service please  PutItemCompositeKey(table, a, TestItem, myItem)
+
+      val (output, _, _) = service please GetItemCompositeKey(table, a, TestItem, 213, "test")
+
+      assert(output._1 === 213)
+      assert(output._2 === "test")
+
       service please DeleteItemCompositeKey(table, a, 213, "test")
+
       //service please UpdateTable(table, a, 2, 2)
       waitFor(table, a).foreach(service please DeleteTable(table, _))
     }
