@@ -22,10 +22,8 @@ object Implicits {
       .withAttributeType(ScalarAttributeType.N)
   }
 
-  implicit def getAttributeDefinitionS(attr: Attribute[String])
-  // (implicit c: ClassTag[A#Raw])
-  : AttributeDefinition = {
-    // val clazz = c.runtimeClass.asInstanceOf[Class[p.Raw]]
+  implicit def getAttributeDefinitionS(attr: Attribute[String]): 
+        AttributeDefinition = {
     new AttributeDefinition()
       .withAttributeName(attr.label)
       .withAttributeType(ScalarAttributeType.S)
