@@ -60,9 +60,10 @@ class irishService extends FunSuite {
 
   test("complex example") {
     case object id extends Attribute[Int]
-    object table extends HashKeyTable("tabula_test", id, service.region)
+    case object name extends Attribute[String]
+    object table extends CompositeKeyTable("tabula_test", id, name, service.region)
 
-    println("creating table tabula_test")
+    println("creating table")
     val (_, sta): (table.type, AnyTableState.For[table.type]) = 
       service(CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1))))
 
@@ -70,7 +71,7 @@ class irishService extends FunSuite {
 
     waitFor(table, sta).foreach { a =>
 
-      service please DeleteItemHashKey(table, a, 213)
+      service please DeleteItemCompositeKey(table, a, 213, "test")
       service please UpdateTable(table, a, 2, 2)
       waitFor(table, a).foreach(service please DeleteTable(table, _))
     }

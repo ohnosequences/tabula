@@ -82,7 +82,7 @@ case class UpdateTable[T <: AnyTable with Singleton](input: T, state: AnyTableSt
 
 trait AnyDeleteItemHashKey extends AnyAction {
 
-  override type Input <: AnyTable with Singleton
+  override type Input <: AnyHashKeyTable with Singleton
   override type Output = Input
 
   //require updating or creating
@@ -95,8 +95,29 @@ trait AnyDeleteItemHashKey extends AnyAction {
 }
 
 
-case class DeleteItemHashKey[T <: AnyTable with Singleton, R <: T#HashKey#Raw](input: T, state: AnyTableState.For[T] with ReadyTable, hashKeyValue: R)
+case class DeleteItemHashKey[T <: AnyHashKeyTable with Singleton, R <: T#HashKey#Raw](input: T, state: AnyTableState.For[T] with ReadyTable, hashKeyValue: R)
   extends AnyDeleteItemHashKey { override type Input = T }
+
+
+trait AnyDeleteItemCompositeKey extends AnyAction {
+
+  override type Input <: AnyCompositeKeyTable with Singleton
+  override type Output = Input
+
+  //require updating or creating
+  override type InputState  = AnyTableState.For[Input] with ReadyTable
+  override type OutputState = InputState
+
+  // val hashKeyValue: input.hashKey.Raw
+  // type Foo = input.hashKey.Raw
+  val hashKeyValue: Input#HashKey#Raw
+  val rangeKeyValue: Input#RangeKey#Raw
+
+}
+
+
+case class DeleteItemCompositeKey[T <: AnyCompositeKeyTable with Singleton, RH <: T#HashKey#Raw, RR <: T#RangeKey#Raw](input: T, state: AnyTableState.For[T] with ReadyTable, hashKeyValue: RH, rangeKeyValue: RR)
+  extends AnyDeleteItemCompositeKey { override type Input = T }
 
 /*
   #### GetItem
