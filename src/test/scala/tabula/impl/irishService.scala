@@ -100,7 +100,7 @@ class irishService extends FunSuite {
       //   rep get id
       // }
 
-      val myItem = TestItem ->> ((3, "foo"))
+      val myItem: TestItem.Rep = TestItem ->> ((3, "foo"): (Int, String))
       // val myId = getTestItemId(myItem)
       // assert(myId === 3)
 
@@ -111,7 +111,10 @@ class irishService extends FunSuite {
         )
       }
 
-      service.please(PutItemCompositeKey(table, a, myItem)(TestItemType_id, TestItemType_name)) //(putItemCompositeKeyExecutor(defaultDynamoDBClient, getSDKRep))
+      // println((myItem: TestItem.Rep).getClass)
+      // [table.type, TestItem.Rep, TestItem.type]
+      val ac = PutItemCompositeKey(table, a, TestItem, myItem)(TestItemType_id, TestItemType_name)
+      service.please(ac) //(putItemCompositeKeyExecutor(defaultDynamoDBClient, getSDKRep))
       service please DeleteItemCompositeKey(table, a, 213, "test")
       //service please UpdateTable(table, a, 2, 2)
       waitFor(table, a).foreach(service please DeleteTable(table, _))
