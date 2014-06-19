@@ -290,8 +290,9 @@ object Executors {
     PutItemCompositeKeyExecutor[A](dynamoClient, getSDKRep)
 
   case class GetItemCompositeKeyExecutor[A <: AnyGetItemCompositeKey](
+     a: A,
      dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
-     parseSDKItem :Map[String, AttributeValue] =>  A#ItemRep,
+     parseSDKItem: RepFromMap[A],
      getHashAttributeValue: A#Table#HashKey#Raw => AttributeValue,
      getRangeAttributeValue: A#Table#RangeKey#Raw => AttributeValue
   ) extends Executor {
@@ -301,25 +302,37 @@ object Executors {
     type C[+X] = X
 
     def apply(ac: A): Out = {
-      val res = try {
+      val res: A#Output = try {
         val sdkRep = dynamoClient.client.getItem(ac.table.name, Map(
           ac.table.hashKey.label -> getHashAttributeValue(ac.input._1),
           ac.table.rangeKey.label -> getRangeAttributeValue(ac.input._2)
         )).getItem
-        GetItemSuccess(parseSDKItem(sdkRep.toMap))
+        Left(parseSDKItem(sdkRep.toMap))
       } catch {
-        case t: Throwable => t.printStackTrace(); GetItemFail
+        case t: Throwable => t.printStackTrace(); Right(GetItemFail)
       }
       (res, ac.table, ac.inputState)
     }
   }
 
   implicit def getItemCompositeKeyExecutor[A <: AnyGetItemCompositeKey]
-  (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
-   parseSDKItem :Map[String, AttributeValue] =>  A#ItemRep,
+  (implicit 
+   a: A,
+   dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
+   parseSDKItem: RepFromMap[A],
    getHashAttributeValue: A#Table#HashKey#Raw => AttributeValue,
    getRangeAttributeValue: A#Table#RangeKey#Raw => AttributeValue): GetItemCompositeKeyExecutor[A] =
-    GetItemCompositeKeyExecutor[A](dynamoClient, parseSDKItem, getHashAttributeValue, getRangeAttributeValue)
+    GetItemCompositeKeyExecutor[A](a, dynamoClient, parseSDKItem, getHashAttributeValue, getRangeAttributeValue)
 
 
 }
+
+trait RepFromMap[A <: AnyGetItemCompositeKey] {
+  val a: A
+  type Out = a.ItemRep
+  def apply(m: Map[String, AttributeValue]): Out
+}
+
+// object RepFromMap {
+
+// }

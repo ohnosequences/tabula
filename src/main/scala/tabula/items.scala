@@ -31,7 +31,7 @@ class ItemType[T <: AnyTable](val table: T) extends AnyItemType {
 
 case class ItemTypeOps[IT <: AnyItemType](val itemType: IT) {
 
-  def has[P <: AnyAttribute](p: P) = HasProperty[IT, P](itemType, p)
+  def has[P <: AnyAttribute](p: P) = new HasProperty[IT, P](itemType, p)
 }
 
 /*
@@ -42,6 +42,6 @@ trait AnyItem extends Denotation[AnyItemType] with HasProperties {}
 object AnyItem {
   type ofTable[T <: AnyTable] = AnyItem { type Tpe <: AnyItemType.of[T] }
   type ofType[IT <: AnyItemType] = AnyItem { type Tpe = IT }
-  // type RepOf[I <: AnyItem] = AnyDenotation.TaggedWith[I]
+  type RepOf[I <: AnyItem] = AnyDenotation.TaggedWith[I]
   // type Rep = AnyDenotation.AnyTag { type Denotation <: AnyItem }
 }
