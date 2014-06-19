@@ -271,10 +271,10 @@ object Executors {
   ) extends Executor {
 
     import scala.collection.JavaConversions._
-    override type Action = A
+    type Action = A
+    type C[+X] = X
 
-    override def apply(ac: A): Out = {
-
+    def apply(ac: A): Out = {
       try {
         dynamoClient.client.putItem(ac.table.name, getSDKRep(ac.itemRep))
       } catch {
@@ -282,9 +282,6 @@ object Executors {
       }
       (ac.table, ac.inputState)
     }
-
-    override type C[+X] = X
-
   }
 
   implicit def putItemCompositeKeyExecutor[A <: AnyPutItemCompositeKey]

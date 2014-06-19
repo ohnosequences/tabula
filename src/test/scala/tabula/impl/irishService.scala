@@ -93,10 +93,11 @@ class irishService extends FunSuite {
         implicit def getId: GetProperty[id.type] = new GetProperty(id) {
           def apply(rep: Rep): id.Raw = rep._1
         }
-
       }
 
-
+      val myItem: TestItem.Rep = TestItem ->> ((3, "foo"): (Int, String))
+      // val myId = getTestItemId(myItem)
+      // assert(myId === 3)
 
       implicit def getSDKRep(rep: TestItem.Rep): Map[String, AttributeValue] = {
 
@@ -107,17 +108,10 @@ class irishService extends FunSuite {
       }
 
 
-
-//      def getTestItemId(rep: AnyDenotation.TaggedWith[TestItem.type]): id.Raw = {
-//        rep get id
-//      }
-
-      val myItem = TestItem ->> ((1, "yeah"))
-//      val myId = getTestItemId(myItem)
-//      assert(myId === 3)
-
-
-      service.please(PutItemCompositeKey(table, a, myItem)(TestItemType_id, TestItemType_name)) //(putItemCompositeKeyExecutor(defaultDynamoDBClient, getSDKRep))
+      // println((myItem: TestItem.Rep).getClass)
+      // [table.type, TestItem.Rep, TestItem.type]
+      val ac = PutItemCompositeKey(table, a, TestItem, myItem)
+      service.please(ac) //(putItemCompositeKeyExecutor(defaultDynamoDBClient, getSDKRep))
       service please DeleteItemCompositeKey(table, a, 213, "test")
       //service please UpdateTable(table, a, 2, 2)
       waitFor(table, a).foreach(service please DeleteTable(table, _))

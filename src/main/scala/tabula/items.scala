@@ -40,8 +40,8 @@ case class ItemTypeOps[IT <: AnyItemType](val itemType: IT) {
 trait AnyItem extends Denotation[AnyItemType] with HasProperties {}
 
 object AnyItem {
-  // type ofTable[T <: AnyTable] = AnyItem { type Table <: T }
+  type ofTable[T <: AnyTable] = AnyItem { type Tpe <: AnyItemType.of[T] }
   type ofType[IT <: AnyItemType] = AnyItem { type Tpe = IT }
-  type RepOf[I <: Singleton with AnyItem] = AnyDenotation.TaggedWith[I]
-  type Rep = AnyDenotation.AnyTag { type Denotation <: AnyItem }
+  // type RepOf[I <: AnyItem] = AnyDenotation.TaggedWith[I]
+  // type Rep = AnyDenotation.AnyTag { type Denotation <: AnyItem }
 }
