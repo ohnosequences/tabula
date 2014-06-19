@@ -45,7 +45,7 @@ case class DynamoDBARN[R <: AnyDynamoDBResource](resource: R, account: Account) 
  // val id = "id"
 }
 
-
+// TODO experiment with treating states as denotations of resources
 trait AnyDynamoDBState { state =>
 
   type Resource <: AnyDynamoDBResource
