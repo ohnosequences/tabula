@@ -53,10 +53,59 @@ trait AnyDynamoDBState { state =>
 
   val account: Account
 
-  val arn: DynamoDBARN[Resource] = DynamoDBARN(resource, account)
+  lazy val arn: DynamoDBARN[Resource] = DynamoDBARN(resource, account)
 }
 
 object AnyDynamoDBState {
 
   type Of[R <: AnyDynamoDBResource] = AnyDynamoDBState { type Resource = R }
 }
+
+sealed trait ResourceList {
+
+  type Head <: AnyDynamoDBResource
+  val head: Head
+
+  type Tail <: ResourceList
+  val tail: Tail
+}
+
+case class :+:[+H <: AnyDynamoDBResource, +T <: ResourceList](
+  val h: H,
+  val t: T
+) extends ResourceList {
+
+  type Head = h.type
+  val head = h: h.type
+  type Tail = t.type
+  val tail = t: t.type
+}
+
+sealed trait RNil extends ResourceList {
+
+  def :+:[H <: Singleton with AnyDynamoDBResource](h: H): (H :+: RNil) = ohnosequences.tabula.:+:(h, this) 
+}
+object RNil extends RNil with AnyDynamoDBResource {
+
+  type Head = RNil.type
+  val head = RNil
+  type Tail = RNil.type
+  val tail = RNil
+
+  val name: String = ???
+  val region: ohnosequences.tabula.RNil.Region = ???
+  val resourceType: ohnosequences.tabula.RNil.ResourceType = ???
+}
+
+object ResourceList {
+
+  implicit def toOps[RL <: ResourceList](rl: RL) = ResourceListOps(rl)
+}
+
+case class ResourceListOps[RL <: ResourceList](val rl: RL) {
+
+  def :+:[H <: Singleton with AnyDynamoDBResource](h: H) : H :+: RL = ohnosequences.tabula.:+:(h, rl)
+}
+
+
+
