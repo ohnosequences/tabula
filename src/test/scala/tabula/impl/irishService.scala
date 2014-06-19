@@ -103,7 +103,7 @@ class irishService extends FunSuite {
 
 
       service please DeleteItemCompositeKey(table, a, 213, "test")
-      service please UpdateTable(table, a, 2, 2)
+      //service please UpdateTable(table, a, 2, 2)
       waitFor(table, a).foreach(service please DeleteTable(table, _))
     }
   }
