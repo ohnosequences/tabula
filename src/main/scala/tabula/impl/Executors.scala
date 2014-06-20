@@ -25,29 +25,29 @@ object Executors {
   implicit def deleteTableExecute[A <: AnyDeleteTable]
     (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region]): DeleteTableExecute[A] = DeleteTableExecute[A](dynamoClient)
 
-  case class DeleteTableExecute_[A <: AnyDeleteTable](a: A, dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region]) extends Executor {
-    type Action = A
-    val action = a
-
-    type C[+X] = X
-
-    def apply(action: A): Out = {
-      println("executing: " + action)
-      try { 
-        dynamoClient.client.deleteTable(action.table.name)
-      } catch {
-        case r: ResourceNotFoundException => println("warning: table " + action.table.name + " doesn't exist")
-      }
-      (None, action.table, action.inputState.deleting)
-    }
-  }
-
-  implicit def deleteTableExecute_[A <: AnyDeleteTable]
-    (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region]): ExecutorFrom.Aux[A, DeleteTableExecute_[A]] = 
-    new ExecutorFrom[A]{
-      type Exec = DeleteTableExecute_[A]
-      def apply(a: A): Exec = DeleteTableExecute_[A](a, dynamoClient)
-    }
+//  case class DeleteTableExecute_[A <: AnyDeleteTable](a: A, dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region]) extends Executor {
+//    type Action = A
+//    val action = a
+//
+//    type C[+X] = X
+//
+//    def apply(action: A): Out = {
+//      println("executing: " + action)
+//      try {
+//        dynamoClient.client.deleteTable(action.table.name)
+//      } catch {
+//        case r: ResourceNotFoundException => println("warning: table " + action.table.name + " doesn't exist")
+//      }
+//      (None, action.table, action.inputState.deleting)
+//    }
+//  }
+//
+//  implicit def deleteTableExecute_[A <: AnyDeleteTable]
+//    (implicit dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region]): ExecutorFrom.Aux[A, DeleteTableExecute_[A]] =
+//    new ExecutorFrom[A]{
+//      type Exec = DeleteTableExecute_[A]
+//      def apply(a: A): Exec = DeleteTableExecute_[A](a, dynamoClient)
+//    }
 
   case class CreateHashKeyTableExecute[A <: AnyCreateTable.withHashKeyTable](
       dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
@@ -314,8 +314,8 @@ object Executors {
 
   case class GetItemCompositeKeyExecutor[A <: AnyGetItemCompositeKey](
      dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
-     parseSDKItem: RepFromMap.Aux[A, A#ItemRep],
-     // parseSDKItem: Map[String, AttributeValue] => A#ItemRep,
+    // parseSDKItem: RepFromMap.Aux[A, A#ItemRep],
+      parseSDKItem: Map[String, AttributeValue] => A#ItemRaw,
      getHashAttributeValue: A#Table#HashKey#Raw => AttributeValue,
      getRangeAttributeValue: A#Table#RangeKey#Raw => AttributeValue
   ) extends Executor {
@@ -341,51 +341,51 @@ object Executors {
   implicit def getItemCompositeKeyExecutor[A <: AnyGetItemCompositeKey]
   (implicit 
    dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
-   parseSDKItem: RepFromMap.Aux[A, A#ItemRep],
+   parseSDKItem: Map[String, AttributeValue] => A#ItemRaw,
    getHashAttributeValue: A#Table#HashKey#Raw => AttributeValue,
    getRangeAttributeValue: A#Table#RangeKey#Raw => AttributeValue): GetItemCompositeKeyExecutor[A] =
     GetItemCompositeKeyExecutor[A](dynamoClient, parseSDKItem, getHashAttributeValue, getRangeAttributeValue)
 
 
-  case class GetItemCompositeKeyExecutor_[A <: AnyGetItemCompositeKey](
-     a: A,
-     dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
-     parseSDKItem: RepFromMap.Aux[A, A#ItemRep],
-     getHashAttributeValue: A#Table#HashKey#Raw => AttributeValue,
-     getRangeAttributeValue: A#Table#RangeKey#Raw => AttributeValue
-  ) extends Executor {
-
-    import scala.collection.JavaConversions._
-    type Action = A
-    val action = a
-    type C[+X] = X
-
-    def apply(ac: A): Out = {
-      val res: A#Output = try {
-        val sdkRep = dynamoClient.client.getItem(ac.table.name, Map(
-          ac.table.hashKey.label -> getHashAttributeValue(ac.input._1),
-          ac.table.rangeKey.label -> getRangeAttributeValue(ac.input._2)
-        )).getItem
-        GetItemSuccess(parseSDKItem(sdkRep.toMap))
-      } catch {
-        case t: Throwable => t.printStackTrace(); GetItemFail[ac.Item]
-      }
-      (res, ac.table, ac.inputState)
-    }
-  }
-
-
-  implicit def getItemCompositeKeyExecutor_[A <: AnyGetItemCompositeKey]
-  (implicit 
-   dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
-   parseSDKItem: RepFromMap.Aux[A, A#ItemRep],
-   getHashAttributeValue: A#Table#HashKey#Raw => AttributeValue,
-   getRangeAttributeValue: A#Table#RangeKey#Raw => AttributeValue
-  ): ExecutorFrom.Aux[A, GetItemCompositeKeyExecutor_[A]] = 
-    new ExecutorFrom[A]{
-      type Exec = GetItemCompositeKeyExecutor_[A]
-      def apply(a: A): Exec = GetItemCompositeKeyExecutor_[A](a, dynamoClient, parseSDKItem, getHashAttributeValue, getRangeAttributeValue)
-    }
+//  case class GetItemCompositeKeyExecutor_[A <: AnyGetItemCompositeKey](
+//     a: A,
+//     dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
+//     parseSDKItem: RepFromMap.Aux[A, A#ItemRep],
+//     getHashAttributeValue: A#Table#HashKey#Raw => AttributeValue,
+//     getRangeAttributeValue: A#Table#RangeKey#Raw => AttributeValue
+//  ) extends Executor {
+//
+//    import scala.collection.JavaConversions._
+//    type Action = A
+//    val action = a
+//    type C[+X] = X
+//
+//    def apply(ac: A): Out = {
+//      val res: A#Output = try {
+//        val sdkRep = dynamoClient.client.getItem(ac.table.name, Map(
+//          ac.table.hashKey.label -> getHashAttributeValue(ac.input._1),
+//          ac.table.rangeKey.label -> getRangeAttributeValue(ac.input._2)
+//        )).getItem
+//        GetItemSuccess(parseSDKItem(sdkRep.toMap))
+//      } catch {
+//        case t: Throwable => t.printStackTrace(); GetItemFail[ac.Item]
+//      }
+//      (res, ac.table, ac.inputState)
+//    }
+//  }
+//
+//
+//  implicit def getItemCompositeKeyExecutor_[A <: AnyGetItemCompositeKey]
+//  (implicit
+//   dynamoClient: AnyDynamoDBClient.inRegion[A#Table#Region],
+//   parseSDKItem: RepFromMap.Aux[A, A#ItemRep],
+//   getHashAttributeValue: A#Table#HashKey#Raw => AttributeValue,
+//   getRangeAttributeValue: A#Table#RangeKey#Raw => AttributeValue
+//  ): ExecutorFrom.Aux[A, GetItemCompositeKeyExecutor_[A]] =
+//    new ExecutorFrom[A]{
+//      type Exec = GetItemCompositeKeyExecutor_[A]
+//      def apply(a: A): Exec = GetItemCompositeKeyExecutor_[A](a, dynamoClient, parseSDKItem, getHashAttributeValue, getRangeAttributeValue)
+//    }
 
 }
 

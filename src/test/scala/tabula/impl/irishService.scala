@@ -111,7 +111,7 @@ class irishService extends FunSuite {
 
       service please  PutItemCompositeKey(table, a, TestItem, myItem)
 
-      implicit val ac = GetItemCompositeKey(table, a, TestItem, 213, "test")(TestItemType_id, TestItemType_name)
+      implicit val ac = GetItemCompositeKey(table, a, TestItem, 213, "test", myItem)(TestItemType_id, TestItemType_name)
 
       implicit def parseSDKRep(rep:  Map[String, AttributeValue]): TestItem.Rep = {
         TestItem ->> ((rep(id.label).getN.toInt, rep(name.label).getS.toString))
@@ -127,7 +127,7 @@ class irishService extends FunSuite {
       // [table.type, TestItem.Rep, TestItem.type]
 
       // FIXME!!!! (nothing works)
-      // val (output, _, _) = service.apply(ac)(getItemCompositeKeyExecutor_(defaultDynamoDBClient, p, getAttributeValue, getAttributeValueS))
+       val (output, _, _) = service.apply(ac)//(getItemCompositeKeyExecutor(defaultDynamoDBClient, parseSDKRep, getAttributeValue, getAttributeValueS))
 
       // println(output)
       // assert(output._1 === 213)

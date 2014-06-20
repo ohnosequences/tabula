@@ -225,7 +225,9 @@ trait AnyGetItemCompositeKey extends AnyTableAction {
 
   // FIXME: add restriction on the table
   type Item <: Singleton with AnyItem
-  type ItemRep = Item#Rep
+  type ItemRaw <: Item#Raw
+
+  val testRaw: ItemRaw
 
   type Input = (Table#HashKey#Raw, Table#RangeKey#Raw)
   type Output = GetItemResult
@@ -240,25 +242,28 @@ sealed trait GetItemResult {
 
 case class GetItemFail[I <: AnyItem]() 
   extends GetItemResult { type Item = I }
-case class GetItemSuccess[I <: Singleton with AnyItem](val item: I#Rep) 
+case class GetItemSuccess[I <: Singleton with AnyItem](item: I#Raw)
   extends GetItemResult { type Item = I }
 
 case class GetItemCompositeKey[
   T <: Singleton with AnyCompositeKeyTable,
   I <: Singleton with AnyItem,
+  R <: I#Raw,
   RH <: T#HashKey#Raw,
   RR <: T#RangeKey#Raw](
   table: T,
   inputState: AnyTableState.For[T] with ReadyTable,
   item: I,
   hashKeyValue: RH,
-  rangeKeyValue: RR
+  rangeKeyValue: RR,
+  testRaw: R
 )(implicit
     val hasHashKey: HasProperty[I#Tpe, T#HashKey],
     val hasRangeKey: HasProperty[I#Tpe, T#RangeKey]
 ) extends AnyGetItemCompositeKey {
   type Table = T
   type Item = I
+  type ItemRaw = R
   val input = (hashKeyValue, rangeKeyValue)
 }
 /*
