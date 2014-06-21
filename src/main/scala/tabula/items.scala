@@ -15,22 +15,23 @@ import ohnosequences.scarph._
 /*
   Items are denotations of an item type. the table is accessible through the item type.
 */
-trait AnyItem extends AnyDenotation with PropertyGetters {
+trait AnyItem extends Denotation[AnyItem] with PropertyGetters {
+  val label: String
+
   type Table <: AnyTable
   val  table: Table
 
-  val label: String
-  type TYPE <: AnyItem
-}
-
-class Item[T <: AnyTable](val table: T) extends Denotation[AnyItem] with AnyItem { 
-  type Table = T
-
-  val label = this.toString
+  // type TYPE <: AnyItem
 
   /* Item denotes itself */
   type Tpe = this.type
   val  tpe = this: Tpe
+}
+
+class Item[T <: AnyTable](val table: T) extends AnyItem { 
+  val label = this.toString
+
+  type Table = T
 }
 
 object AnyItem {

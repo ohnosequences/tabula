@@ -48,30 +48,36 @@ class irishService extends FunSuite {
   case object pairItem extends Item(table) { type Raw = (Int, String) }
   implicit val pairItem_props = pairItem has id :~: name :~: ∅
 
-  implicit def getSDKRep(rep: pairItem.Rep): Map[String, AttributeValue] = {
-    Map[String, AttributeValue](
-      id.label -> rep._1,
-      name.label -> rep._2
-    )
-  }
-  implicit def parseSDKRep(m: Map[String, AttributeValue]): pairItem.Rep = {
-    pairItem ->> ((m(id.label).getN.toInt, m(name.label).getS.toString))
+  object pairItemImplicits {
+    implicit def getSDKRep(rep: pairItem.Rep): Map[String, AttributeValue] = {
+      Map[String, AttributeValue](
+        id.label -> rep._1,
+        name.label -> rep._2
+      )
+    }
+    implicit def parseSDKRep(m: Map[String, AttributeValue]): pairItem.Rep = {
+      pairItem ->> ((m(id.label).getN.toInt, m(name.label).getS.toString))
+    }
   }
 
-  ignore("complex example") {
+  test("complex example") {
     // CREATE TABLE
     val (_, _, st0) = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
 
     waitFor(table, st0).foreach { st =>
-      // PUT ITEM
       val myItem = pairItem ->> ((213, "test"))
+      import pairItemImplicits._
+
+      // PUT ITEM
       val (putResult, _, st1) = service please (InTable(table, st) putItem pairItem ofValue myItem)
       assert(putResult === PutItemSuccess)
+      println("put item: " + myItem)
 
       waitFor(table, st1).foreach { st =>
         // GET ITEM
         val (getResult, _, st2) = service please (FromTable(table, st) getItem pairItem withKeys (myItem._1, myItem._2))
         assert(getResult === GetItemSuccess(myItem))
+        println("got item: " + getResult)
 
         waitFor(table, st2).foreach { st =>
           // DELETE TABLE
