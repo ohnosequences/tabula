@@ -153,13 +153,12 @@ object DynamoDBExecutors {
 
 
   /* PUT ITEM */
-  implicit def putItemCompositeKeyExecutor[A <: AnyPutItemCompositeKey](a: A)
-    (implicit 
-      dynamoClient: AnyDynamoDBClient
-    ): PutItemCompositeKeyExecutor[A] =
-       PutItemCompositeKeyExecutor[A](a)(dynamoClient)
+  implicit def putItemExecutor[A <: AnyPutItemAction](a: A)
+    (implicit dynamoClient: AnyDynamoDBClient): 
+      PutItemExecutor[A] =
+      PutItemExecutor[A](a)(dynamoClient)
 
-  case class PutItemCompositeKeyExecutor[A <: AnyPutItemCompositeKey](a: A)(
+  case class PutItemExecutor[A <: AnyPutItemAction](a: A)(
       dynamoClient: AnyDynamoDBClient
     ) extends Executor[A](a) {
 
@@ -170,7 +169,7 @@ object DynamoDBExecutors {
       println("executing: " + action)
 
       val res: ohnosequences.tabula.PutItemResult = try {
-        dynamoClient.client.putItem(action.table.name, action.inputSDKRep); PutItemSuccess
+        dynamoClient.client.putItem(action.table.name, action.getSDKRep(action.input)); PutItemSuccess
       } catch {
         case t: Throwable => t.printStackTrace(); PutItemFail
       }
@@ -180,12 +179,12 @@ object DynamoDBExecutors {
 
 
   /* GET ITEM */
-  implicit def getItemCompositeKeyExecutor[A <: AnyGetItemCompositeKey](a: A)
+  implicit def getItemCompositeKeyExecutor[A <: AnyGetItemCompositeKeyAction](a: A)
     (implicit dynamoClient: AnyDynamoDBClient): 
       GetItemCompositeKeyExecutor[A] =
       GetItemCompositeKeyExecutor[A](a)(dynamoClient)
 
-  case class GetItemCompositeKeyExecutor[A <: AnyGetItemCompositeKey](a: A)(
+  case class GetItemCompositeKeyExecutor[A <: AnyGetItemCompositeKeyAction](a: A)(
      dynamoClient: AnyDynamoDBClient
   ) extends Executor[A](a) {
 
@@ -324,7 +323,7 @@ object DynamoDBExecutors {
 //     DeleteItemCompositeKeyExecutor[A](dynamoClient, getHashAttributeValue, getRangeAttributeValue)
 
 
-// //  case class GetItemCompositeKeyExecutor_[A <: AnyGetItemCompositeKey](
+// //  case class GetItemCompositeKeyExecutor_[A <: AnyGetItemCompositeKeyAction](
 // //     a: A,
 // //     dynamoClient: AnyDynamoDBClient,
 // //     parseSDKItem: RepFromMap.Aux[A, A#ItemRep],
@@ -352,7 +351,7 @@ object DynamoDBExecutors {
 // //  }
 // //
 // //
-// //  implicit def getItemCompositeKeyExecutor_[A <: AnyGetItemCompositeKey]
+// //  implicit def getItemCompositeKeyExecutor_[A <: AnyGetItemCompositeKeyAction]
 // //  (implicit
 // //   dynamoClient: AnyDynamoDBClient,
 // //   parseSDKItem: RepFromMap.Aux[A, A#ItemRep],
@@ -371,12 +370,12 @@ object DynamoDBExecutors {
 // //   type Out = I#Rep
 // //   def apply(m: Map[String, AttributeValue]): Out
 // // }
-// trait RepFromMap[A0 <: AnyGetItemCompositeKey] {
+// trait RepFromMap[A0 <: AnyGetItemCompositeKeyAction] {
 //   // type A = A0
 //   type Out // = A#ItemRep
 //   def apply(m: Map[String, AttributeValue]): Out
 // }
 
 // object RepFromMap {
-//   type Aux[A <: AnyGetItemCompositeKey, R] = RepFromMap[A] { type Out = R }
+//   type Aux[A <: AnyGetItemCompositeKeyAction, R] = RepFromMap[A] { type Out = R }
 // }

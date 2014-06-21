@@ -93,7 +93,7 @@ class irishService extends FunSuite {
 
     // GET ITEM
     val afterPut = waitFor(table, putResult.state)
-    val getResult = service please (FromTable(table, afterPut) getItem pairItem withKeys (myItem._1, myItem._2))
+    val getResult = service please (FromCompositeKeyTable(table, afterPut) getItem pairItem withKeys (myItem._1, myItem._2))
     assert(getResult.output === GetItemSuccess(myItem))
 
     // DELETE TABLE
