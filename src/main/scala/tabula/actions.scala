@@ -203,8 +203,7 @@ trait AnyPutItemCompositeKey extends AnyTableAction {
   type InputState  = AnyTableState.For[Table] with ReadyTable
   type OutputState = InputState
 
-  // FIXME: add restriction on the table
-  type Item <: Singleton with AnyItem
+  type Item <: Singleton with AnyItem.ofTable[Table]
   val  item: Item
 
   type Input = item.Rep
@@ -217,14 +216,14 @@ trait AnyPutItemCompositeKey extends AnyTableAction {
 case class InTable[T <: Singleton with AnyCompositeKeyTable](
     t: T, inputSt: AnyTableState.For[T] with ReadyTable
   ) {
-  case class putItem[I <: Singleton with AnyItem](i: I) {
+  case class putItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
     case class ofValue(itemRep: i.Rep)(implicit
       getSDKRep: i.Rep => Map[String, AttributeValue],
       hasHashKey:  i.type HasProperty t.HashKey,
       hasRangeKey: i.type HasProperty t.RangeKey
     ) extends AnyPutItemCompositeKey {
       type Table = T
-      val  table = t
+      val  table = t: t.type
 
       type Item = I
       val  item = i: i.type
@@ -235,15 +234,6 @@ case class InTable[T <: Singleton with AnyCompositeKeyTable](
       val inputState = inputSt
     }
   }
-}
-
-object AnyPutItemCompositeKey {
-  type Aux[T <: Singleton with AnyCompositeKeyTable, I <: Singleton with AnyItem] =
-    AnyPutItemCompositeKey {
-      type Table = T
-      type Item = I
-    }
-  type withInput[I] = AnyPutItemCompositeKey { type Input = I }
 }
 
 
@@ -260,8 +250,7 @@ trait AnyGetItemCompositeKey extends AnyTableAction {
   type InputState  = AnyTableState.For[Table] with ReadyTable
   type OutputState = InputState
 
-  // FIXME: add restriction on the table
-  type Item <: Singleton with AnyItem
+  type Item <: Singleton with AnyItem.ofTable[Table]
   val  item: Item
 
   type Input = (table.hashKey.Raw, table.rangeKey.Raw)
@@ -274,7 +263,7 @@ trait AnyGetItemCompositeKey extends AnyTableAction {
 case class FromTable[T <: Singleton with AnyCompositeKeyTable](
     t: T, inputSt: AnyTableState.For[T] with ReadyTable
   ) {
-  case class getItem[I <: Singleton with AnyItem](i: I) {
+  case class getItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
     case class withKeys(
       hashKeyValue: t.hashKey.Raw,
       rangeKeyValue: t.rangeKey.Raw

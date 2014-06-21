@@ -60,7 +60,7 @@ class irishService extends FunSuite {
     }
   }
 
-  test("complex example") {
+  ignore("complex example") {
     // CREATE TABLE
     val (_, _, st0) = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
 
