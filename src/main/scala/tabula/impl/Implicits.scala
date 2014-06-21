@@ -13,8 +13,8 @@ object Implicits {
   }
 
   import scala.reflect._
-  def getAttrDef[A <: AnyAttribute](attr: A)
-    // (implicit c: ClassTag[A#Raw])
+  // TODO: add check for PrimaryKeyValues 
+  implicit def getAttrDef[A <: AnyAttribute](attr: A)
     : AttributeDefinition = {
       val clazz = attr.ctag.runtimeClass.asInstanceOf[Class[attr.Raw]]
 
@@ -24,35 +24,22 @@ object Implicits {
 
       val attrDef = new AttributeDefinition().withAttributeName(attr.label)
 
-      // FIXME: this gives strange warnings
       clazz match {
-        case cInt => attrDef.withAttributeType(ScalarAttributeType.N)
-        case cString => attrDef.withAttributeType(ScalarAttributeType.S)
-        case cBytes => attrDef.withAttributeType(ScalarAttributeType.B)
+        case c if c == classOf[Int]    => attrDef.withAttributeType(ScalarAttributeType.N)
+        case c if c == classOf[String] => attrDef.withAttributeType(ScalarAttributeType.S)
+        case c if c == classOf[Bytes]  => attrDef.withAttributeType(ScalarAttributeType.B)
       }
     }
 
-  implicit def getAttributeDefinitionN(attr: Attribute[Int])
-  // (implicit c: ClassTag[A#Raw])
-    : AttributeDefinition = {
-    // val clazz = c.runtimeClass.asInstanceOf[Class[p.Raw]]
-    new AttributeDefinition()
-      .withAttributeName(attr.label)
-      .withAttributeType(ScalarAttributeType.N)
+  // TODO: limit T
+  implicit def getAttrVal[T](attr: T): AttributeValue = {
+    
+    attr match {
+      case _: Int    => new AttributeValue().withN(attr.toString)
+      case _: String => new AttributeValue().withS(attr.toString)
+      // FIXME: some bytes conversion
+      // case _: Bytes  => new AttributeValue().withB(attr)
+    }
   }
 
-  implicit def getAttributeDefinitionS(attr: Attribute[String]): 
-        AttributeDefinition = {
-    new AttributeDefinition()
-      .withAttributeName(attr.label)
-      .withAttributeType(ScalarAttributeType.S)
-  }
-
-  implicit def getAttributeValue(attr: Int): AttributeValue = {
-    new AttributeValue().withN(attr.toString)
-  }
-
-  implicit def getAttributeValueS(attr: String): AttributeValue = {
-    new AttributeValue().withS(attr.toString)
-  }
 }

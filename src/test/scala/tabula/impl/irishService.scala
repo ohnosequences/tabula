@@ -71,75 +71,52 @@ class irishService extends FunSuite {
 
   case object id extends Attribute[Int]
   case object name extends Attribute[String]
-  object table extends CompositeKeyTable("tabula_test", id, name, service.region)
+  object table extends CompositeKeyTable("tabula_test_1", id, name, service.region)
 
-  test("complex example") {
-    println("creating table")
-    val ac = CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
-    val (_, _, state) =  service.please(ac)(createCompositeKeyTableExecute)
+  import ohnosequences.scarph._
 
+  case object TestItemType extends ItemType(table)
+  implicit val TestItemType_id = TestItemType has id
+  implicit val TestItemType_name = TestItemType has name
 
-    waitFor(table, state).foreach { st =>
-      import ohnosequences.scarph._
-
-      case object TestItem extends ItemType(table)
-      implicit val TestItemType_id = TestItem has id
-      implicit val TestItemType_name = TestItem has name
-
-      case object testItem extends AnyItem {
-        type Tpe = TestItem.type
-        val  tpe = TestItem
-        type Raw = (Int, String)
-
-        // implicit def getId: GetProperty[id.type] = new GetProperty(id) {
-        //   def apply(rep: Rep): id.Raw = rep._1
-        // }
-      }
-
-      val myItem: testItem.Rep = testItem ->> ((213, "test"): (Int, String))
-
-      implicit def getSDKRep(rep: testItem.Rep): Map[String, AttributeValue] = {
-        Map[String, AttributeValue](
-          id.label -> rep._1,
-          name.label -> rep._2
-        )
-      }
-
-      val putAc = InTable(table, st) putItem testItem ofValue myItem
-
-      service please putAc
-      // service.please(putAc)(x => putItemCompositeKeyExecutor(x)(defaultDynamoDBClient, getSDKRep))
-
-      service please DeleteTable(table, st)
-    }
-    //   implicit val ac = GetItemCompositeKey(table, a, testItem, 213, "test", myItem)(testItemType_id, testItemType_name)
-
-    //   implicit def parseSDKRep(rep:  Map[String, AttributeValue]): testItem.Rep = {
-    //     testItem ->> ((rep(id.label).getN.toInt, rep(name.label).getS.toString))
-    //   }
-    //   implicit val p: RepFromMap.Aux[ac.type, testItem.Rep] = new RepFromMap[ac.type] {
-    //     // val a = ac
-    //     type Out = testItem.Rep
-    //     def apply(m: Map[String, AttributeValue]): Out =
-    //       testItem ->> ((m(id.label).getN.toInt, m(name.label).getS.toString))
-    //   }
-
-    //   // println((myItem: testItem.Rep).getClass)
-    //   // [table.type, testItem.Rep, testItem.type]
-
-    //   // FIXME!!!! (nothing works)
-    //    // val (output, _, _) = service.apply(ac)//(getItemCompositeKeyExecutor(defaultDynamoDBClient, parseSDKRep, getAttributeValue, getAttributeValueS))
-
-    //   // println(output)
-    //   // assert(output._1 === 213)
-    //   // assert(output._2 === "test")
-
-    //  // service please DeleteItemCompositeKey(table, a, 213, "test")
-
-    //   //service please UpdateTable(table, a, 2, 2)
-    //   waitFor(table, a).foreach{ x => service.apply(DeleteTable(table, x)) }
-    // }
+  case object testItem extends AnyItem {
+    type Tpe = TestItemType.type
+    val  tpe = TestItemType
+    type Raw = (Int, String)
   }
 
+  val myItem: testItem.Rep = testItem ->> ((213, "test"): (Int, String))
+
+  implicit def getSDKRep(rep: testItem.Rep): Map[String, AttributeValue] = {
+    Map[String, AttributeValue](
+      id.label -> rep._1,
+      name.label -> rep._2
+    )
+  }
+  implicit def parseSDKRep(m: Map[String, AttributeValue]): testItem.Rep = {
+    testItem ->> ((m(id.label).getN.toInt, m(name.label).getS.toString))
+  }
+
+  test("complex example") {
+    // CREATE TABLE
+    val (_, _, st0) = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
+
+    waitFor(table, st0).foreach { st =>
+      // PUT ITEM
+      val (putResult, _, st1) = service please (InTable(table, st) putItem testItem ofValue myItem)
+      assert(putResult === PutItemSuccess)
+
+      waitFor(table, st1).foreach { st =>
+        // GET ITEM
+        val (getResult, _, st2) = service please (FromTable(table, st) getItem testItem withKeys (myItem._1, myItem._2))
+        assert(getResult === GetItemSuccess(myItem))
+
+        waitFor(table, st2).foreach { st =>
+          // DELETE TABLE
+          service please DeleteTable(table, st)
+        }
+      }
+    }
+  }
 
 }

@@ -92,6 +92,7 @@ case class DescribeTable[T <: Singleton with AnyTable](table: T, inputState: Any
   extends AnyDescribeTable { type Table = T }
 
 
+// TODO
 trait AnyUpdateTable extends AnyTableAction {
   //require updating or creating
   type InputState  = AnyTableState.For[Table] with ReadyTable
@@ -105,6 +106,7 @@ trait AnyUpdateTable extends AnyTableAction {
   type Output = None.type
 }
 
+// TODO
 case class UpdateTable[T <: Singleton with AnyTable](
     table: T, 
     inputState: AnyTableState.For[T] with ReadyTable, 
@@ -136,6 +138,7 @@ case class DeleteItemHashKey[
   ) extends AnyDeleteItemHashKey { type Table = T }
 
 
+// TODO
 trait AnyDeleteItemCompositeKey extends AnyTableAction {
   type Table <: Singleton with AnyCompositeKeyTable
 
@@ -151,6 +154,7 @@ trait AnyDeleteItemCompositeKey extends AnyTableAction {
   type Output = None.type
 }
 
+// TODO
 case class DeleteItemCompositeKey[
     T <: AnyCompositeKeyTable with Singleton, 
     RH <: T#HashKey#Raw, 
@@ -167,6 +171,7 @@ case object PutItemFail extends PutItemResult
 case object PutItemSuccess extends PutItemResult
 
 //todo conditional part
+// TODO
 trait AnyPutItemHashKey extends AnyTableAction {
   type Table <: Singleton with AnyHashKeyTable
 
@@ -184,8 +189,7 @@ trait AnyPutItemHashKey extends AnyTableAction {
 }
 
 
-// case class PutItemHashKey[T <: AnyHashKeyTable with Singleton, R <: T#HashKey#Raw, IT <: AnyItemType.of[T]](table: T, inputState: AnyTableState.For[T] with ReadyTable, itemType: IT)(implicit val hasHashKey: HasProperty[IT, T#HashKey])
-//   extends AnyPutItemHashKey { type Table = T; type ItemType = IT }
+// TODO
 case class PutItemHashKey[T <: AnyHashKeyTable with Singleton, I <: AnyItem with Singleton](
   table: T,
   inputState: AnyTableState.For[T] with ReadyTable,
@@ -209,32 +213,26 @@ trait AnyPutItemCompositeKey extends AnyTableAction {
   val input: Input
   type Output = PutItemResult
 
-  // val hasHashKey: HasProperty[ItemRep#DenotedType, Table#HashKey]
-  // val hasRangeKey: HasProperty[ItemRep#DenotedType, Table#RangeKey]
+  val inputSDKRep: Map[String, AttributeValue]
 }
 
-// class OnTable[T <: Singleton with AnyTable](t: T) extends AnyTableAction {
-//   type Table = T
-//   val  table = t
-// }
-
-
 case class InTable[T <: Singleton with AnyCompositeKeyTable](
-    t: T, 
-    inputSt: AnyTableState.For[T] with ReadyTable
+    t: T, inputSt: AnyTableState.For[T] with ReadyTable
   ) {
   case class putItem[I <: Singleton with AnyItem](i: I) {
     case class ofValue(itemRep: i.Rep)(implicit
+      getSDKRep: i.Rep => Map[String, AttributeValue],
       hasHashKey:  i.Tpe HasProperty t.HashKey,
       hasRangeKey: i.Tpe HasProperty t.RangeKey
     ) extends AnyPutItemCompositeKey {
       type Table = T
-      val  table = t //: t.type
+      val  table = t
 
-      type Item = i.type
+      type Item = I
       val  item = i: i.type
 
       val  input = itemRep
+      val  inputSDKRep = getSDKRep(input)
 
       val inputState = inputSt
     }
@@ -250,19 +248,11 @@ object AnyPutItemCompositeKey {
   type withInput[I] = AnyPutItemCompositeKey { type Input = I }
 }
 
-// case class PutItemCompositeKey[T <: Singleton with AnyCompositeKeyTable, I <: Singleton with AnyItem](
-//     table: T,
-//     inputState: AnyTableState.For[T] with ReadyTable,
-//     item: I,
-//     itemRep: I#Rep
-//   )(implicit
-//     val hasHashKey: HasProperty[I#Tpe, T#HashKey],
-//     val hasRangeKey: HasProperty[I#Tpe, T#RangeKey]
-//   ) extends AnyPutItemCompositeKey {
-//     type Table = T
-//     type Item = I
-//     val input = (item, itemRep)
-//   }
+
+
+sealed trait GetItemResult { type Item <: AnyItem }
+case class GetItemFail[I <: AnyItem]() extends GetItemResult { type Item = I }
+case class GetItemSuccess[I <: Singleton with AnyItem](item: I#Raw) extends GetItemResult { type Item = I }
 
 
 trait AnyGetItemCompositeKey extends AnyTableAction {
@@ -274,46 +264,40 @@ trait AnyGetItemCompositeKey extends AnyTableAction {
 
   // FIXME: add restriction on the table
   type Item <: Singleton with AnyItem
-  type ItemRaw <: Item#Raw
+  val  item: Item
 
-  val testRaw: ItemRaw
-
-  type Input = (Table#HashKey#Raw, Table#RangeKey#Raw)
+  type Input = (table.hashKey.Raw, table.rangeKey.Raw)
   type Output = GetItemResult
 
-  // val hasHashKey: HasProperty[ItemRep#DenotedType, Table#HashKey]
-  // val hasRangeKey: HasProperty[ItemRep#DenotedType, Table#RangeKey]
+  // def parseSDKItem(Map[String, AttributeValue]): item.Rep
+  val parseSDKRep: Map[String, AttributeValue] => item.Rep
 }
 
-sealed trait GetItemResult {
-  type Item <: AnyItem
-}
+case class FromTable[T <: Singleton with AnyCompositeKeyTable](
+    t: T, inputSt: AnyTableState.For[T] with ReadyTable
+  ) {
+  case class getItem[I <: Singleton with AnyItem](i: I) {
+    case class withKeys(
+      hashKeyValue: t.hashKey.Raw,
+      rangeKeyValue: t.rangeKey.Raw
+    )(implicit
+      hasHashKey: i.Tpe HasProperty t.HashKey,
+      hasRangeKey: i.Tpe HasProperty t.RangeKey,
+      parse: Map[String, AttributeValue] => i.Rep
+    ) extends AnyGetItemCompositeKey {
+      type Table = T
+      val  table = t: t.type
 
-case class GetItemFail[I <: AnyItem]() 
-  extends GetItemResult { type Item = I }
-case class GetItemSuccess[I <: Singleton with AnyItem](item: I#Raw)
-  extends GetItemResult { type Item = I }
+      type Item = I
+      val  item = i: i.type
 
-case class GetItemCompositeKey[
-  T <: Singleton with AnyCompositeKeyTable,
-  I <: Singleton with AnyItem,
-  R <: I#Raw,
-  RH <: T#HashKey#Raw,
-  RR <: T#RangeKey#Raw](
-  table: T,
-  inputState: AnyTableState.For[T] with ReadyTable,
-  item: I,
-  hashKeyValue: RH,
-  rangeKeyValue: RR,
-  testRaw: R
-)(implicit
-    val hasHashKey: HasProperty[I#Tpe, T#HashKey],
-    val hasRangeKey: HasProperty[I#Tpe, T#RangeKey]
-) extends AnyGetItemCompositeKey {
-  type Table = T
-  type Item = I
-  type ItemRaw = R
-  val input = (hashKeyValue, rangeKeyValue)
+      val input = (hashKeyValue, rangeKeyValue)
+
+      val inputState = inputSt
+
+      val parseSDKRep = parse
+    }
+  }
 }
 /*
   #### GetItem
