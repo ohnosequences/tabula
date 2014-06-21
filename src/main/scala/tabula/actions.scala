@@ -1,9 +1,11 @@
 package ohnosequences.tabula
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
-import ohnosequences.scarph.HasProperty
+// import ohnosequences.scarph.HasProperty
+import ohnosequences.scarph._
 
-trait AnyAction {
+
+trait AnyAction { action =>
   // this should be an HList of Resources; it is hard to express though
   type Resources
   val  resources: Resources
@@ -18,6 +20,16 @@ trait AnyAction {
   val  input: Input
 
   type Output
+
+  // trait Executor {
+  //   val ac = action
+  //   type OutC[+X]
+  //   type Out = OutC[(ac.Output, ac.Resources, ac.OutputState)]
+
+  //   def apply(): Out
+  // }
+
+  // trait IdExecutor extends action.Executor { type OutC[+X] = X }
 }
 
 object AnyAction {
@@ -34,6 +46,11 @@ trait AnyTableAction extends AnyAction {
   val  resources = table
 }
 
+object AnyTableAction {
+  type withHashKeyTable      = AnyTableAction { type Table <: Singleton with AnyHashKeyTable }
+  type withCompositeKeyTable = AnyTableAction { type Table <: Singleton with AnyCompositeKeyTable }
+}
+
 // actions
 
 trait AnyCreateTable extends AnyTableAction {
@@ -47,11 +64,6 @@ trait AnyCreateTable extends AnyTableAction {
 
 case class CreateTable[T <: Singleton with AnyTable](table: T, inputState: InitialState[T]) 
   extends AnyCreateTable { type Table = T }
-
-object AnyCreateTable {
-  type withHashKeyTable      = AnyCreateTable { type Table <: Singleton with AnyHashKeyTable }
-  type withCompositeKeyTable = AnyCreateTable { type Table <: Singleton with AnyCompositeKeyTable }
-}
 
 
 trait AnyDeleteTable extends AnyTableAction {
@@ -150,6 +162,10 @@ case class DeleteItemCompositeKey[
   ) extends AnyDeleteItemCompositeKey { type Table = T }
 
 
+sealed trait PutItemResult
+case object PutItemFail extends PutItemResult
+case object PutItemSuccess extends PutItemResult
+
 //todo conditional part
 trait AnyPutItemHashKey extends AnyTableAction {
   type Table <: Singleton with AnyHashKeyTable
@@ -187,33 +203,66 @@ trait AnyPutItemCompositeKey extends AnyTableAction {
 
   // FIXME: add restriction on the table
   type Item <: Singleton with AnyItem
-  type ItemRep = Item#Rep
+  val  item: Item
 
-  type Input = (Item, ItemRep)
+  type Input = item.Rep
+  val input: Input
   type Output = PutItemResult
 
   // val hasHashKey: HasProperty[ItemRep#DenotedType, Table#HashKey]
   // val hasRangeKey: HasProperty[ItemRep#DenotedType, Table#RangeKey]
 }
 
-sealed trait PutItemResult
+// class OnTable[T <: Singleton with AnyTable](t: T) extends AnyTableAction {
+//   type Table = T
+//   val  table = t
+// }
 
-case object PutItemFail extends PutItemResult
-case object PutItemSuccess extends PutItemResult
 
-case class PutItemCompositeKey[T <: Singleton with AnyCompositeKeyTable, I <: Singleton with AnyItem](
-    table: T,
-    inputState: AnyTableState.For[T] with ReadyTable,
-    item: I,
-    itemRep: I#Rep
-  )(implicit
-    val hasHashKey: HasProperty[I#Tpe, T#HashKey],
-    val hasRangeKey: HasProperty[I#Tpe, T#RangeKey]
-  ) extends AnyPutItemCompositeKey {
-    type Table = T
-    type Item = I
-    val input = (item, itemRep)
+case class InTable[T <: Singleton with AnyCompositeKeyTable](
+    t: T, 
+    inputSt: AnyTableState.For[T] with ReadyTable
+  ) {
+  case class putItem[I <: Singleton with AnyItem](i: I) {
+    case class ofValue(itemRep: i.Rep)(implicit
+      hasHashKey:  i.Tpe HasProperty t.HashKey,
+      hasRangeKey: i.Tpe HasProperty t.RangeKey
+    ) extends AnyPutItemCompositeKey {
+      type Table = T
+      val  table = t //: t.type
+
+      type Item = i.type
+      val  item = i: i.type
+
+      val  input = itemRep
+
+      val inputState = inputSt
+    }
   }
+}
+
+object AnyPutItemCompositeKey {
+  type Aux[T <: Singleton with AnyCompositeKeyTable, I <: Singleton with AnyItem] =
+    AnyPutItemCompositeKey {
+      type Table = T
+      type Item = I
+    }
+  type withInput[I] = AnyPutItemCompositeKey { type Input = I }
+}
+
+// case class PutItemCompositeKey[T <: Singleton with AnyCompositeKeyTable, I <: Singleton with AnyItem](
+//     table: T,
+//     inputState: AnyTableState.For[T] with ReadyTable,
+//     item: I,
+//     itemRep: I#Rep
+//   )(implicit
+//     val hasHashKey: HasProperty[I#Tpe, T#HashKey],
+//     val hasRangeKey: HasProperty[I#Tpe, T#RangeKey]
+//   ) extends AnyPutItemCompositeKey {
+//     type Table = T
+//     type Item = I
+//     val input = (item, itemRep)
+//   }
 
 
 trait AnyGetItemCompositeKey extends AnyTableAction {

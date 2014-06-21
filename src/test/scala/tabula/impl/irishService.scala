@@ -32,9 +32,9 @@ class irishService extends FunSuite {
 
     var res: Option[Active[T]] = None
     while(!active) {
-      state = (service please DescribeTable(table, state))._3
+      val result = service please DescribeTable(table, state)
     //  println(">" + state)
-      state match {
+      result._3 match {
         case a: Active[T] => active = true; res = Some(a)
         case _ => {
           println(table.name + " state: " + state)
@@ -49,15 +49,16 @@ class irishService extends FunSuite {
   //   assert(!service.ddbClient.listTables().getTableNames.isEmpty)
   // }
 
-//  test("deleting table") {
-//
-//    //wordcount01_snapshot_errors
-//    case object id extends Attribute[Int]
-//    object table extends HashKeyTable("wordcount01_snapshot_errors", id, service.region)
-//
-//    typed[Deleting[table.type]](service(DeleteTable(table, Active(table, service.account, InitialThroughput(1, 1))))._2)
-//  }
-//
+ ignore("deleting table") {
+   //wordcount01_snapshot_errors
+   case object id extends Attribute[Int]
+   object table extends HashKeyTable("wordcount01_snapshot_errors", id, service.region)
+
+   val ac = DeleteTable(table, Active(table, service.account, InitialThroughput(1, 1)))
+   val res = service(ac) //(deleteTableExecute)
+   typed[Deleting[table.type]](res._3)
+ }
+
 //  test("creating table") {
 //    case object id extends Attribute[Int]
 //    object table extends HashKeyTable("tabula_test2", id, service.region)
@@ -68,76 +69,76 @@ class irishService extends FunSuite {
 //    //service please UpdateTable(table, state, 2, 2)
 //  }
 
+  case object id extends Attribute[Int]
+  case object name extends Attribute[String]
+  object table extends CompositeKeyTable("tabula_test", id, name, service.region)
+
   test("complex example") {
-    case object id extends Attribute[Int]
-    case object name extends Attribute[String]
-    object table extends CompositeKeyTable("tabula_test", id, name, service.region)
-
-
-
     println("creating table")
-    val (_, _, sta) =  service please (CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1))))
+    val ac = CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
+    val (_, _, state) =  service.please(ac)(createCompositeKeyTableExecute)
 
 
-
-    waitFor(table, sta).foreach { a =>
+    waitFor(table, state).foreach { st =>
       import ohnosequences.scarph._
 
-      case object TestItemType extends ItemType(table)
-      implicit val TestItemType_id = new HasProperty(TestItemType, id)
-      implicit val TestItemType_name = new HasProperty(TestItemType, name)
+      case object TestItem extends ItemType(table)
+      implicit val TestItemType_id = TestItem has id
+      implicit val TestItemType_name = TestItem has name
 
-      case object TestItem extends AnyItem {
-        type Tpe = TestItemType.type
-        val  tpe = TestItemType
-
+      case object testItem extends AnyItem {
+        type Tpe = TestItem.type
+        val  tpe = TestItem
         type Raw = (Int, String)
 
-        implicit def getId: GetProperty[id.type] = new GetProperty(id) {
-          def apply(rep: Rep): id.Raw = rep._1
-        }
+        // implicit def getId: GetProperty[id.type] = new GetProperty(id) {
+        //   def apply(rep: Rep): id.Raw = rep._1
+        // }
       }
 
-      val myItem: TestItem.Rep = TestItem ->> ((213, "test"): (Int, String))
-      // val myId = getTestItemId(myItem)
-      // assert(myId === 3)
+      val myItem: testItem.Rep = testItem ->> ((213, "test"): (Int, String))
 
-      implicit def getSDKRep(rep: TestItem.Rep): Map[String, AttributeValue] = {
+      implicit def getSDKRep(rep: testItem.Rep): Map[String, AttributeValue] = {
         Map[String, AttributeValue](
           id.label -> rep._1,
           name.label -> rep._2
         )
       }
 
-      service please  PutItemCompositeKey(table, a, TestItem, myItem)
+      val putAc = InTable(table, st) putItem testItem ofValue myItem
 
-      implicit val ac = GetItemCompositeKey(table, a, TestItem, 213, "test", myItem)(TestItemType_id, TestItemType_name)
+      service please putAc
+      // service.please(putAc)(x => putItemCompositeKeyExecutor(x)(defaultDynamoDBClient, getSDKRep))
 
-      implicit def parseSDKRep(rep:  Map[String, AttributeValue]): TestItem.Rep = {
-        TestItem ->> ((rep(id.label).getN.toInt, rep(name.label).getS.toString))
-      }
-      implicit val p: RepFromMap.Aux[ac.type, TestItem.Rep] = new RepFromMap[ac.type] {
-        // val a = ac
-        type Out = TestItem.Rep
-        def apply(m: Map[String, AttributeValue]): Out =
-          TestItem ->> ((m(id.label).getN.toInt, m(name.label).getS.toString))
-      }
-
-      // println((myItem: TestItem.Rep).getClass)
-      // [table.type, TestItem.Rep, TestItem.type]
-
-      // FIXME!!!! (nothing works)
-       val (output, _, _) = service.apply(ac)//(getItemCompositeKeyExecutor(defaultDynamoDBClient, parseSDKRep, getAttributeValue, getAttributeValueS))
-
-      // println(output)
-      // assert(output._1 === 213)
-      // assert(output._2 === "test")
-
-      // service please DeleteItemCompositeKey(table, a, 213, "test")
-
-      //service please UpdateTable(table, a, 2, 2)
-      waitFor(table, a).foreach{ x => service.apply(DeleteTable(table, x)) }
+      service please DeleteTable(table, st)
     }
+    //   implicit val ac = GetItemCompositeKey(table, a, testItem, 213, "test", myItem)(testItemType_id, testItemType_name)
+
+    //   implicit def parseSDKRep(rep:  Map[String, AttributeValue]): testItem.Rep = {
+    //     testItem ->> ((rep(id.label).getN.toInt, rep(name.label).getS.toString))
+    //   }
+    //   implicit val p: RepFromMap.Aux[ac.type, testItem.Rep] = new RepFromMap[ac.type] {
+    //     // val a = ac
+    //     type Out = testItem.Rep
+    //     def apply(m: Map[String, AttributeValue]): Out =
+    //       testItem ->> ((m(id.label).getN.toInt, m(name.label).getS.toString))
+    //   }
+
+    //   // println((myItem: testItem.Rep).getClass)
+    //   // [table.type, testItem.Rep, testItem.type]
+
+    //   // FIXME!!!! (nothing works)
+    //    // val (output, _, _) = service.apply(ac)//(getItemCompositeKeyExecutor(defaultDynamoDBClient, parseSDKRep, getAttributeValue, getAttributeValueS))
+
+    //   // println(output)
+    //   // assert(output._1 === 213)
+    //   // assert(output._2 === "test")
+
+    //  // service please DeleteItemCompositeKey(table, a, 213, "test")
+
+    //   //service please UpdateTable(table, a, 2, 2)
+    //   waitFor(table, a).foreach{ x => service.apply(DeleteTable(table, x)) }
+    // }
   }
 
 

@@ -12,8 +12,27 @@ object Implicits {
     client.setRegion(Region.getRegion(Regions.EU_WEST_1))
   }
 
-  // implicit def getAttributeDefinition[A <: AnyAttribute](attr: A)
-  implicit def getAttributeDefinition(attr: Attribute[Int])
+  import scala.reflect._
+  def getAttrDef[A <: AnyAttribute](attr: A)
+    // (implicit c: ClassTag[A#Raw])
+    : AttributeDefinition = {
+      val clazz = attr.ctag.runtimeClass.asInstanceOf[Class[attr.Raw]]
+
+      val cInt    = classOf[Int]
+      val cString = classOf[String]
+      val cBytes  = classOf[Bytes]
+
+      val attrDef = new AttributeDefinition().withAttributeName(attr.label)
+
+      // FIXME: this gives strange warnings
+      clazz match {
+        case cInt => attrDef.withAttributeType(ScalarAttributeType.N)
+        case cString => attrDef.withAttributeType(ScalarAttributeType.S)
+        case cBytes => attrDef.withAttributeType(ScalarAttributeType.B)
+      }
+    }
+
+  implicit def getAttributeDefinitionN(attr: Attribute[Int])
   // (implicit c: ClassTag[A#Raw])
     : AttributeDefinition = {
     // val clazz = c.runtimeClass.asInstanceOf[Class[p.Raw]]
