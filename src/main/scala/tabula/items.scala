@@ -20,19 +20,17 @@ trait AnyItem extends AnyDenotation with PropertyGetters {
   val  table: Table
 
   val label: String
-  type TYPE <: AnyTable
+  type TYPE <: AnyItem
 }
 
-class Item[T <: AnyTable](val table: T) extends Denotation[AnyTable] with AnyItem { 
+class Item[T <: AnyTable](val table: T) extends Denotation[AnyItem] with AnyItem { 
   type Table = T
 
   val label = this.toString
 
   /* Item denotes itself */
-  // type Tpe = this.type
-  // val  tpe = this: Tpe
-  type Tpe = T
-  val  tpe = table
+  type Tpe = this.type
+  val  tpe = this: Tpe
 }
 
 object AnyItem {
