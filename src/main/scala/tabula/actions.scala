@@ -184,8 +184,6 @@ trait AnyPutItemHashKey extends AnyTableAction {
 
   type Input = (Item, ItemRep)
   type Output = PutItemResult
-
- // val hasHashKey: HasProperty[Item#Tpe, Table#HashKey]
 }
 
 
@@ -195,7 +193,7 @@ case class PutItemHashKey[T <: AnyHashKeyTable with Singleton, I <: AnyItem with
   inputState: AnyTableState.For[T] with ReadyTable,
   item: I,
   itemRep: I#Rep
-)(implicit val hasHashKey: HasProperty[I#Tpe, T#HashKey])
+)(implicit val hasHashKey: HasProperty[I, T#HashKey])
   extends AnyPutItemHashKey { override type Table = T; override type Item = I; val input = (item, itemRep)  }
 
 trait AnyPutItemCompositeKey extends AnyTableAction {
@@ -222,8 +220,8 @@ case class InTable[T <: Singleton with AnyCompositeKeyTable](
   case class putItem[I <: Singleton with AnyItem](i: I) {
     case class ofValue(itemRep: i.Rep)(implicit
       getSDKRep: i.Rep => Map[String, AttributeValue],
-      hasHashKey:  i.Tpe HasProperty t.HashKey,
-      hasRangeKey: i.Tpe HasProperty t.RangeKey
+      hasHashKey:  i.type HasProperty t.HashKey,
+      hasRangeKey: i.type HasProperty t.RangeKey
     ) extends AnyPutItemCompositeKey {
       type Table = T
       val  table = t
@@ -281,8 +279,8 @@ case class FromTable[T <: Singleton with AnyCompositeKeyTable](
       hashKeyValue: t.hashKey.Raw,
       rangeKeyValue: t.rangeKey.Raw
     )(implicit
-      hasHashKey: i.Tpe HasProperty t.HashKey,
-      hasRangeKey: i.Tpe HasProperty t.RangeKey,
+      hasHashKey:  i.type HasProperty t.HashKey,
+      hasRangeKey: i.type HasProperty t.RangeKey,
       parse: Map[String, AttributeValue] => i.Rep
     ) extends AnyGetItemCompositeKey {
       type Table = T

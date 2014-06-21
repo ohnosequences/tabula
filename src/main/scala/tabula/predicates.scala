@@ -8,7 +8,7 @@ import ohnosequences.scarph._
 */
 trait AnyPredicate {
 
-  type ItemType <: Singleton with AnyItemType
+  type ItemType <: Singleton with AnyItem
   val itemType: ItemType
 }
 
@@ -28,7 +28,7 @@ trait AnyAndPredicate extends AnyPredicate {
   ): AND[this.type, Other] = AND[this.type, Other](this, other)
 }
 
-case class SimplePredicate[I <: Singleton with AnyItemType, C <: Condition](val itemType: I, val condition: C) 
+case class SimplePredicate[I <: Singleton with AnyItem, C <: Condition](val itemType: I, val condition: C) 
   extends AnyPredicate with AnyOrPredicate with AnyAndPredicate {
 
   type ItemType = I
@@ -51,11 +51,11 @@ case class OR[P <: AnyOrPredicate, C <: Condition](val allThis: P, val also: C)
 
 object AnyPredicate {
 
-  type On[I <: AnyItemType] = AnyPredicate { type ItemType = I }
+  type On[I <: AnyItem] = AnyPredicate { type ItemType = I }
 
   // itemType ? condition == SimplePredicate(itemType, condition)
-  implicit def toItemPredicateOps[I <: Singleton with AnyItemType](itemType: I): ItemPredicateOps[I] = ItemPredicateOps(itemType)
-  case class ItemPredicateOps[I <: Singleton with AnyItemType](itemType: I) {
+  implicit def toItemPredicateOps[I <: Singleton with AnyItem](itemType: I): ItemPredicateOps[I] = ItemPredicateOps(itemType)
+  case class ItemPredicateOps[I <: Singleton with AnyItem](itemType: I) {
     def ?[C <: Condition](c: C)(implicit 
         ev: I HasProperty C#Attribute
       ): SimplePredicate[I, C] =

@@ -32,11 +32,11 @@ object simpleModel {
     region = EU
   )
 
-  case object UserItem extends ItemType(UsersTable)
+  case object UserItem extends Item(UsersTable)
   implicit val user_name = UserItem has name
   implicit val user_age = UserItem has age
 
-  case object FunnyUserItem extends ItemType(UsersTable)
+  case object FunnyUserItem extends Item(UsersTable)
   implicit val funnyUser_name = FunnyUserItem has name
   implicit val funnyUser_email = FunnyUserItem has email
   implicit val funnyUser_serializedCrap = FunnyUserItem has serializedCrap

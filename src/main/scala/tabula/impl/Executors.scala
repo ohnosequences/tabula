@@ -192,7 +192,7 @@ object Executors {
           action.table.hashKey.label -> Implicits.getAttrVal(action.input._1),
           action.table.rangeKey.label -> Implicits.getAttrVal(action.input._2)
         )).getItem
-        println("SDK REP: " + sdkRep.toString)
+        // println("SDK REP: " + sdkRep.toString)
         GetItemSuccess(action.parseSDKRep(sdkRep.toMap))
       } catch {
         case t: Throwable => t.printStackTrace(); GetItemFail[action.Item]

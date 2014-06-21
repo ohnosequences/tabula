@@ -11,37 +11,36 @@ import ohnosequences.scarph._
 
   The primary key of an item is accessible through the corresponding table
 */
-trait AnyItemType {
-
-  type Table <: AnyTable
-  val table: Table
-}
-
-
-object AnyItemType {
-
-  type of[T <: AnyTable] = AnyItemType { type Table = T }
-  implicit def itemTypeOps[IT <: AnyItemType](itemType: IT) = ItemTypeOps(itemType)
-}
-
-class ItemType[T <: AnyTable](val table: T) extends AnyItemType {
-
-  type Table = T
-}
-
-case class ItemTypeOps[IT <: AnyItemType](val itemType: IT) {
-
-  def has[P <: AnyAttribute](p: P) = new HasProperty[IT, P] //(itemType, p)
-}
 
 /*
   Items are denotations of an item type. the table is accessible through the item type.
 */
-trait AnyItem extends Denotation[AnyItemType] with PropertyGetters {}
+trait AnyItem extends AnyDenotation with PropertyGetters {
+  type Table <: AnyTable
+  val  table: Table
+
+  val label: String
+  type TYPE <: AnyTable
+}
+
+class Item[T <: AnyTable](val table: T) extends Denotation[AnyTable] with AnyItem { 
+  type Table = T
+
+  val label = this.toString
+
+  /* Item denotes itself */
+  // type Tpe = this.type
+  // val  tpe = this: Tpe
+  type Tpe = T
+  val  tpe = table
+}
 
 object AnyItem {
-  type ofTable[T <: AnyTable] = AnyItem { type Tpe <: AnyItemType.of[T] }
-  type ofType[IT <: AnyItemType] = AnyItem { type Tpe = IT }
-  type RepOf[I <: Singleton with AnyItem] = AnyDenotation.TaggedWith[I]
+  type ofTable[T <: AnyTable] = AnyItem { type Table = T }
+  // type RepOf[I <: Singleton with AnyItem] = AnyDenotation.TaggedWith[I]
   // type Rep = AnyDenotation.AnyTag { type Denotation <: AnyItem }
+
+  implicit def itemOps[I <: AnyItem](item: I): ItemOps[I] = ItemOps[I](item)
 }
+
+case class ItemOps[I <: AnyItem](item: I) extends HasPropertiesOps(item) {}
