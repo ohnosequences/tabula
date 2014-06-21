@@ -26,7 +26,7 @@ object Executors {
       } catch {
         case r: ResourceNotFoundException => println("warning: table " + action.table.name + " doesn't exist")
       }
-      (None, action.table, action.inputState.deleting)
+      ExecutorResult(None, action.table, action.inputState.deleting)
     }
   }
 
@@ -64,7 +64,7 @@ object Executors {
         case e: ResourceInUseException => println("warning: table " + action.table.name + " is in use")
       }
 
-      (None, action.table, action.inputState.creating)
+      ExecutorResult(None, action.table, action.inputState.creating)
     }
   }
 
@@ -102,7 +102,7 @@ object Executors {
         case t: ResourceInUseException => println("already exists")
       }
 
-      (None, action.table, action.inputState.creating)
+      ExecutorResult(None, action.table, action.inputState.creating)
     }
   }
 
@@ -142,7 +142,7 @@ object Executors {
         case "UPDATING" => Updating(action.table, action.inputState.account, throughput)
       }
 
-      (None, action.table, newState)
+      ExecutorResult(None, action.table, newState)
     }
   }
 
@@ -162,13 +162,14 @@ object Executors {
 
     import scala.collection.JavaConversions._
     def apply(): Out = {
+      println("executing: " + action)
+
       val res: ohnosequences.tabula.PutItemResult = try {
-        // println("input sdk rep: "+action.inputSDKRep.toString)
         dynamoClient.client.putItem(action.table.name, action.inputSDKRep); PutItemSuccess
       } catch {
         case t: Throwable => t.printStackTrace(); PutItemFail
       }
-      (res, action.table, action.inputState)
+      ExecutorResult(res, action.table, action.inputState)
     }
   }
 
@@ -187,17 +188,18 @@ object Executors {
 
     import scala.collection.JavaConversions._
     def apply(): Out = {
-      val res: A#Output = try {
+      println("executing: " + action)
+
+      val res = try {
         val sdkRep = dynamoClient.client.getItem(action.table.name, Map(
           action.table.hashKey.label -> Implicits.getAttrVal(action.input._1),
           action.table.rangeKey.label -> Implicits.getAttrVal(action.input._2)
         )).getItem
-        // println("SDK REP: " + sdkRep.toString)
         GetItemSuccess(action.parseSDKRep(sdkRep.toMap))
       } catch {
         case t: Throwable => t.printStackTrace(); GetItemFail[action.Item]
       }
-      (res, action.table, action.inputState)
+      ExecutorResult(res, action.table, action.inputState)
     }
   }
 

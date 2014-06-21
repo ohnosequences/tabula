@@ -217,7 +217,7 @@ case class InTable[T <: Singleton with AnyCompositeKeyTable](
     t: T, inputSt: AnyTableState.For[T] with ReadyTable
   ) {
   case class putItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
-    case class ofValue(itemRep: i.Rep)(implicit
+    case class withValue(itemRep: i.Rep)(implicit
       getSDKRep: i.Rep => Map[String, AttributeValue],
       hasHashKey:  i.type HasProperty t.HashKey,
       hasRangeKey: i.type HasProperty t.RangeKey

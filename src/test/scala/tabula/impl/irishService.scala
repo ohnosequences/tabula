@@ -20,24 +20,18 @@ class irishService extends FunSuite {
   def waitFor[
     T <: Singleton with AnyTable.inRegion[service.Region], 
     S <: AnyTableState.For[T]
-  ](table: T, initialState: S): Option[Active[T]] = {
+  ](table: T, state: S): Active[T] = {
 
-    var active = false
-    var state: AnyTableState.For[T] = initialState
+    val result = service please DescribeTable(table, state)
 
-    var res: Option[Active[T]] = None
-    while(!active) {
-      val result = service please DescribeTable(table, state)
-    //  println(">" + state)
-      result._3 match {
-        case a: Active[T] => active = true; res = Some(a)
-        case _ => {
-          println(table.name + " state: " + state)
-          Thread.sleep(5000)
-        }
+    result.state match {
+      case (a @ Active(table, _, _)) => return a
+      case s => {
+        println(table.name + " state: " + s)
+        Thread.sleep(5000)
+        waitFor(table, s)
       }
     }
-    res
   }
 
   case object id extends Attribute[Int]
@@ -60,31 +54,26 @@ class irishService extends FunSuite {
     }
   }
 
-  ignore("complex example") {
+  test("complex example") {
     // CREATE TABLE
-    val (_, _, st0) = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
+    val createResult = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
 
-    waitFor(table, st0).foreach { st =>
-      val myItem = pairItem ->> ((213, "test"))
-      import pairItemImplicits._
+    // PUT ITEM
+    val myItem = pairItem ->> ((213, "test"))
+    import pairItemImplicits._
 
-      // PUT ITEM
-      val (putResult, _, st1) = service please (InTable(table, st) putItem pairItem ofValue myItem)
-      assert(putResult === PutItemSuccess)
-      println("put item: " + myItem)
+    val afterCreate = waitFor(table, createResult.state)
+    val putResult = service please (InTable(table, afterCreate) putItem pairItem withValue myItem)
+    assert(putResult.output === PutItemSuccess)
 
-      waitFor(table, st1).foreach { st =>
-        // GET ITEM
-        val (getResult, _, st2) = service please (FromTable(table, st) getItem pairItem withKeys (myItem._1, myItem._2))
-        assert(getResult === GetItemSuccess(myItem))
-        println("got item: " + getResult)
+    // GET ITEM
+    val afterPut = waitFor(table, putResult.state)
+    val getResult = service please (FromTable(table, afterPut) getItem pairItem withKeys (myItem._1, myItem._2))
+    assert(getResult.output === GetItemSuccess(myItem))
 
-        waitFor(table, st2).foreach { st =>
-          // DELETE TABLE
-          service please DeleteTable(table, st)
-        }
-      }
-    }
+    // DELETE TABLE
+    val afterGet = waitFor(table, getResult.state)
+    service please DeleteTable(table, afterGet)
   }
 
 }
