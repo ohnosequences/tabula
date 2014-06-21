@@ -1,10 +1,9 @@
 package ohnosequences.tabula.impl
 
-import com.amazonaws.auth.{PropertiesFileCredentialsProvider, EnvironmentVariableCredentialsProvider, InstanceProfileCredentialsProvider, AWSCredentialsProviderChain}
-import java.io.File
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import ohnosequences.tabula._
-import com.amazonaws.services.dynamodbv2.model.{ScalarAttributeType, AttributeDefinition}
+import com.amazonaws.auth.{PropertiesFileCredentialsProvider, EnvironmentVariableCredentialsProvider, InstanceProfileCredentialsProvider, AWSCredentialsProviderChain}
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
+import java.io.File
 
 trait AnyDynamoDBClient {
   type Region <: AnyRegion

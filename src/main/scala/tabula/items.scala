@@ -21,8 +21,6 @@ trait AnyItem extends Denotation[AnyItem] with PropertyGetters {
   type Table <: AnyTable
   val  table: Table
 
-  // type TYPE <: AnyItem
-
   /* Item denotes itself */
   type Tpe = this.type
   val  tpe = this: Tpe
@@ -36,8 +34,6 @@ class Item[T <: AnyTable](val table: T) extends AnyItem {
 
 object AnyItem {
   type ofTable[T <: AnyTable] = AnyItem { type Table = T }
-  // type RepOf[I <: Singleton with AnyItem] = AnyDenotation.TaggedWith[I]
-  // type Rep = AnyDenotation.AnyTag { type Denotation <: AnyItem }
 
   implicit def itemOps[I <: AnyItem](item: I): ItemOps[I] = ItemOps[I](item)
 }

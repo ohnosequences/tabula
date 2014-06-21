@@ -1,37 +1,35 @@
 package ohnosequences.tabula.impl
 
 import org.scalatest.FunSuite
+
+import com.amazonaws.regions._
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
+
 import ohnosequences.typesets._
 import ohnosequences.scarph._
 import ohnosequences.tabula._
-import ohnosequences.tabula.impl._
+import ohnosequences.tabula.impl._, AttributeImplicits._, DynamoDBExecutors._
 
 
-class irishService extends FunSuite {
-  import Implicits._
-  import Executors._
+object TestImplicits {
 
-  type Id[+X] = X
-  def typed[X](x: X) = x
+  implicit val defaultDynamoDBClient = new DynamoDBClient(EU,
+    new AmazonDynamoDBClient(CredentialProviderChains.default)) {
+    client.setRegion(Region.getRegion(Regions.EU_WEST_1))
+  }
 
-  val service = IrishDynamoDBService
+}
 
-  def waitFor[
-    T <: Singleton with AnyTable.inRegion[service.Region], 
-    S <: AnyTableState.For[T]
-  ](table: T, state: S): Active[T] = {
+object TestSetting {
+  case object service extends AnyDynamoDBService {
+    type Region = EU.type
+    val region = EU
 
-    val result = service please DescribeTable(table, state)
+    type Account = ohnosequences.tabula.Account
+    val account: Account = Account("", "")
 
-    result.state match {
-      case (a @ Active(table, _, _)) => return a
-      case s => {
-        println(table.name + " state: " + s)
-        Thread.sleep(5000)
-        waitFor(table, s)
-      }
-    }
+    def endpoint: String = "" //shouldn't be here
   }
 
   case object id extends Attribute[Int]
@@ -49,18 +47,45 @@ class irishService extends FunSuite {
         name.label -> rep._2
       )
     }
+
     implicit def parseSDKRep(m: Map[String, AttributeValue]): pairItem.Rep = {
       pairItem ->> ((m(id.label).getN.toInt, m(name.label).getS.toString))
     }
   }
+}
 
-  test("complex example") {
+class irishService extends FunSuite {
+  import TestImplicits._
+  import TestSetting._
+  import pairItemImplicits._
+
+  type Id[+X] = X
+  def typed[X](x: X) = x
+
+  // waits until the table becomes active
+  def waitFor[
+    T <: Singleton with AnyTable.inRegion[service.Region], 
+    S <: AnyTableState.For[T]
+  ](table: T, state: S): Active[T] = {
+
+    val result = service please DescribeTable(table, state)
+
+    result.state match {
+      case (a @ Active(table, _, _)) => return a
+      case s => {
+        println(table.name + " state: " + s)
+        Thread.sleep(5000)
+        waitFor(table, s)
+      }
+    }
+  }
+
+  ignore("complex example") {
     // CREATE TABLE
     val createResult = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
 
     // PUT ITEM
     val myItem = pairItem ->> ((213, "test"))
-    import pairItemImplicits._
 
     val afterCreate = waitFor(table, createResult.state)
     val putResult = service please (InTable(table, afterCreate) putItem pairItem withValue myItem)

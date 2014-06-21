@@ -1,24 +1,23 @@
 package ohnosequences.tabula
 
+// TODO experiment with treating states as denotations of resources
+trait AnyDynamoDBState { state =>
+
+  type Resource <: AnyDynamoDBResource
+  val resource: Resource
+
+  val account: Account
+
+  lazy val arn: DynamoDBARN[Resource] = DynamoDBARN(resource, account)
+}
+
+object AnyDynamoDBState {
+  type of[R <: AnyDynamoDBResource] = AnyDynamoDBState { type Resource = R }
+}
+
 /*
-  ### table states
-
+  ### throughput status
 */
-sealed trait AnyTableState extends AnyDynamoDBState {
-
-  type Resource <: Singleton with AnyTable
-  
-  val throughputStatus: AnyThroughputStatus
-
-  def deleting = Deleting(resource, account, throughputStatus)
-
-  // TODO table ARN  
-}
-
-object AnyTableState {
-  type For[T] = AnyTableState {type Resource = T}
-}
-
 sealed trait AnyThroughputStatus {
 
   val readCapacity: Int
@@ -45,20 +44,33 @@ case class InitialThroughput(
 ) 
 extends AnyThroughputStatus {}
 
+
+/*
+  ### table states
+*/
+sealed trait AnyTableState extends AnyDynamoDBState {
+
+  type Resource <: Singleton with AnyTable
+  
+  val throughputStatus: AnyThroughputStatus
+
+  def deleting = Deleting(resource, account, throughputStatus)
+
+  // TODO table ARN  
+}
+
+object AnyTableState {
+  type For[T] = AnyTableState {type Resource = T}
+}
+
 case class InitialState[T <: Singleton with AnyTable](
   resource: T,
   account: Account,
-  initialThroughput: InitialThroughput
-)
-
-extends AnyTableState {
-
+  throughputStatus: InitialThroughput
+) extends AnyTableState {
   type Resource = T
 
-  val throughputStatus = initialThroughput
-
-  def creating = Creating(resource, account, initialThroughput)
-
+  def creating = Creating(resource, account, throughputStatus)
 }
 
 trait ReadyTable
@@ -67,36 +79,22 @@ case class Updating[T <: Singleton with AnyTable](
   resource: T,
   account: Account,
   throughputStatus: AnyThroughputStatus
-) extends AnyTableState with ReadyTable {
-  type Resource = T
-  //val throughputStatus = initialThroughput
-}
+) extends AnyTableState with ReadyTable { type Resource = T }
 
 case class Creating[T <: Singleton with AnyTable](
   resource: T,
   account: Account,
   throughputStatus: AnyThroughputStatus
-) extends AnyTableState {
-  type Resource = T
- // val throughputStatus = ThroughputStatus
-}
+) extends AnyTableState { type Resource = T }
 
 case class Active[T <: Singleton with AnyTable](
   resource: T,
   account: Account,
   throughputStatus: AnyThroughputStatus
-) extends AnyTableState  with ReadyTable {
-  type Resource = T
-  //val throughputStatus = initialThroughput
-
- // def deleting = Deleting(resource, account, throughputStatus)
-}
+) extends AnyTableState with ReadyTable { type Resource = T }
 
 case class Deleting[T <: Singleton with AnyTable](
   resource: T,
   account: Account,
   throughputStatus: AnyThroughputStatus
-) extends AnyTableState {
-  type Resource = T
- // val throughputStatus = initialThroughput
-}
+) extends AnyTableState { type Resource = T }

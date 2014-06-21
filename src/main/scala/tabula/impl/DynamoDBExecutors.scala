@@ -3,8 +3,9 @@ package ohnosequences.tabula.impl
 import ohnosequences.tabula._
 import com.amazonaws.services.dynamodbv2.model._
 import java.util.Date
+import AttributeImplicits._
 
-object Executors {
+object DynamoDBExecutors {
 
   /* DELETE table */
   // TODO check region of client
@@ -48,10 +49,12 @@ object Executors {
     def apply(): Out = {
       println("executing: " + action)
 
-      val attributeDefinition = Implicits.getAttrDef(a.table.hashKey)
+      val attributeDefinition = getAttrDef(a.table.hashKey)
       val keySchemaElement = new KeySchemaElement(action.table.hashKey.label, "HASH")
-      val throughput = new ProvisionedThroughput(action.inputState.initialThroughput.readCapacity, action.inputState.initialThroughput.writeCapacity)
-
+      val throughput = new ProvisionedThroughput(
+        action.inputState.throughputStatus.readCapacity, 
+        action.inputState.throughputStatus.writeCapacity
+      )
       val request = new CreateTableRequest()
         .withTableName(action.table.name)
         .withProvisionedThroughput(throughput)
@@ -84,12 +87,14 @@ object Executors {
     def apply(): Out = {
       println("executing: " + action)
 
-      val hashAttributeDefinition = Implicits.getAttrDef(a.table.hashKey)
-      val rangeAttributeDefinition = Implicits.getAttrDef(a.table.rangeKey)
+      val hashAttributeDefinition = getAttrDef(a.table.hashKey)
+      val rangeAttributeDefinition = getAttrDef(a.table.rangeKey)
       val hashSchemaElement = new KeySchemaElement(action.table.hashKey.label, "HASH")
       val rangeSchemaElement = new KeySchemaElement(action.table.rangeKey.label, "RANGE")
-      val throughput = new ProvisionedThroughput(action.inputState.initialThroughput.readCapacity, action.inputState.initialThroughput.writeCapacity)
-
+      val throughput = new ProvisionedThroughput(
+        action.inputState.throughputStatus.readCapacity, 
+        action.inputState.throughputStatus.writeCapacity
+      )
       val request = new CreateTableRequest()
         .withTableName(action.table.name)
         .withProvisionedThroughput(throughput)
@@ -192,8 +197,8 @@ object Executors {
 
       val res = try {
         val sdkRep = dynamoClient.client.getItem(action.table.name, Map(
-          action.table.hashKey.label -> Implicits.getAttrVal(action.input._1),
-          action.table.rangeKey.label -> Implicits.getAttrVal(action.input._2)
+          action.table.hashKey.label -> getAttrVal(action.input._1),
+          action.table.rangeKey.label -> getAttrVal(action.input._2)
         )).getItem
         GetItemSuccess(action.parseSDKRep(sdkRep.toMap))
       } catch {

@@ -45,22 +45,6 @@ case class DynamoDBARN[R <: AnyDynamoDBResource](resource: R, account: Account) 
  // val id = "id"
 }
 
-// TODO experiment with treating states as denotations of resources
-trait AnyDynamoDBState { state =>
-
-  type Resource <: AnyDynamoDBResource
-  val resource: Resource
-
-  val account: Account
-
-  lazy val arn: DynamoDBARN[Resource] = DynamoDBARN(resource, account)
-}
-
-object AnyDynamoDBState {
-
-  type Of[R <: AnyDynamoDBResource] = AnyDynamoDBState { type Resource = R }
-}
-
 sealed trait ResourceList {
 
   type Head <: AnyDynamoDBResource
