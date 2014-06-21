@@ -43,6 +43,8 @@ case class InTable[T <: Singleton with AnyCompositeKeyTable]
       val  getSDKRep = getter
 
       val inputState = inputSt
+
+      override def toString = s"InTable ${t.name} putItem ${i.label} withValue ${itemRep}"
     }
 
   }

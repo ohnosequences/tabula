@@ -80,25 +80,40 @@ class irishService extends FunSuite {
     }
   }
 
-  ignore("complex example") {
+  test("complex example") {
     // CREATE TABLE
     val createResult = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
+    val afterCreate = waitFor(table, createResult.state)
+
+    // UPDATE TABLE (takes time)
+    // val updateResult  = service please UpdateTable(table, afterCreate).withReadWriteThroughput(2, 2)
+    // val afterUpdate = waitFor(table, updateResult.state)
+    // val updateResult2 = service please UpdateTable(table, afterUpdate).withReadWriteThroughput(1, 1)
+    // val afterUpdate2 = waitFor(table, updateResult2.state)
 
     // PUT ITEM
     val myItem = pairItem ->> ((213, "test"))
 
-    val afterCreate = waitFor(table, createResult.state)
     val putResult = service please (InTable(table, afterCreate) putItem pairItem withValue myItem)
     assert(putResult.output === PutItemSuccess)
+    val afterPut = waitFor(table, putResult.state)
 
     // GET ITEM
-    val afterPut = waitFor(table, putResult.state)
     val getResult = service please (FromCompositeKeyTable(table, afterPut) getItem pairItem withKeys (myItem._1, myItem._2))
     assert(getResult.output === GetItemSuccess(myItem))
+    val afterGet = waitFor(table, getResult.state)
+
+    // DELETE ITEM + get again
+    val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterGet) withKeys (myItem._1, myItem._2))
+    val afterDel = waitFor(table, delResult.state)
+
+    // prints exception stacktrace - it's ok
+    val getResult2 = service please (FromCompositeKeyTable(table, afterDel) getItem pairItem withKeys (myItem._1, myItem._2))
+    assert(getResult2.output === GetItemFailure())
 
     // DELETE TABLE
-    val afterGet = waitFor(table, getResult.state)
-    service please DeleteTable(table, afterGet)
+    val lastState = waitFor(table, getResult2.state)
+    service please DeleteTable(table, lastState)
   }
 
 }

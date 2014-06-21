@@ -4,7 +4,7 @@ import ohnosequences.scarph._
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 
 sealed trait GetItemResult { type Item <: AnyItem }
-case class GetItemFail[I <: AnyItem]() extends GetItemResult { type Item = I }
+case class GetItemFailure[I <: AnyItem]() extends GetItemResult { type Item = I }
 case class GetItemSuccess[I <: Singleton with AnyItem](item: I#Raw) extends GetItemResult { type Item = I }
 
 /* ### Common action trait */
@@ -49,6 +49,8 @@ case class FromHashKeyTable[T <: Singleton with AnyHashKeyTable]
       val inputState = inputSt
 
       val parseSDKRep = parser
+
+      override def toString = s"FromTable ${t.name} getItem ${i.label} withKey ${hashKeyValue}"
     }
 
   }
@@ -86,6 +88,8 @@ case class FromCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
       val inputState = inputSt
 
       val parseSDKRep = parse
+
+      override def toString = s"FromTable ${t.name} getItem ${i.label} withKeys ${(hashKeyValue, rangeKeyValue)}"
     }
 
   }

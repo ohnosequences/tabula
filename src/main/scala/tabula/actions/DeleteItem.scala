@@ -1,47 +1,68 @@
 package ohnosequences.tabula
 
-trait AnyDeleteItemHashKey extends AnyTableAction {
+import ohnosequences.scarph._
+import com.amazonaws.services.dynamodbv2.model.AttributeValue
+
+sealed trait DeleteItemResult
+case object DeleteItemFail extends DeleteItemResult
+case object DeleteItemSuccess extends DeleteItemResult
+
+/* ### Common action trait */
+trait AnyDeleteItemAction extends AnyTableAction {
   //require updating or creating
   type InputState  = AnyTableState.For[Table] with ReadyTable
   type OutputState = InputState
 
-  type Input = Table#HashKey#Raw
-  val  hashKeyValue: Input
-  val  input = hashKeyValue
-
-  type Output = None.type
+  type Output = DeleteItemResult
 }
 
-case class DeleteItemHashKey[
-    T <: AnyHashKeyTable with Singleton, 
-    H <: T#HashKey#Raw
-  ](table: T, 
-    inputState: AnyTableState.For[T] with ReadyTable, 
-    hashKeyValue: H
-  ) extends AnyDeleteItemHashKey { type Table = T }
 
-trait AnyDeleteItemCompositeKey extends AnyTableAction {
+/* ### Hash key table */
+trait AnyDeleteItemHashKeyAction extends AnyDeleteItemAction {
+  type Table <: Singleton with AnyHashKeyTable
+  type Input = table.hashKey.Raw
+}
+
+case class DeleteItemFromHashKeyTable[T <: Singleton with AnyHashKeyTable]
+  (t: T, inputSt: AnyTableState.For[T] with ReadyTable) {
+
+  case class withKey(hashKeyValue: t.hashKey.Raw)
+   extends AnyDeleteItemHashKeyAction {
+
+    type Table = T
+    val  table = t: t.type
+
+    val input = hashKeyValue
+
+    val inputState = inputSt
+
+    override def toString = s"DeleteItemFromHashKeyTable ${t.name} withKey ${hashKeyValue}"
+  }
+
+}
+
+
+/* ### Composite key table */
+trait AnyDeleteItemCompositeKeyAction extends AnyDeleteItemAction {
   type Table <: Singleton with AnyCompositeKeyTable
-
-  //require updating or creating
-  type InputState  = AnyTableState.For[Table] with ReadyTable
-  type OutputState = InputState
-
-  type Input = (Table#HashKey#Raw, Table#RangeKey#Raw)
-  val hashKeyValue: Table#HashKey#Raw
-  val rangeKeyValue: Table#RangeKey#Raw
-  val  input = (hashKeyValue, rangeKeyValue)
-
-  type Output = None.type
+  type Input = (table.hashKey.Raw, table.rangeKey.Raw)
 }
 
-// TODO
-case class DeleteItemCompositeKey[
-    T <: AnyCompositeKeyTable with Singleton, 
-    RH <: T#HashKey#Raw, 
-    RR <: T#RangeKey#Raw
-  ](table: T, 
-    inputState: AnyTableState.For[T] with ReadyTable, 
-    hashKeyValue: RH, 
-    rangeKeyValue: RR
-  ) extends AnyDeleteItemCompositeKey { type Table = T }
+case class DeleteItemFromCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
+  (t: T, inputSt: AnyTableState.For[T] with ReadyTable) {
+
+  case class withKeys(
+    hashKeyValue: t.hashKey.Raw,
+    rangeKeyValue: t.rangeKey.Raw
+  ) extends AnyDeleteItemCompositeKeyAction {
+    type Table = T
+    val  table = t: t.type
+
+    val input = (hashKeyValue, rangeKeyValue)
+
+    val inputState = inputSt
+
+    override def toString = s"DeleteItemFromCompositeKeyTable ${t.name} withKeys ${(hashKeyValue, rangeKeyValue)}"
+  }
+
+}
