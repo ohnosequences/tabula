@@ -8,8 +8,10 @@ import scala.reflect.ClassTag
 sealed trait AnyAttribute extends AnyProperty 
 
 /* But their Raw type is restricted */
-class Attribute[V : oneOf[ValidValues]#is](implicit classTag: ClassTag[V]) 
-  extends Property[V]()(classTag) with AnyAttribute 
+class Attribute[V](implicit 
+  classTag: ClassTag[V],
+  ev: V :<: ValidValues
+) extends Property[V]()(classTag) with AnyAttribute
 
 object Attribute {
 

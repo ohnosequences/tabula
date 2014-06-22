@@ -13,18 +13,26 @@ object simpleModel {
   object email extends Attribute[String]
   object serializedCrap extends Attribute[Bytes]
   object departments extends Attribute[Set[String]]
-  // object nono extends Attribute[Traversable[Array[Float]]]
+
+  // Float is not a valid type for an attribute
+  illTyped("""
+  object nono extends Attribute[Traversable[Array[Float]]]
+  """)
+
+  // departments attribute cannot be a primary key:
+  illTyped("""
+  object WrongHashTable extends HashKeyTable (
+    name = "users",
+    hashKey = departments,
+    region = EU
+  )
+  """)
 
   case object UsersTable extends HashKeyTable (
     name = "users",
     hashKey = id,
     region = EU
   )
-  // object WrongHashTable extends TableType (
-  //   name = "users",
-  //   key = Hash(serializedCrap),
-  //   region = EU
-  // )
 
   case object RandomTable extends CompositeKeyTable (
     name = "someStuff",
@@ -52,9 +60,9 @@ object simpleModel {
 
   val longOrPred  = UserItem ? (name === "piticli") or (name === "clipiti") or (age < 10) or (age > 34)
   val longAndPred = UserItem ? (name === "piticli") and (name === "clipiti") and (age < 10) and (age > 34)
-  // wrong! no mixing and/or
-  // val andAgePred = orNamePred and (age ≥ 5)
-  val orAge = longOrPred or (age ≥ 5)
+  val orAgeExt = longOrPred or (age ≥ 5)
+  // No mixing and/or
+  illTyped("longOrPred and (age ≥ 5)")
 
   val userHasName = UserItem ? (name isThere)
 
@@ -63,9 +71,9 @@ object simpleModel {
 
   // import OnlyWitnKeyConditions._
   implicitly[OnlyWitnKeyConditions[namePred.type]]   //(OnlyWitnKeyConditions.simple)
+  implicitly[OnlyWitnKeyConditions[ageOrPred.type]]  //(OnlyWitnKeyConditions2.or)
   implicitly[OnlyWitnKeyConditions[ageAndPred.type]] //(OnlyWitnKeyConditions2.and)
   implicitly[OnlyWitnKeyConditions[agePred.type]]
-  implicitly[OnlyWitnKeyConditions[ageOrPred.type]] //(OnlyWitnKeyConditions2.or)
   illTyped("implicitly[OnlyWitnKeyConditions[userHasName.type]]")
   illTyped("implicitly[OnlyWitnKeyConditions[userInDpt.type]]")
 }
