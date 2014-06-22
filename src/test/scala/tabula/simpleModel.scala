@@ -1,8 +1,9 @@
 package ohnosequences.tabula.test
 
+import ohnosequences.typesets._
 import ohnosequences.tabula._
 import ohnosequences.scarph._
-
+import shapeless.test._
 
 object simpleModel {
 
@@ -33,14 +34,10 @@ object simpleModel {
   )
 
   case object UserItem extends Item(UsersTable)
-  implicit val user_name = UserItem has name
-  implicit val user_age = UserItem has age
+  implicit val user_props = UserItem has name :~: age :~: ∅
 
   case object FunnyUserItem extends Item(UsersTable)
-  implicit val funnyUser_name = FunnyUserItem has name
-  implicit val funnyUser_email = FunnyUserItem has email
-  implicit val funnyUser_serializedCrap = FunnyUserItem has serializedCrap
-  implicit val funnyUser_departments = FunnyUserItem has departments
+  implicit val funnyUser_props = FunnyUserItem has name :~: email :~: serializedCrap :~: departments :~: ∅
 
   // predicates
   import AnyPredicate._
@@ -64,4 +61,11 @@ object simpleModel {
   val userNotInDpt = FunnyUserItem ? (departments ∌ "sales")
   val userInDpt = FunnyUserItem ? (departments ∋ "IT")
 
+  // import OnlyWitnKeyConditions._
+  implicitly[OnlyWitnKeyConditions[namePred.type]]   //(OnlyWitnKeyConditions.simple)
+  implicitly[OnlyWitnKeyConditions[ageAndPred.type]] //(OnlyWitnKeyConditions2.and)
+  implicitly[OnlyWitnKeyConditions[agePred.type]]
+  implicitly[OnlyWitnKeyConditions[ageOrPred.type]] //(OnlyWitnKeyConditions2.or)
+  illTyped("implicitly[OnlyWitnKeyConditions[userHasName.type]]")
+  illTyped("implicitly[OnlyWitnKeyConditions[userInDpt.type]]")
 }

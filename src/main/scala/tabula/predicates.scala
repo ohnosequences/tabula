@@ -11,8 +11,11 @@ import ohnosequences.scarph._
   Predicate constructors check that the item has the attribute used in the applied condition.
 */
 trait AnyPredicate {
-  type Self <: AnyPredicate
-  val  self: Self
+  type Body <: AnyPredicate
+  val  body: Body
+
+  type Head <: Condition
+  val  head: Head
 
   type Item <: Singleton with AnyItem
   val  item: Item
@@ -21,54 +24,62 @@ trait AnyPredicate {
 /* ### OR Predicates */
 trait AnyOrPredicate extends AnyPredicate {
 
-  type Self <: AnyOrPredicate
+  type Body <: AnyOrPredicate
 
-  def or[Other <: Condition](other: Other)(implicit 
-    ev: self.Item HasProperty other.Attribute
-  ): OR[Self, Other] = 
-     OR(self, other)
+  def or[Head <: Condition](other: Head)(implicit 
+    ev: body.Item HasProperty other.Attribute
+  ): OR[Body, Head] = 
+     OR(body, other)
 }
 
-case class OR[P <: AnyOrPredicate, C <: Condition]
-  (val self : P, val other: C) extends AnyOrPredicate {
-  type Self = P
+case class OR[B <: AnyOrPredicate, H <: Condition]
+  (val body : B,  val head : H) extends AnyOrPredicate {
+  type Body = B; type Head = H
 
-  type Item = self.Item
-  val  item = self.item
+  type Item = body.Item
+  val  item = body.item
 } 
 
 
 /* ### AND Predicates */
 trait AnyAndPredicate extends AnyPredicate {
 
-  type Self <: AnyAndPredicate
+  type Body <: AnyAndPredicate
 
-  def and[Other <: Condition](other: Other)(implicit 
-    ev: self.Item HasProperty other.Attribute
-  ): AND[Self, Other] = 
-     AND(self, other)
+  def and[Head <: Condition](other: Head)(implicit 
+    ev: body.Item HasProperty other.Attribute
+  ): AND[Body, Head] = 
+     AND(body, other)
 }
 
-case class AND[P <: AnyAndPredicate, C <: Condition]
-  (val self : P, val other: C) extends AnyAndPredicate {
-  type Self = P
+case class AND[B <: AnyAndPredicate, H <: Condition]
+  (val body : B,  val head : H) extends AnyAndPredicate {
+  type Body = B; type Head = H
 
-  type Item = self.Item
-  val  item = self.item 
+  type Item = body.Item
+  val  item = body.item 
 }
 
 
-/* ### Initial Predicate */
+/* 
+  ### Initial Predicate 
+
+  It contains only one condition and can be extended the either to `OR` or `AND` predicate
+*/
+trait AnySimplePredicate extends AnyOrPredicate with AnyAndPredicate {
+  type Body = this.type
+  val  body = this: this.type
+}
+
 case class SimplePredicate[I <: Singleton with AnyItem, C <: Condition]
-  (val item: I, val condition: C) 
-    extends AnyOrPredicate with AnyAndPredicate { type Item = I 
-
-  type Self = this.type
-  val  self = this: this.type
+  (val item : I,  val head : C) extends AnySimplePredicate {
+  type Item = I; type Head = C
 }
 
 
 object AnyPredicate {
+
+  type HeadedBy[C <: Condition] = AnyPredicate { type Head <: C }
 
   type On[I <: AnyItem] = AnyPredicate { type Item = I }
 
@@ -81,4 +92,26 @@ object AnyPredicate {
         ev: item.type HasProperty c.Attribute
       ): SimplePredicate[I, C] = SimplePredicate(item, c)
   }
+}
+
+/* An implicit check that this predicate consists only of KeyConditions */
+sealed class OnlyWitnKeyConditions[P <: AnyPredicate]
+
+object OnlyWitnKeyConditions extends OnlyWitnKeyConditions2 {
+  implicit def simple[P <: AnySimplePredicate with AnyPredicate.HeadedBy[KeyCondition]]:
+    OnlyWitnKeyConditions[P] = new OnlyWitnKeyConditions[P]
+}
+
+// This needs to be separated, otherwise implicits will deverge for SimplePredicate
+trait OnlyWitnKeyConditions2 {
+
+  implicit def and[P <: AnyAndPredicate with AnyPredicate.HeadedBy[KeyCondition]]
+    (implicit ev: OnlyWitnKeyConditions[P#Body]):
+                  OnlyWitnKeyConditions[P] = 
+              new OnlyWitnKeyConditions[P]
+
+  implicit def  or[P <: AnyOrPredicate  with AnyPredicate.HeadedBy[KeyCondition]]
+    (implicit ev: OnlyWitnKeyConditions[P#Body]):
+                  OnlyWitnKeyConditions[P] = 
+              new OnlyWitnKeyConditions[P]
 }
