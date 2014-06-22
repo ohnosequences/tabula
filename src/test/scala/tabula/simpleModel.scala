@@ -51,7 +51,8 @@ object simpleModel {
 
   val emailPred = SimplePredicate(FunnyUserItem, EQ[email.type](email, "oh@uh.com"))
 
-  val orNamePred = UserItem ? (name === "piticli") or (name === "clipiti")
+  // FIXME: if you use more than one `or`, existentials appear
+  val orNamePred = UserItem ? (name === "piticli") or (name === "clipiti") or (age < 10)
   // wrong! no mixing and/or
   // val andAgePred = orNamePred and (age ≥ 5)
   val orAge = orNamePred or (age ≥ 5)

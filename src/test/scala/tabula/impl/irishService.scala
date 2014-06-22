@@ -80,7 +80,7 @@ class irishService extends FunSuite {
     }
   }
 
-  test("complex example") {
+  ignore("complex example") {
     // CREATE TABLE
     val createResult = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
     val afterCreate = waitFor(table, createResult.state)

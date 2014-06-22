@@ -9,25 +9,22 @@ import ohnosequences.scarph._
   A table contains only the static part of a table, things hat cannot be changed once the the table is created. Dynamic data lives in `AnyTableState`. The only exception to this is the `Account`; this is so because normally it is something that is retrieved dynamically from the environment.
 */
 trait AnyTable extends AnyDynamoDBResource {
+  val name: String
 
   type HashKey <: AnyAttribute
-
-  val hashKey: HashKey
+  val  hashKey: HashKey
 
   type ResourceType = Table.type
-  val resourceType = Table
+  val  resourceType = Table
 
   type Region <: AnyRegion
-  val region: Region
-
-  val name: String
+  val  region: Region
 }
 
 /*
   Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation only makes sense on a table with a composite key.
 */
-sealed trait AnyHashKeyTable extends AnyTable { 
-}
+sealed trait AnyHashKeyTable extends AnyTable 
 
 sealed trait AnyCompositeKeyTable extends AnyTable { 
 
@@ -38,12 +35,11 @@ sealed trait AnyCompositeKeyTable extends AnyTable {
 class HashKeyTable [
   HK <: AnyAttribute,
   R <: AnyRegion
-](
-  val name: String,
+](val name: String,
   val hashKey: HK,
   val region: R
 )(implicit
-  val ev_k: oneOf[PrimaryKeyValues]#is[HK#Raw]
+  val ev_k: HK#Raw :<: PrimaryKeyValues
 ) extends AnyHashKeyTable {
 
   type Region = R
@@ -54,17 +50,14 @@ class CompositeKeyTable [
   HK <: AnyAttribute,
   RK <: AnyAttribute,
   R <: AnyRegion
-](
-  val name: String,
+](val name: String,
   val hashKey: HK,
   val rangeKey: RK,
   val region: R
-) 
-(implicit 
-  val ev_h: oneOf[PrimaryKeyValues]#is[HK#Raw],
-  val ev_r: oneOf[PrimaryKeyValues]#is[RK#Raw]
-)
-extends AnyCompositeKeyTable {
+)(implicit
+  val ev_h: HK#Raw :<: PrimaryKeyValues,
+  val ev_r: RK#Raw :<: PrimaryKeyValues
+) extends AnyCompositeKeyTable {
 
   type Region = R
   type HashKey = HK
