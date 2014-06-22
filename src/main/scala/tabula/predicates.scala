@@ -17,14 +17,24 @@ trait AnyPredicate {
 }
 
 /* ### OR Predicates */
-trait AnyOrPredicate extends AnyPredicate {
+trait AnyOrPredicate extends AnyPredicate { p =>
 
-  def or[Other <: Condition](other: Other)(implicit 
-    ev: Item HasProperty other.Attribute
-  ): OR[this.type, other.type] = OR[this.type, other.type](this, other)
+// object AnyOrPredicate {
+//   implicit def orPredicateOps[P <: AnyOrPredicate](p: P): Singleton with OrPredicateOps[p.type] = {
+//     val x = OrPredicateOps[p.type](p: p.type)
+//     x: x.type
+//   }
+//   case class   OrPredicateOps[P <: Singleton with AnyOrPredicate](p: P) {
+    def or[Other <: Condition](other: Other)(implicit 
+      ev: p.Item HasProperty other.Attribute
+    ): Singleton with OR[p.type, other.type] = {
+      val y = OR[p.type, other.type](p, other)
+      y: y.type
+    }
+  // }
 }
 
-case class OR[P <: AnyOrPredicate, C <: Condition](val allThis: P, val also: C) 
+case class OR[P <: Singleton with AnyOrPredicate, C <: Condition](val allThis: P, val also: C) 
   extends AnyOrPredicate { 
 
   type Item = P#Item
@@ -35,9 +45,9 @@ case class OR[P <: AnyOrPredicate, C <: Condition](val allThis: P, val also: C)
 /* ### AND Predicates */
 trait AnyAndPredicate extends AnyPredicate {
 
-  def and[Other <: Condition](other: Other)(implicit 
-    ev: Item HasProperty other.Attribute
-  ): AND[this.type, other.type] = AND[this.type, other.type](this, other)
+    def and[Other <: Condition](other: Other)(implicit 
+      ev: Item HasProperty other.Attribute
+    ): AND[this.type, other.type] = AND[this.type, other.type](this, other)
 }
 
 case class AND[P <: AnyAndPredicate, C <: Condition](val allThis: P, val also: C) 
@@ -65,7 +75,9 @@ object AnyPredicate {
   case class ItemPredicateOps[I <: Singleton with AnyItem](item: I) {
     def ?[C <: Condition](c: C)(implicit 
         ev: I HasProperty C#Attribute
-      ): SimplePredicate[I, C] =
-         SimplePredicate(item, c)
+      ): Singleton with SimplePredicate[I, C] = {
+        val z = SimplePredicate(item, c)
+        z: z.type
+      }
   }
 }
