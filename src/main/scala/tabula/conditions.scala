@@ -25,6 +25,8 @@ trait Condition {
   val  attribute: Attribute
 }
 
+trait KeyCondition extends Condition
+
 object Condition {
   implicit def conditionNotSetOps[A <: Singleton with AnyAttribute](attribute: A)
     (implicit ev: A#Raw :<: NotSetValues): 
@@ -65,9 +67,10 @@ trait SimpleCondition[A <: Singleton with AnyAttribute] extends Condition {
 case class EQ[A <: Singleton with AnyAttribute](
   val attribute: A,
   val value: A#Raw
-) extends SimpleCondition[A]
+) extends SimpleCondition[A] with KeyCondition
 
 /* - `NE` - true if an attribute is not equal to a value */
+// NOTE: this is not a KeyCondition for some reason
 case class NE[A <: Singleton with AnyAttribute](
   val attribute: A,
   val value: A#Raw
@@ -79,14 +82,14 @@ case class LE[A <: Singleton with AnyAttribute](
   val value: A#Raw
 )(implicit 
   ev: A#Raw :<: NotSetValues
-) extends SimpleCondition[A]
+) extends SimpleCondition[A] with KeyCondition
 
 /* - `LT` - true if an attribute is less than a value */
 case class LT[A <: Singleton with AnyAttribute](
   val attribute: A,
   val value: A#Raw
 )(implicit ev: A#Raw :<: NotSetValues)
-  extends SimpleCondition[A]
+  extends SimpleCondition[A] with KeyCondition
 
 /* - `GE` - true if an attribute is greater than or equal to a value */
 case class GE[A <: Singleton with AnyAttribute](
@@ -94,7 +97,7 @@ case class GE[A <: Singleton with AnyAttribute](
   val value: A#Raw
 )(implicit
   ev: A#Raw :<: NotSetValues
-) extends SimpleCondition[A]
+) extends SimpleCondition[A] with KeyCondition
 
 /* - `GT` - true if an attribute is greater than a value */
 case class GT[A <: Singleton with AnyAttribute](
@@ -102,7 +105,7 @@ case class GT[A <: Singleton with AnyAttribute](
   val value: A#Raw
 )(implicit 
   ev: A#Raw :<: NotSetValues
-) extends SimpleCondition[A]
+) extends SimpleCondition[A] with KeyCondition
 
 
 /* - `CONTAINS` - true if a value is present within a set, or if one value contains another */
@@ -130,7 +133,7 @@ case class BEGINS_WITH[A <: Singleton with AnyAttribute](
   val value: A#Raw
 )(implicit 
   ev: A#Raw :<: ValuesWithPrefixes
-) extends SimpleCondition[A]
+) extends SimpleCondition[A] with KeyCondition
 
 
 /*
@@ -144,7 +147,7 @@ case class BETWEEN[A <: Singleton with AnyAttribute](
   val end: A#Raw
 )(implicit
   ev: A#Raw :<: NotSetValues
-) extends Condition { type Attribute = A }
+) extends KeyCondition { type Attribute = A }
 
 // NOTE: this is not in the Amazon documentation
 case class NOT_BETWEEN[A <: Singleton with AnyAttribute](
@@ -153,7 +156,7 @@ case class NOT_BETWEEN[A <: Singleton with AnyAttribute](
   val end: A#Raw
 )(implicit
   ev: A#Raw :<: NotSetValues
-) extends Condition { type Attribute = A }
+) extends KeyCondition { type Attribute = A }
 
 
 /*
