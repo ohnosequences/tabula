@@ -47,15 +47,17 @@ object simpleModel {
   import Condition._
 
   val namePred = SimplePredicate(UserItem, EQ[name.type](name, "piticli"))
-  val agePred = AND(namePred, age < 18)
+  val ageAndPred = AND(namePred, age < 18)
+  val  ageOrPred =  OR(namePred, age > 18)
+  val agePred = namePred and (age < 18)
 
   val emailPred = SimplePredicate(FunnyUserItem, EQ[email.type](email, "oh@uh.com"))
 
-  // FIXME: if you use more than one `or`, existentials appear
-  val orNamePred = UserItem ? (name === "piticli") or (name === "clipiti") //or (age < 10)
+  val longOrPred  = UserItem ? (name === "piticli") or (name === "clipiti") or (age < 10) or (age > 34)
+  val longAndPred = UserItem ? (name === "piticli") and (name === "clipiti") and (age < 10) and (age > 34)
   // wrong! no mixing and/or
   // val andAgePred = orNamePred and (age ≥ 5)
-  val orAge = orNamePred or (age ≥ 5)
+  val orAge = longOrPred or (age ≥ 5)
 
   val userHasName = UserItem ? (name isThere)
 

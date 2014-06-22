@@ -11,57 +11,61 @@ import ohnosequences.scarph._
   Predicate constructors check that the item has the attribute used in the applied condition.
 */
 trait AnyPredicate {
+  type Self <: AnyPredicate
+  val  self: Self
 
   type Item <: Singleton with AnyItem
   val  item: Item
 }
 
 /* ### OR Predicates */
-trait AnyOrPredicate extends AnyPredicate { p =>
+trait AnyOrPredicate extends AnyPredicate {
 
-// object AnyOrPredicate {
-//   implicit def orPredicateOps[P <: AnyOrPredicate](p: P): Singleton with OrPredicateOps[p.type] = {
-//     val x = OrPredicateOps[p.type](p: p.type)
-//     x: x.type
-//   }
-//   case class   OrPredicateOps[P <: Singleton with AnyOrPredicate](p: P) {
-    def or[Other <: Condition](other: Other)(implicit 
-      ev: p.Item HasProperty other.Attribute
-    ): Singleton with OR[p.type, other.type] = {
-      val y = OR[p.type, other.type](p, other)
-      y: y.type
-    }
-  // }
+  type Self <: AnyOrPredicate
+
+  def or[Other <: Condition](other: Other)(implicit 
+    ev: self.Item HasProperty other.Attribute
+  ): OR[Self, Other] = 
+     OR(self, other)
 }
 
-case class OR[P <: Singleton with AnyOrPredicate, C <: Condition](val allThis: P, val also: C) 
-  extends AnyOrPredicate { 
+case class OR[P <: AnyOrPredicate, C <: Condition]
+  (val self : P, val other: C) extends AnyOrPredicate {
+  type Self = P
 
-  type Item = P#Item
-  val item = allThis.item
+  type Item = self.Item
+  val  item = self.item
 } 
 
 
 /* ### AND Predicates */
 trait AnyAndPredicate extends AnyPredicate {
 
-    def and[Other <: Condition](other: Other)(implicit 
-      ev: Item HasProperty other.Attribute
-    ): AND[this.type, other.type] = AND[this.type, other.type](this, other)
+  type Self <: AnyAndPredicate
+
+  def and[Other <: Condition](other: Other)(implicit 
+    ev: self.Item HasProperty other.Attribute
+  ): AND[Self, Other] = 
+     AND(self, other)
 }
 
-case class AND[P <: AnyAndPredicate, C <: Condition](val allThis: P, val also: C) 
-  extends AnyAndPredicate { 
+case class AND[P <: AnyAndPredicate, C <: Condition]
+  (val self : P, val other: C) extends AnyAndPredicate {
+  type Self = P
 
-  type Item = P#Item
-  val item = allThis.item 
+  type Item = self.Item
+  val  item = self.item 
 }
 
 
 /* ### Initial Predicate */
 case class SimplePredicate[I <: Singleton with AnyItem, C <: Condition]
   (val item: I, val condition: C) 
-    extends AnyOrPredicate with AnyAndPredicate { type Item = I }
+    extends AnyOrPredicate with AnyAndPredicate { type Item = I 
+
+  type Self = this.type
+  val  self = this: this.type
+}
 
 
 object AnyPredicate {
@@ -71,13 +75,10 @@ object AnyPredicate {
   /* 
     With this you can write `item ? condition` which means `SimplePredicate(item, condition)`
   */
-  implicit def toItemPredicateOps[I <: Singleton with AnyItem](item: I): ItemPredicateOps[I] = ItemPredicateOps(item)
-  case class ItemPredicateOps[I <: Singleton with AnyItem](item: I) {
+  implicit def itemPredicateOps[I <: Singleton with AnyItem](item: I): ItemPredicateOps[I] = ItemPredicateOps(item)
+  case class   ItemPredicateOps[I <: Singleton with AnyItem](item: I) {
     def ?[C <: Condition](c: C)(implicit 
-        ev: I HasProperty C#Attribute
-      ): Singleton with SimplePredicate[I, C] = {
-        val z = SimplePredicate(item, c)
-        z: z.type
-      }
+        ev: item.type HasProperty c.Attribute
+      ): SimplePredicate[I, C] = SimplePredicate(item, c)
   }
 }
