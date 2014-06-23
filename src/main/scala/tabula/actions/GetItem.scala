@@ -1,7 +1,7 @@
 package ohnosequences.tabula
 
 import ohnosequences.scarph._
-import com.amazonaws.services.dynamodbv2.model.AttributeValue
+import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 
 sealed trait GetItemResult { type Item <: AnyItem }
 case class GetItemFailure[I <: AnyItem]() extends GetItemResult { type Item = I }
@@ -93,5 +93,31 @@ case class FromCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
     }
 
   }
+
+  case class updateItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
+
+    case class withKeys(
+      hashKeyValue: t.hashKey.Raw,
+      rangeKeyValue: t.rangeKey.Raw,
+      updates: Map[String, AttributeValueUpdate]
+    )(implicit
+      hasHashKey:  i.type HasProperty t.HashKey,
+      hasRangeKey: i.type HasProperty t.RangeKey
+    ) extends AnyUpdateItemCompositeKeyAction {
+      type Table = T
+      val  table = t: t.type
+
+      type Item = I
+      val  item = i: i.type
+
+      val input = (hashKeyValue, rangeKeyValue, updates)
+
+      val inputState = inputSt
+
+
+      override def toString = s"FromTable ${t.name} getItem ${i.label} withKeys ${(hashKeyValue, rangeKeyValue)}"
+    }
+  }
+
 
 }

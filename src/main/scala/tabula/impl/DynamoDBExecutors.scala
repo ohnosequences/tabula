@@ -59,6 +59,12 @@ object DynamoDBExecutors {
       GetItemCompositeKeyExecutor[A] =
       GetItemCompositeKeyExecutor[A](a)(dynamoClient)
 
+  /* UPDATE ITEM */
+  implicit def updateItemCompositeKeyExecutor[A <: AnyUpdateItemCompositeKeyAction](a: A)
+     (implicit dynamoClient: AnyDynamoDBClient):
+  UpdateItemCompositeKeyExecutor[A] =
+    UpdateItemCompositeKeyExecutor[A](a)(dynamoClient)
+
 
   /* DELETE ITEM */
   implicit def deleteItemHashKeyExecutor[A <: AnyDeleteItemHashKeyAction](a: A)

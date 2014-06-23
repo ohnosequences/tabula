@@ -4,7 +4,7 @@ import org.scalatest.FunSuite
 
 import com.amazonaws.regions._
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
-import com.amazonaws.services.dynamodbv2.model.AttributeValue
+import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue, AttributeAction}
 
 import ohnosequences.typesets._
 import ohnosequences.scarph._
@@ -80,7 +80,7 @@ class irishService extends FunSuite {
     }
   }
 
-  ignore("complex example") {
+  test("complex example") {
     // CREATE TABLE
     val createResult = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
     val afterCreate = waitFor(table, createResult.state)
@@ -101,10 +101,16 @@ class irishService extends FunSuite {
     // GET ITEM
     val getResult = service please (FromCompositeKeyTable(table, afterPut) getItem pairItem withKeys (myItem._1, myItem._2))
     assert(getResult.output === GetItemSuccess(myItem))
-    val afterGet = waitFor(table, getResult.state)
+
+
+    //negative test
+    val updateResult = service please (FromCompositeKeyTable(table, afterPut) updateItem pairItem withKeys (
+      myItem._1, myItem._2, Map(id.label -> new AttributeValueUpdate(1, AttributeAction.ADD))))
+
+
 
     // DELETE ITEM + get again
-    val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterGet) withKeys (myItem._1, myItem._2))
+    val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterPut) withKeys (myItem._1, myItem._2))
     val afterDel = waitFor(table, delResult.state)
 
     // prints exception stacktrace - it's ok
