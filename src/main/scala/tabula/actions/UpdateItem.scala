@@ -28,3 +28,41 @@ trait AnyUpdateItemCompositeKeyAction extends AnyUpdateItemAction {
   type Table <: Singleton with AnyCompositeKeyTable
   type Input = (table.hashKey.Raw, table.rangeKey.Raw, Map[String, AttributeValueUpdate])
 }
+
+
+trait UpdateAction {
+  type Attribute
+}
+
+object UpdateAction {
+  type of[A] = UpdateAction { type Attribute = A}
+}
+
+trait ItemVisitor[R] {
+  def visitInt(attribute: Attribute[Int], value: Int)
+ //...
+  def result: R
+}
+
+//in Item
+//def visit(item: ItemVisitor.Of[this.type, rep: Rep)
+
+//for getItem from map to item rep... item rep builder...
+
+//trait ItemRepBuilder {
+//
+//}
+//it will be just an visitor
+
+//update
+//should accept map Attribute => Value
+
+//trait Mapping {
+//  def m[A <: AnyAttribute](a: A): Option[UpdateAction.of[A]]
+//}
+//
+//object testMapping extends Mapping {
+//  def m[A <: AnyAttribute](a: A): Option[UpdateAction.of[A]] = {
+//    Some(a.la)
+//  }
+//}

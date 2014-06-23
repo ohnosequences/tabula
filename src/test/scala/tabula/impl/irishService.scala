@@ -104,8 +104,8 @@ class irishService extends FunSuite {
 
 
     //negative test
-    val updateResult = service please (FromCompositeKeyTable(table, afterPut) updateItem pairItem withKeys (
-      myItem._1, myItem._2, Map(id.label -> new AttributeValueUpdate(1, AttributeAction.ADD))))
+   // val updateResult = service please (FromCompositeKeyTable(table, afterPut) updateItem pairItem withKeys (
+   //   myItem._1, myItem._2, Map(id.label -> new AttributeValueUpdate(1, AttributeAction.ADD))))
 
 
 
@@ -120,6 +120,12 @@ class irishService extends FunSuite {
     // DELETE TABLE
     val lastState = waitFor(table, getResult2.state)
     service please DeleteTable(table, lastState)
+
+    //itemTest
+
+    val myid: Int = ohnosequences.tabula.impl.itemtest.TestItem.get(ohnosequences.tabula.impl.itemtest.id, (123, "123"))
+    println(myid)
+    assert(myid === 123)
   }
 
 }
