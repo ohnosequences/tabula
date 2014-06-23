@@ -6,7 +6,7 @@ import com.amazonaws.services.dynamodbv2.model._
 case class DeleteTableExecutor[A <: AnyDeleteTable](a: A)(
     dynamoClient: AnyDynamoDBClient
   ) extends Executor(a) {
-  type OutC[+X] = X
+  type OutC[X] = X
 
   def apply(): Out = {
     println("executing: " + action)

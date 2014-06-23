@@ -7,7 +7,7 @@ case class DeleteItemHashKeyExecutor[A <: AnyDeleteItemHashKeyAction](a: A)
   (dynamoClient: AnyDynamoDBClient) 
     extends Executor[A](a) {
 
-  type OutC[+X] = X
+  type OutC[X] = X
 
   import scala.collection.JavaConversions._
   def apply(): Out = {
@@ -30,7 +30,7 @@ case class DeleteItemCompositeKeyExecutor[A <: AnyDeleteItemCompositeKeyAction](
   (dynamoClient: AnyDynamoDBClient) 
     extends Executor[A](a) {
 
-  type OutC[+X] = X
+  type OutC[X] = X
 
   import scala.collection.JavaConversions._
   def apply(): Out = {

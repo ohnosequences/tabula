@@ -2,39 +2,26 @@
 ```scala
 package ohnosequences.tabula
 
-// TODO move to a different namespace
-trait AwsService
-object DynamoDB extends AwsService
+case class ExecutorResult[O, R, OS](output: O, resources: R, state: OS)
 
-trait AnyDynamoDBService { thisService =>
-  
-  // TODO move this to the type
-  type Region <: AnyRegion
-  type Account <: AnyAccount
-  // type Auth <: AnyAuth
-  val region: Region
-  val account: Account
-  // val auth: Auth
+trait AnyExecutor {
+  type Action <: AnyAction
+  val  action: Action
 
-  val host = "amazonaws.com"
-  val namespace: String = "dynamodb"
-  // add here isSecure or something similar
-  def endpoint: String
+  type OutC[X]
+  type Out = OutC[ExecutorResult[action.Output, action.Resources, action.OutputState]]
 
-  // then you can do: service please createTable(table, initialState)
-  // it could also be apply, like: service createTable(table, initialState)
-  def apply[A <: AnyAction, E <: Executor.For[A]](action: A)
-    (implicit mkE: A => E): E#Out = {
-    // E#OutC[(A#Output, A#Resources, A#OutputState)] = {
-      val exec = mkE(action)
-      exec()
-    }
+  def apply(): Out
+}
 
-  def please[A <: AnyAction, E <: Executor.For[A]](action: A)
-    (implicit mkE: A => E): E#Out = {
-      val exec = mkE(action)
-      exec()
-    }
+abstract class Executor[A <: AnyAction](val action: A) 
+  extends AnyExecutor { type Action = A }
+
+object Executor {
+  type Aux[A <: AnyAction, C[_]] = AnyExecutor { type Action = A; type OutC[X] = C[X] }
+  type Id[A <: AnyAction] = AnyExecutor { type Action = A; type OutC[X] = X }
+  type For[A <: AnyAction] = AnyExecutor { type Action = A }
+  type inRegion[R <: AnyRegion] = AnyExecutor { type Action <: AnyAction.inRegion[R] }
 }
 
 ```

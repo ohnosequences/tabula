@@ -7,7 +7,7 @@ case class DescribeTableExecutor[A <: AnyDescribeTable](a: A)(
     dynamoClient: AnyDynamoDBClient
   ) extends Executor[A](a) {
 
-  type OutC[+X] = X
+  type OutC[X] = X
 
   def apply(): Out = {
     println("executing: " + action)
