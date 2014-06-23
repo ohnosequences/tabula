@@ -4,31 +4,31 @@ import ohnosequences.typesets._
 import ohnosequences.tabula._
 import com.amazonaws.services.dynamodbv2.model.{AttributeValue, ScalarAttributeType, AttributeDefinition}
 import scala.reflect._
+import shapeless._
 
 object AttributeImplicits {
   implicit def getAttrDef[A <: AnyAttribute](attr: A): AttributeDefinition = {
     val attrDef = new AttributeDefinition().withAttributeName(attr.label)
 
-    // NOTE: don't know if the commented code is needed here
-    attr.classTag //.runtimeClass.asInstanceOf[Class[attr.Raw]] 
-      match {
+    attr.classTag.runtimeClass.asInstanceOf[Class[attr.Raw]] match {
       case c if c == classOf[Int]    => attrDef.withAttributeType(ScalarAttributeType.N)
       case c if c == classOf[String] => attrDef.withAttributeType(ScalarAttributeType.S)
       case c if c == classOf[Bytes]  => attrDef.withAttributeType(ScalarAttributeType.B)
-      // TODO: are sets types needed here?
+      // TODO: are the set types needed here?
     }
   }
 
   // import scala.collection.JavaConversions._
-  // FIXME: want to check the type range, but it gives a warning
-  implicit def getAttrVal[T] // : oneOf[NotSetValues]#is]
+  // FIXME: restrict T somehow, maybe Typeable instance is needed
+  implicit def getAttrVal[T] // : Typeable] // : oneOf[NotSetValues]#is]
     (attr: T): AttributeValue = {
 
+    val B = TypeCase[Bytes]
     attr match {
       case _: Int    => new AttributeValue().withN(attr.toString)
       case _: String => new AttributeValue().withS(attr.toString)
-      // FIXME: don't know how to overcome type-erasure warning in this case "/
-      case a: Bytes => { 
+      // TODO: test the Bytes case
+      case B(a) => { 
         import java.nio._
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(a.length)
         byteBuffer.put(Array[Byte](a: _*))
