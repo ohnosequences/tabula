@@ -150,13 +150,13 @@ case class BETWEEN[A <: Singleton with AnyAttribute](
 ) extends KeyCondition { type Attribute = A }
 
 // NOTE: this is not in the Amazon documentation
-case class NOT_BETWEEN[A <: Singleton with AnyAttribute](
-  val attribute: A,
-  val start: A#Raw,
-  val end: A#Raw
-)(implicit
-  ev: A#Raw :<: NotSetValues
-) extends KeyCondition { type Attribute = A }
+// case class NOT_BETWEEN[A <: Singleton with AnyAttribute](
+//   val attribute: A,
+//   val start: A#Raw,
+//   val end: A#Raw
+// )(implicit
+//   ev: A#Raw :<: NotSetValues
+// ) extends KeyCondition { type Attribute = A }
 
 
 /*
@@ -178,7 +178,9 @@ case class IN[A <: Singleton with AnyAttribute](
 class ConditionAnyOps[A <: Singleton with AnyAttribute](attribute: A) {
   final def isThere  = NOT_NULL(attribute)
   final def notThere =     NULL(attribute)
+
   final def ===(value: A#Raw): EQ[A] = EQ(attribute, value)
+  final def  eq(value: A#Raw): EQ[A] = EQ(attribute, value)
 }
 
 case class ConditionNotSetOps[A <: Singleton with AnyAttribute](attribute: A)
@@ -189,10 +191,17 @@ case class ConditionNotSetOps[A <: Singleton with AnyAttribute](attribute: A)
   final def >(value: A#Raw): GT[A] = GT(attribute, value)
   final def ≥(value: A#Raw): GE[A] = GE(attribute, value)
 
+  // non-symbolic names:
+  final def lt(value: A#Raw): LT[A] = LT(attribute, value)
+  final def le(value: A#Raw): LE[A] = LE(attribute, value)
+  final def gt(value: A#Raw): GT[A] = GT(attribute, value)
+  final def ge(value: A#Raw): GE[A] = GE(attribute, value)
+
   final def    between(start: A#Raw, end: A#Raw):     BETWEEN[A] =     BETWEEN(attribute, start, end)
-  final def notBetween(start: A#Raw, end: A#Raw): NOT_BETWEEN[A] = NOT_BETWEEN(attribute, start, end)
+  // final def notBetween(start: A#Raw, end: A#Raw): NOT_BETWEEN[A] = NOT_BETWEEN(attribute, start, end)
 
   final def isOneOf(values: List[A#Raw]): IN[A] = IN(attribute, values)
+  final def      in(values: List[A#Raw]): IN[A] = IN(attribute, values)
 }
 
 case class ConditionSetOps[A <: Singleton with AnyAttribute](attribute: A)

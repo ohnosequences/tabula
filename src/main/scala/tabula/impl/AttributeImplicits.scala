@@ -14,7 +14,6 @@ object AttributeImplicits {
       case c if c == classOf[Int]    => attrDef.withAttributeType(ScalarAttributeType.N)
       case c if c == classOf[String] => attrDef.withAttributeType(ScalarAttributeType.S)
       case c if c == classOf[Bytes]  => attrDef.withAttributeType(ScalarAttributeType.B)
-      // TODO: are the set types needed here?
     }
   }
 
@@ -23,12 +22,12 @@ object AttributeImplicits {
   implicit def getAttrVal[T] // : Typeable] // : oneOf[NotSetValues]#is]
     (attr: T): AttributeValue = {
 
-    val B = TypeCase[Bytes]
+    // val B = TypeCase[Bytes]
     attr match {
       case _: Int    => new AttributeValue().withN(attr.toString)
       case _: String => new AttributeValue().withS(attr.toString)
       // TODO: test the Bytes case
-      case B(a) => { 
+      case a: Bytes => { 
         import java.nio._
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(a.length)
         byteBuffer.put(Array[Byte](a: _*))
