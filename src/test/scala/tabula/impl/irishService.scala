@@ -126,6 +126,16 @@ class irishService extends FunSuite {
     val myid: Int = ohnosequences.tabula.impl.itemtest.TestItem.get(ohnosequences.tabula.impl.itemtest.id, (123, "123"))
     println(myid)
     assert(myid === 123)
+
+    //build test
+
+    val builder = ohnosequences.tabula.impl.itemtest.TestItem.builder()
+
+    builder.addAttribute(ohnosequences.tabula.impl.itemtest.id)(123)
+    builder.addAttribute(ohnosequences.tabula.impl.itemtest.name)("123")
+
+    println(builder.result())
+
   }
 
 }
