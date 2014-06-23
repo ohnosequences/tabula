@@ -6,7 +6,7 @@ import ohnosequences.scarph._
 /*
   ## Predicates
 
-  Predicates represent complex expressions using multiple conditions on a particular item.
+  Predicates represent expressions combining several conditions for a particular item.
   You can combine conditions **either** by `OR` or by `AND` conditional operator (_you can't mix them_).
   Predicate constructors check that the item has the attribute used in the applied condition.
 */
@@ -21,7 +21,9 @@ trait AnyPredicate {
   val  item: Item
 }
 
-/* ### OR Predicates */
+/*
+  ### OR Predicates
+*/
 trait AnyOrPredicate extends AnyPredicate {
 
   type Body <: AnyOrPredicate
@@ -41,7 +43,9 @@ case class OR[B <: AnyOrPredicate, H <: Condition]
 } 
 
 
-/* ### AND Predicates */
+/* 
+  ### AND Predicates
+*/
 trait AnyAndPredicate extends AnyPredicate {
 
   type Body <: AnyAndPredicate
@@ -62,9 +66,9 @@ case class AND[B <: AnyAndPredicate, H <: Condition]
 
 
 /* 
-  ### Initial Predicate 
+  ### Simple Predicates
 
-  It contains only one condition and can be extended the either to `OR` or `AND` predicate
+  It contains only one condition and can be extended either to `OR` or `AND` predicate
 */
 trait AnySimplePredicate extends AnyOrPredicate with AnyAndPredicate {
   type Body = this.type
