@@ -41,11 +41,11 @@ object simpleModel {
     region = EU
   )
 
-  case object UserItem extends Item(UsersTable)
-  implicit val user_props = UserItem has name :~: age :~: ∅
+  case object UserItem extends Item(UsersTable, name :~: age :~: ∅)
 
-  case object FunnyUserItem extends Item(UsersTable)
-  implicit val funnyUser_props = FunnyUserItem has name :~: email :~: serializedCrap :~: departments :~: ∅
+  case object FunnyUserItem extends Item(UsersTable, 
+    name :~: email :~: serializedCrap :~: departments :~: ∅
+  )
 
   // predicates
   import AnyPredicate._

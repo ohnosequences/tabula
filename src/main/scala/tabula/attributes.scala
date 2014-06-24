@@ -14,6 +14,7 @@ class Attribute[V](implicit
 ) extends Property[V]()(classTag) with AnyAttribute
 
 object Attribute {
+  type Of[I] = { type is[P <: AnyAttribute] = I HasProperty P }
 
   type SetsOf[V] = AnyAttribute { type Raw = Set[V] }
 }
