@@ -33,7 +33,7 @@ trait AnyItem extends Representable { item =>
   implicit def attributeOps(rep: item.Rep): AttributeOps = AttributeOps(rep)
   case class   AttributeOps(rep: item.Rep) {
 
-    def get[A <: Singleton with AnyAttribute](a: A)
+    def attr[A <: Singleton with AnyAttribute](a: A)
       (implicit 
         // isThere: A ∈ item.Attributes, // lookup does this check anyway 
         lookup: Lookup[item.Raw, a.Rep]
@@ -95,28 +95,108 @@ object Represented {
 }
 
 
-// // Some experiments with getting record keys (copied from shapeless) 
+// Some experiments with getting record keys (copied from shapeless) 
 
-// import shapeless._
+import shapeless._, poly._
 
-// trait Keys[S <: TypeSet] extends DepFn1[S] { type Out <: TypeSet }
+trait Keys[S <: TypeSet] extends DepFn1[S] { type Out <: TypeSet }
 
-// object Keys {
-//   def apply[S <: TypeSet](implicit keys: Keys[S]): Aux[S, keys.Out] = keys
+object Keys {
+  def apply[S <: TypeSet](implicit keys: Keys[S]): Aux[S, keys.Out] = keys
 
-//   type Aux[S <: TypeSet, O <: TypeSet] = Keys[S] { type Out = O }
+  type Aux[S <: TypeSet, O <: TypeSet] = Keys[S] { type Out = O }
 
-//   implicit val empty: Aux[∅, ∅] =
-//     new Keys[∅] {
-//       type Out = ∅
-//       def apply(s: ∅): Out = ∅
-//     }
+  implicit val empty: Aux[∅, ∅] =
+    new Keys[∅] {
+      type Out = ∅
+      def apply(s: ∅): Out = ∅
+    }
 
-//   import AnyDenotation._
-//   implicit def cons[H <: AnyTag, T <: TypeSet]
-//     (implicit wk: Witness.Aux[H#Denotation], t: Keys[T]): Aux[H :~: T, H#Denotation :~: t.Out] =
-//       new Keys[H :~: T] {
-//         type Out = H#Denotation :~: t.Out
-//         def apply(s: H :~: T): Out = wk.value :~: t(s.tail)
-//       }
-// }
+  import AnyDenotation._
+  implicit def cons[H <: AnyTag, T <: TypeSet]
+    (implicit wk: Witness.Aux[H#Denotation], t: Keys[T]): Aux[H :~: T, H#Denotation :~: t.Out] =
+      new Keys[H :~: T] {
+        type Out = H#Denotation :~: t.Out
+        def apply(s: H :~: T): Out = wk.value :~: t(s.tail)
+      }
+}
+
+//////////////////////////////////////////////
+
+// look, monoid! haha XD
+trait Mono[T] {
+  val zero: T
+  def plus(a: T, b: T): T
+}
+
+trait Transform[
+    A <: TypeSet, // set of attributes
+    Out           // what we want to get
+  ] {
+
+  type R <: TypeSet             // representation of attributes
+  type F <: Singleton with Poly // transformation function
+
+  def apply(a: A, r: R): Out
+}
+
+object Transform {
+  type Aux[A <: TypeSet, R0 <: TypeSet, F0 <: Singleton with Poly, Out] =
+    Transform[A, Out] { 
+      type R = R0
+      type F = F0
+    }
+
+  type Anyhow[A <: TypeSet, R0 <: TypeSet, Out] =
+    Transform[A, Out] { 
+      type R = R0
+    }
+
+  def transform[A <: TypeSet, R <: TypeSet, F <: Singleton with Poly, Out](implicit tr: Transform.Aux[A, R, F, Out]):
+    Transform.Aux[A, R, F, Out] = tr
+
+  implicit def empty[Out, F0 <: Singleton with Poly]
+    (implicit m: Mono[Out]): Transform.Aux[∅, ∅, F0, Out] = new Transform[∅, Out] {
+      type R = ∅
+      type F = F0
+      def apply(i: ∅, r: ∅): Out = m.zero
+    }
+
+  implicit def cons[
+    F0 <: Singleton with Poly,
+    AH <: Singleton with AnyAttribute, AT <: TypeSet,
+    RH <: AH#Raw, RT <: TypeSet,
+    Out
+  ](implicit
+    m: Mono[Out], 
+    f: Case1.Aux[F0, (AH, RH), Out], 
+    t: Transform.Aux[AT, RT, F0, Out]
+  ): Transform.Aux[AH :~: AT, RH :~: RT, F0, Out] =
+    new Transform[AH :~: AT, Out] {
+      type R = RH :~: RT
+      type F = F0
+      def apply(a: AH :~: AT, r: RH :~: RT): Out = {
+        m.plus(
+          f((a.head, r.head)),
+          t(a.tail, r.tail)
+        )
+      }
+    }
+}
+
+trait TransformItem[I <: Singleton with AnyItem, Out] {
+  type R = I#Rep
+  type F <: Singleton with Poly
+  def apply(i: I, r: R): Out
+}
+
+object TransformItem {
+  type Aux[I <: Singleton with AnyItem, F0 <: Singleton with Poly, Out] = TransformItem[I, Out] { type F = F0 }
+
+  implicit def yeah[I <: Singleton with AnyItem, F0 <: Singleton with Poly, Out]
+    (implicit tr: Transform.Aux[I#Attributes, I#Raw, F0, Out]): TransformItem.Aux[I, F0, Out] =
+      new TransformItem[I, Out] {
+        type F = F0
+        def apply(i: I, r: R): Out = tr(i.attributes, r)
+      }
+}

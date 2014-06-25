@@ -41,12 +41,18 @@ object TestSetting {
   case object testItem extends Item(table, id :~: name :~: ∅)
 
   object testItemImplicits {
-    implicit def getSDKRep(rep: testItem.Rep): Map[String, AttributeValue] = {
-      import testItem._
-      Map[String, AttributeValue](
-        id.label -> getAttrVal(rep.get(id)),
-        name.label -> getAttrVal(rep.get(name))
-      )
+    import shapeless._, poly._
+    import AnyDenotation._
+
+    type SDKRep = Map[String, AttributeValue]
+    implicit val momono = new Mono[SDKRep] {
+      val zero: SDKRep = Map()
+      def plus(x: SDKRep, y: SDKRep): SDKRep = x ++ y
+    }
+
+    case object sdkRep extends Poly1 {
+      implicit def default[A <: AnyAttribute, R <: A#Raw] = 
+        at[(A, R)] { case (a, r) => Map(a.label -> getAttrVal(r)): SDKRep }
     }
 
     implicit def parseSDKRep(m: Map[String, AttributeValue]): testItem.Rep = {
@@ -84,7 +90,8 @@ class irishService extends FunSuite {
   }
 
   test("item attribute witnesses") {
-    { import shapeless._
+    { 
+      import shapeless._
 
       val wid = implicitly[Witness.Aux[id.type]]
       typed[id.type](wid.value)
@@ -128,15 +135,30 @@ class irishService extends FunSuite {
     )
     """)
 
-    import testItem._
-    assert(i.get(id) === 123)
-    assert(i.get(name) === "foo")
+    assert(i.attr(id) === 123)
+    assert(i.attr(name) === "foo")
 
-    // val keys = implicitly[Keys.Aux[i.type, id.type :~: name.type :~: ∅]]
+    val keys = implicitly[Keys.Aux[id.Rep :~: name.Rep :~: ∅, id.type :~: name.type :~: ∅]]
+    assert(keys(i) === testItem.attributes)
+    assert(keys(i) === (id :~: name :~: ∅))
+
+    import shapeless._, poly._
+
+    val tr = Transform.transform[
+      id.type :~: name.type :~: ∅, 
+      id.Rep  :~: name.Rep  :~: ∅,
+      sdkRep.type,
+      SDKRep
+    ]
+    println(tr(testItem.attributes, i))
+
+    val t = implicitly[Transform.Aux[testItem.Attributes, testItem.Raw, sdkRep.type, SDKRep]]
+    val ti = implicitly[TransformItem.Aux[testItem.type, sdkRep.type, SDKRep]]
+    println(ti(testItem, i))
 
   }
 
-  test("complex example") {
+  ignore("complex example") {
     // CREATE TABLE
     val createResult = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
     val afterCreate = waitFor(table, createResult.state)
@@ -148,34 +170,35 @@ class irishService extends FunSuite {
     // val afterUpdate2 = waitFor(table, updateResult2.state)
 
     // PUT ITEM
-    import testItem._
+    // import testItem._
     val myItem = testItem ->> (
       (id ->> 123) :~: 
       (name ->> "myItem") :~: 
       ∅
     )
 
+    import sdkRep._
     val putResult = service please (InTable(table, afterCreate) putItem testItem withValue myItem)
     assert(putResult.output === PutItemSuccess)
     val afterPut = waitFor(table, putResult.state)
 
     // GET ITEM
-    val getResult = service please (FromCompositeKeyTable(table, afterPut) getItem testItem withKeys (myItem.get(id), myItem.get(name)))
+    val getResult = service please (FromCompositeKeyTable(table, afterPut) getItem testItem withKeys (myItem.attr(id), myItem.attr(name)))
     assert(getResult.output === GetItemSuccess(myItem))
 
 
     //negative test
    // val updateResult = service please (FromCompositeKeyTable(table, afterPut) updateItem testItem withKeys (
-   //   myItem.get(id), myItem.get(name), Map(id.label -> new AttributeValueUpdate(1, AttributeAction.ADD))))
+   //   myItem.attr(id), myItem.attr(name), Map(id.label -> new AttributeValueUpdate(1, AttributeAction.ADD))))
 
 
 
     // DELETE ITEM + get again
-    val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterPut) withKeys (myItem.get(id), myItem.get(name)))
+    val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterPut) withKeys (myItem.attr(id), myItem.attr(name)))
     val afterDel = waitFor(table, delResult.state)
 
     // prints exception stacktrace - it's ok
-    val getResult2 = service please (FromCompositeKeyTable(table, afterDel) getItem testItem withKeys (myItem.get(id), myItem.get(name)))
+    val getResult2 = service please (FromCompositeKeyTable(table, afterDel) getItem testItem withKeys (myItem.attr(id), myItem.attr(name)))
     assert(getResult2.output === GetItemFailure())
 
     // DELETE TABLE

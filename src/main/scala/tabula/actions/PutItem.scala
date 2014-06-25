@@ -29,9 +29,9 @@ case class InTable[T <: Singleton with AnyCompositeKeyTable]
   case class putItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
 
     case class withValue(itemRep: i.Rep)(implicit
-      getter: i.Rep => Map[String, AttributeValue],
-      hasHashKey:  i.type HasProperty t.HashKey,
-      hasRangeKey: i.type HasProperty t.RangeKey
+      val transf: TransformItem[i.type, Map[String, AttributeValue]],
+      val hasHashKey:  i.type HasProperty t.HashKey,
+      val hasRangeKey: i.type HasProperty t.RangeKey
     ) extends AnyPutItemAction {
       type Table = T
       val  table = t: t.type
@@ -40,7 +40,7 @@ case class InTable[T <: Singleton with AnyCompositeKeyTable]
       val  item = i: i.type
 
       val  input = itemRep
-      val  getSDKRep = getter
+      val  getSDKRep = (r: i.Rep) => transf(i, r)
 
       val inputState = inputSt
 
