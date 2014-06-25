@@ -1,6 +1,6 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._, AttributeImplicits._
+import ohnosequences.tabula._, ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 
 case class GetItemHashKeyExecutor[A <: AnyGetItemHashKeyAction](a: A)
@@ -14,10 +14,10 @@ case class GetItemHashKeyExecutor[A <: AnyGetItemHashKeyAction](a: A)
     println("executing: " + action)
 
     val res = try {
-      val sdkRep = dynamoClient.client.getItem(action.table.name, Map(
+      val toSDKRep = dynamoClient.client.getItem(action.table.name, Map(
         action.table.hashKey.label -> getAttrVal(action.input)
       )).getItem
-      GetItemSuccess(action.parseSDKRep(sdkRep.toMap))
+      GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
     } catch {
       case t: Throwable => println(t.printStackTrace); GetItemFailure[action.Item]
     }
@@ -37,11 +37,11 @@ case class GetItemCompositeKeyExecutor[A <: AnyGetItemCompositeKeyAction](a: A)
     println("executing: " + action)
 
     val res = try {
-      val sdkRep = dynamoClient.client.getItem(action.table.name, Map(
+      val toSDKRep = dynamoClient.client.getItem(action.table.name, Map(
         action.table.hashKey.label -> getAttrVal(action.input._1),
         action.table.rangeKey.label -> getAttrVal(action.input._2)
       )).getItem
-      GetItemSuccess(action.parseSDKRep(sdkRep.toMap))
+      GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
     } catch {
       case t: Throwable => println(t.printStackTrace); GetItemFailure[action.Item]
     }

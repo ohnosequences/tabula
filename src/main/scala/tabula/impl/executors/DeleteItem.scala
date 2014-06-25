@@ -1,6 +1,6 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._, AttributeImplicits._
+import ohnosequences.tabula._, ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 
 case class DeleteItemHashKeyExecutor[A <: AnyDeleteItemHashKeyAction](a: A)

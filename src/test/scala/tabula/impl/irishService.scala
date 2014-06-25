@@ -9,9 +9,12 @@ import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeV
 import ohnosequences.typesets._
 import ohnosequences.scarph._
 import ohnosequences.tabula._
-import ohnosequences.tabula.impl._, AttributeImplicits._, DynamoDBExecutors._
+import ohnosequences.tabula.impl._, ImplicitConversions._, DynamoDBExecutors._
 
+import shapeless._, poly._
 import shapeless.test.{typed, illTyped}
+import AnyDenotation._
+
 
 object TestImplicits {
 
@@ -39,37 +42,11 @@ object TestSetting {
   object table extends CompositeKeyTable("tabula_test_1", id, name, service.region)
 
   case object testItem extends Item(table, id :~: name :~: ∅)
-
-  object testItemImplicits {
-    import shapeless._, poly._
-    import AnyDenotation._
-
-    type SDKRep = Map[String, AttributeValue]
-    implicit val momono = new Mono[SDKRep] {
-      val zero: SDKRep = Map()
-      def plus(x: SDKRep, y: SDKRep): SDKRep = x ++ y
-    }
-
-    case object sdkRep extends Poly1 {
-      implicit def default[A <: AnyAttribute, R <: A#Raw] = 
-        at[(A, R)] { case (a, r) => Map(a.label -> getAttrVal(r)): SDKRep }
-    }
-
-    implicit def parseSDKRep(m: Map[String, AttributeValue]): testItem.Rep = {
-      testItem ->> (
-        (id ->> m(id.label).getN.toInt) :~: 
-        (name ->> m(name.label).getS.toString) :~:
-        ∅
-      )
-    }
-  }
 }
 
 class irishService extends FunSuite {
   import TestImplicits._
   import TestSetting._
-  import testItemImplicits._
-
 
   // waits until the table becomes active
   def waitFor[
@@ -90,20 +67,27 @@ class irishService extends FunSuite {
   }
 
   test("item attribute witnesses") {
-    { 
-      import shapeless._
 
-      val wid = implicitly[Witness.Aux[id.type]]
-      typed[id.type](wid.value)
-      typed[wid.T](id)
-      implicitly[wid.T =:= id.type]
-      implicitly[wid.value.Raw =:= Int]
-      assert(wid.value == id)
-      
-      val wname = implicitly[Witness.Aux[name.type]]
+    val wid = implicitly[Witness.Aux[id.type]]
+    typed[id.type](wid.value)
+    typed[wid.T](id)
+    implicitly[wid.T =:= id.type]
+    implicitly[wid.value.Raw =:= Int]
+    assert(wid.value == id)
+    
+    val wname = implicitly[Witness.Aux[name.type]]
+
+    val x = name ->> "foo"
+
+    def sing[X, D](x: X)(implicit e: Keys.Aux[X :~: ∅, D :~: ∅]): D = {
+      e(x :~: ∅).head
     }
+    assert(sing(x) == name)
 
-    import AnyDenotation._
+    val nameSing = GetTag[name.Rep]
+    assert(nameSing(x) == name)
+
+    ///////
 
     implicitly[Represented.By[∅, ∅]]
     implicitly[Represented.By[id.type :~: name.type :~: ∅, TaggedWith[id.type] :~: TaggedWith[name.type] :~: ∅]] 
@@ -142,23 +126,32 @@ class irishService extends FunSuite {
     assert(keys(i) === testItem.attributes)
     assert(keys(i) === (id :~: name :~: ∅))
 
-    import shapeless._, poly._
 
-    val tr = Transform.transform[
+    // transforming testItem to Map
+    val tr = FromAttributes[
       id.type :~: name.type :~: ∅, 
       id.Rep  :~: name.Rep  :~: ∅,
-      sdkRep.type,
+      toSDKRep.type,
       SDKRep
     ]
-    println(tr(testItem.attributes, i))
+    val map1 = tr(testItem.attributes, i)
+    println(map1)
 
-    val t = implicitly[Transform.Aux[testItem.Attributes, testItem.Raw, sdkRep.type, SDKRep]]
-    val ti = implicitly[TransformItem.Aux[testItem.type, sdkRep.type, SDKRep]]
-    println(ti(testItem, i))
+    val t = implicitly[FromAttributes.Aux[testItem.Attributes, testItem.Raw, toSDKRep.type, SDKRep]]
+    val ti = implicitly[FromItem.Aux[testItem.type, toSDKRep.type, SDKRep]]
+    val map2 = ti(testItem, i)
+    println(map2)
+    assert(map1 == map2)
+
+    // forming testItem from Map
+    val form = ToAttributes[SDKRep, testItem.Attributes, testItem.Raw, fromSDKRep.type](ToAttributes.cons)
+    val i2 = form(map2, testItem.attributes)
+    println(i2)
+    assert(i2 == i)
 
   }
 
-  ignore("complex example") {
+  test("complex example") {
     // CREATE TABLE
     val createResult = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
     val afterCreate = waitFor(table, createResult.state)
@@ -177,20 +170,23 @@ class irishService extends FunSuite {
       ∅
     )
 
-    import sdkRep._
+    // NOTE: don't know why these explicit import are needed..
+    import toSDKRep._
     val putResult = service please (InTable(table, afterCreate) putItem testItem withValue myItem)
     assert(putResult.output === PutItemSuccess)
     val afterPut = waitFor(table, putResult.state)
 
     // GET ITEM
+    import fromSDKRep._
     val getResult = service please (FromCompositeKeyTable(table, afterPut) getItem testItem withKeys (myItem.attr(id), myItem.attr(name)))
     assert(getResult.output === GetItemSuccess(myItem))
 
 
     //negative test
-   // val updateResult = service please (FromCompositeKeyTable(table, afterPut) updateItem testItem withKeys (
-   //   myItem.attr(id), myItem.attr(name), Map(id.label -> new AttributeValueUpdate(1, AttributeAction.ADD))))
-
+    intercept[com.amazonaws.AmazonServiceException] {
+      val updateResult = service please (FromCompositeKeyTable(table, afterPut) updateItem testItem withKeys (
+        myItem.attr(id), myItem.attr(name), Map(id.label -> new AttributeValueUpdate(1, AttributeAction.ADD))))
+    }
 
 
     // DELETE ITEM + get again

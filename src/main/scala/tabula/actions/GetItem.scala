@@ -2,6 +2,7 @@ package ohnosequences.tabula
 
 import ohnosequences.scarph._
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
+import ohnosequences.tabula.impl.ImplicitConversions._
 
 sealed trait GetItemResult { type Item <: AnyItem }
 case class GetItemFailure[I <: AnyItem]() extends GetItemResult { type Item = I }
@@ -18,7 +19,7 @@ trait AnyGetItemAction extends AnyTableAction {
 
   type Output = GetItemResult
 
-  val parseSDKRep: Map[String, AttributeValue] => item.Rep
+  val parseSDKRep: SDKRep => item.Rep
 }
 
 
@@ -35,8 +36,8 @@ case class FromHashKeyTable[T <: Singleton with AnyHashKeyTable]
 
     case class withKey(hashKeyValue: t.hashKey.Raw)
     (implicit
-      hasHashKey:  i.type HasProperty t.HashKey,
-      parser: Map[String, AttributeValue] => i.Rep
+      val form: ToItem[SDKRep, i.type],
+      val hasHashKey:  i.type HasProperty t.HashKey
     ) extends AnyGetItemHashKeyAction {
       type Table = T
       val  table = t: t.type
@@ -48,7 +49,7 @@ case class FromHashKeyTable[T <: Singleton with AnyHashKeyTable]
 
       val inputState = inputSt
 
-      val parseSDKRep = parser
+      val parseSDKRep = (m: SDKRep) => form(m, i)
 
       override def toString = s"FromTable ${t.name} getItem ${i.label} withKey ${hashKeyValue}"
     }
@@ -73,9 +74,9 @@ case class FromCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
       hashKeyValue: t.hashKey.Raw,
       rangeKeyValue: t.rangeKey.Raw
     )(implicit
-      hasHashKey:  i.type HasProperty t.HashKey,
-      hasRangeKey: i.type HasProperty t.RangeKey,
-      parse: Map[String, AttributeValue] => i.Rep
+      val form: ToItem[SDKRep, i.type],
+      val hasHashKey:  i.type HasProperty t.HashKey,
+      val hasRangeKey: i.type HasProperty t.RangeKey
     ) extends AnyGetItemCompositeKeyAction {
       type Table = T
       val  table = t: t.type
@@ -87,7 +88,7 @@ case class FromCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
 
       val inputState = inputSt
 
-      val parseSDKRep = parse
+      val parseSDKRep = (m: SDKRep) => form(m, i)
 
       override def toString = s"FromTable ${t.name} getItem ${i.label} withKeys ${(hashKeyValue, rangeKeyValue)}"
     }

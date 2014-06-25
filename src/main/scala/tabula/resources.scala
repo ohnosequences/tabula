@@ -28,7 +28,7 @@ object AnyDynamoDBResource {
 }
 
 /*
-  see http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/UsingIAMWithDDB.html#ARN_Format
+  see http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/UsingIAMWithDDB.html#ARN_ToAttributesat
 */
 case class DynamoDBARN[R <: AnyDynamoDBResource](resource: R, account: Account) {
 

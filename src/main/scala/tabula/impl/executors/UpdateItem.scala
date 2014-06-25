@@ -1,7 +1,7 @@
 package ohnosequences.tabula.impl
 
 import ohnosequences.tabula._
-import ohnosequences.tabula.impl.AttributeImplicits._
+import ohnosequences.tabula.impl.ImplicitConversions._
 import ohnosequences.tabula.ExecutorResult
 
 case class UpdateItemCompositeKeyExecutor[A <: AnyUpdateItemCompositeKeyAction](a: A)(
