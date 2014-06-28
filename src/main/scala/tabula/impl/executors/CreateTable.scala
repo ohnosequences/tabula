@@ -4,9 +4,7 @@ import ohnosequences.tabula._, ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 
 case class CreateHashKeyTableExecutor[A <: AnyCreateTable with AnyTableAction.withHashKeyTable](a: A)
-  (implicit
-    dynamoClient: AnyDynamoDBClient
-  ) extends Executor[A](a) {
+  (dynamoClient: AnyDynamoDBClient) extends Executor(a) {
 
   type OutC[X] = X
 
@@ -35,9 +33,8 @@ case class CreateHashKeyTableExecutor[A <: AnyCreateTable with AnyTableAction.wi
   }
 }
 
-case class CreateCompositeKeyTableExecutor[A <: AnyCreateTable with AnyTableAction.withCompositeKeyTable](a: A)(
-    dynamoClient: AnyDynamoDBClient
-  ) extends Executor(a) {
+case class CreateCompositeKeyTableExecutor[A <: AnyCreateTable with AnyTableAction.withCompositeKeyTable](a: A)
+  (dynamoClient: AnyDynamoDBClient) extends Executor(a) {
 
   type OutC[X] = X
 

@@ -35,6 +35,14 @@ object ImplicitConversions {
     // TODO: a case for Bytes
   }
 
+  trait SDKRepParser extends AnyTableItemAction {
+    val parseSDKRep: SDKRep => item.Rep
+  }
+
+  trait SDKRepGetter extends AnyTableItemAction {
+    val getSDKRep: item.Rep => SDKRep
+  }
+
 
   /* Attributes-related conversions */
   implicit def getAttrDef[A <: AnyAttribute](attr: A): AttributeDefinition = {

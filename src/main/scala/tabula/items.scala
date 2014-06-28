@@ -2,6 +2,7 @@ package ohnosequences.tabula
 
 import ohnosequences.typesets._
 import ohnosequences.scarph._
+import shapeless._, poly._
 
 /*
   ## Items
@@ -95,45 +96,25 @@ object Represented {
 }
 
 
-// Some experiments with getting record keys (copied from shapeless) 
+/* Takes a set of Reps and returns the set of what they represent */
+trait TagsOf[S <: TypeSet] extends DepFn1[S] { type Out <: TypeSet }
 
-import shapeless._, poly._
+object TagsOf {
+  def apply[S <: TypeSet](implicit keys: TagsOf[S]): Aux[S, keys.Out] = keys
 
-trait Keys[S <: TypeSet] extends DepFn1[S] { type Out <: TypeSet }
-
-object Keys {
-  def apply[S <: TypeSet](implicit keys: Keys[S]): Aux[S, keys.Out] = keys
-
-  type Aux[S <: TypeSet, O <: TypeSet] = Keys[S] { type Out = O }
+  type Aux[S <: TypeSet, O <: TypeSet] = TagsOf[S] { type Out = O }
 
   implicit val empty: Aux[∅, ∅] =
-    new Keys[∅] {
+    new TagsOf[∅] {
       type Out = ∅
       def apply(s: ∅): Out = ∅
     }
 
-  import AnyDenotation._
-  implicit def cons[H <: AnyTag, T <: TypeSet]
-    (implicit wk: Witness.Aux[H#Denotation], t: Keys[T]): Aux[H :~: T, H#Denotation :~: t.Out] =
-      new Keys[H :~: T] {
-        type Out = H#Denotation :~: t.Out
-        def apply(s: H :~: T): Out = wk.value :~: t(s.tail)
-      }
-}
-
-import AnyDenotation._
-trait GetTag[S] extends DepFn1[S] { type Out }
-
-object GetTag {
-  def apply[S](implicit gt: GetTag[S]): Aux[S, gt.Out] = gt
-
-  type Aux[S, O] = GetTag[S] { type Out = O }
-
-  implicit def cons[R, D]
-    (implicit ks: Keys.Aux[R :~: ∅, D :~: ∅]): Aux[R, D] =
-      new GetTag[R] {
-        type Out = D
-        def apply(s: R): Out = ks(s :~: ∅).head
+  implicit def cons[H <: Singleton with Representable, T <: TypeSet]
+    (implicit fromRep: H#Rep => H, t: TagsOf[T]): Aux[H#Rep :~: T, H :~: t.Out] =
+      new TagsOf[H#Rep :~: T] {
+        type Out = H :~: t.Out
+        def apply(s: H#Rep :~: T): Out = fromRep(s.head) :~: t(s.tail)
       }
 }
 
@@ -159,71 +140,62 @@ trait FromAttributes[
     Out           // what we want to get
   ] {
 
-  type R <: TypeSet             // representation of attributes
-  type F <: Singleton with Poly // transformation function
+  type Reps <: TypeSet            // representation of attributes
+  type Fun <: Singleton with Poly // transformation function
 
-  def apply(a: A, r: R): Out
+  def apply(r: Reps): Out
 }
 
 object FromAttributes {
-  def apply[A <: TypeSet, R <: TypeSet, F <: Singleton with Poly, Out](implicit tr: FromAttributes.Aux[A, R, F, Out]):
-    FromAttributes.Aux[A, R, F, Out] = tr
+  def apply[A <: TypeSet, Reps <: TypeSet, F <: Singleton with Poly, Out](implicit tr: FromAttributes.Aux[A, Reps, F, Out]):
+    FromAttributes.Aux[A, Reps, F, Out] = tr
 
-  type Aux[A <: TypeSet, R0 <: TypeSet, F0 <: Singleton with Poly, Out] =
+  type Aux[A <: TypeSet, R <: TypeSet, F <: Singleton with Poly, Out] =
     FromAttributes[A, Out] { 
-      type R = R0
-      type F = F0
+      type Reps = R
+      type Fun = F
     }
 
-  type Anyhow[A <: TypeSet, R0 <: TypeSet, Out] =
+  type Anyhow[A <: TypeSet, R <: TypeSet, Out] =
     FromAttributes[A, Out] { 
-      type R = R0
+      type Reps = R
     }
 
-  implicit def empty[Out, F0 <: Singleton with Poly]
-    (implicit m: ListLike[Out]): FromAttributes.Aux[∅, ∅, F0, Out] = new FromAttributes[∅, Out] {
-      type R = ∅
-      type F = F0
-      def apply(i: ∅, r: ∅): Out = m.nil
+  type Item[I <: AnyItem, Out] = FromAttributes[I#Attributes, Out] { type Reps = I#Raw }
+  type ItemAux[I <: AnyItem, F <: Singleton with Poly, Out] = 
+    FromAttributes[I#Attributes, Out] { 
+      type Reps = I#Raw
+      type Fun = F
+    }
+
+  implicit def empty[Out, F <: Singleton with Poly]
+    (implicit m: ListLike[Out]): FromAttributes.Aux[∅, ∅, F, Out] = new FromAttributes[∅, Out] {
+      type Reps = ∅
+      type Fun = F
+      def apply(r: ∅): Out = m.nil
     }
 
   implicit def cons[
-    F0 <: Singleton with Poly,
+    F <: Singleton with Poly,
     AH <: Singleton with AnyAttribute, AT <: TypeSet,
-    RH <: AH#Raw, RT <: TypeSet,
+    RT <: TypeSet,
     E, Out
   ](implicit
-    m: ListLike.Of[Out, E], 
-    f: Case1.Aux[F0, (AH, RH), E], 
-    t: FromAttributes.Aux[AT, RT, F0, Out]
-  ): FromAttributes.Aux[AH :~: AT, RH :~: RT, F0, Out] =
+    tagOf: AH#Rep => AH,
+    listLike: ListLike.Of[Out, E], 
+    transform: Case1.Aux[F, (AH, AH#Rep), E], 
+    recOnTail: FromAttributes.Aux[AT, RT, F, Out]
+  ): FromAttributes.Aux[AH :~: AT, AH#Rep :~: RT, F, Out] =
     new FromAttributes[AH :~: AT, Out] {
-      type R = RH :~: RT
-      type F = F0
-      def apply(a: AH :~: AT, r: RH :~: RT): Out = {
-        m.cons(
-          f((a.head, r.head)),
-          t(a.tail, r.tail)
+      type Reps = AH#Rep :~: RT
+      type Fun = F
+      def apply(r: AH#Rep :~: RT): Out = {
+        listLike.cons(
+          transform((tagOf(r.head), r.head)),
+          recOnTail(r.tail)
         )
       }
     }
-}
-
-trait FromItem[I <: Singleton with AnyItem, Out] {
-  type R = I#Rep
-  type F <: Singleton with Poly
-  def apply(i: I, r: R): Out
-}
-
-object FromItem {
-  type Aux[I <: Singleton with AnyItem, F0 <: Singleton with Poly, Out] = FromItem[I, Out] { type F = F0 }
-
-  implicit def yeah[I <: Singleton with AnyItem, F0 <: Singleton with Poly, Out]
-    (implicit tr: FromAttributes.Aux[I#Attributes, I#Raw, F0, Out]): FromItem.Aux[I, F0, Out] =
-      new FromItem[I, Out] {
-        type F = F0
-        def apply(i: I, r: R): Out = tr(i.attributes, r)
-      }
 }
 
 ///////////////////////////////////////////////////////////////

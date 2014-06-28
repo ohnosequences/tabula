@@ -5,8 +5,7 @@ import com.amazonaws.services.dynamodbv2.model._
 import java.util.Date
 
 case class UpdateTableExecutor[A <: AnyUpdateTableAction](a: A)
-  (dynamoClient: AnyDynamoDBClient) 
-    extends Executor[A](a) {
+  (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
 
   type OutC[X] = X
 

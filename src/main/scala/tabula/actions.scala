@@ -35,6 +35,11 @@ trait AnyTableAction extends AnyAction {
   val  resources = table
 }
 
+trait AnyTableItemAction extends AnyTableAction {
+  type Item <: Singleton with AnyItem.ofTable[Table]
+  val  item: Item
+}
+
 object AnyTableAction {
   type withHashKeyTable      = AnyTableAction { type Table <: Singleton with AnyHashKeyTable }
   type withCompositeKeyTable = AnyTableAction { type Table <: Singleton with AnyCompositeKeyTable }

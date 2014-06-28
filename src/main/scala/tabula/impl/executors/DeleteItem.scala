@@ -4,13 +4,12 @@ import ohnosequences.tabula._, ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 
 case class DeleteItemHashKeyExecutor[A <: AnyDeleteItemHashKeyAction](a: A)
-  (dynamoClient: AnyDynamoDBClient) 
-    extends Executor[A](a) {
+  (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
 
   type OutC[X] = X
 
-  import scala.collection.JavaConversions._
   def apply(): Out = {
+    import scala.collection.JavaConversions._
     println("executing: " + action)
 
     val res: ohnosequences.tabula.DeleteItemResult = try {
@@ -19,7 +18,7 @@ case class DeleteItemHashKeyExecutor[A <: AnyDeleteItemHashKeyAction](a: A)
       ))
       DeleteItemSuccess
     } catch {
-      case t: Throwable => println(t.printStackTrace); DeleteItemFail
+      case t: Exception => println(t.printStackTrace); DeleteItemFail
     }
 
     ExecutorResult(res, action.table, action.inputState)
@@ -27,13 +26,12 @@ case class DeleteItemHashKeyExecutor[A <: AnyDeleteItemHashKeyAction](a: A)
 }
 
 case class DeleteItemCompositeKeyExecutor[A <: AnyDeleteItemCompositeKeyAction](a: A)
-  (dynamoClient: AnyDynamoDBClient) 
-    extends Executor[A](a) {
+  (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
 
   type OutC[X] = X
 
-  import scala.collection.JavaConversions._
   def apply(): Out = {
+    import scala.collection.JavaConversions._
     println("executing: " + action)
 
     val res: ohnosequences.tabula.DeleteItemResult = try {
@@ -43,7 +41,7 @@ case class DeleteItemCompositeKeyExecutor[A <: AnyDeleteItemCompositeKeyAction](
       ))
       DeleteItemSuccess
     } catch {
-      case t: Throwable => println(t.printStackTrace); DeleteItemFail
+      case t: Exception => println(t.printStackTrace); DeleteItemFail
     }
 
     ExecutorResult(res, action.table, action.inputState)
