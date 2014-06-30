@@ -1,8 +1,9 @@
 package ohnosequences.tabula.test
 
+import ohnosequences.typesets._
 import ohnosequences.tabula._
 import ohnosequences.scarph._
-
+import shapeless.test._
 
 object simpleModel {
 
@@ -12,18 +13,26 @@ object simpleModel {
   object email extends Attribute[String]
   object serializedCrap extends Attribute[Bytes]
   object departments extends Attribute[Set[String]]
-  // object nono extends Attribute[Traversable[Array[Float]]]
+
+  // Float is not a valid type for an attribute
+  illTyped("""
+  object nono extends Attribute[Traversable[Array[Float]]]
+  """)
+
+  // departments attribute cannot be a primary key:
+  illTyped("""
+  object WrongHashTable extends HashKeyTable (
+    name = "users",
+    hashKey = departments,
+    region = EU
+  )
+  """)
 
   case object UsersTable extends HashKeyTable (
     name = "users",
     hashKey = id,
     region = EU
   )
-  // object WrongHashTable extends TableType (
-  //   name = "users",
-  //   key = Hash(serializedCrap),
-  //   region = EU
-  // )
 
   case object RandomTable extends CompositeKeyTable (
     name = "someStuff",
@@ -32,33 +41,39 @@ object simpleModel {
     region = EU
   )
 
-  case object UserItem extends ItemType(UsersTable)
-  implicit val user_name = UserItem has name
-  implicit val user_age = UserItem has age
+  case object UserItem extends Item(UsersTable, name :~: age :~: ∅)
 
-  case object FunnyUserItem extends ItemType(UsersTable)
-  implicit val funnyUser_name = FunnyUserItem has name
-  implicit val funnyUser_email = FunnyUserItem has email
-  implicit val funnyUser_serializedCrap = FunnyUserItem has serializedCrap
-  implicit val funnyUser_departments = FunnyUserItem has departments
+  case object FunnyUserItem extends Item(UsersTable, 
+    name :~: email :~: serializedCrap :~: departments :~: ∅
+  )
 
   // predicates
   import AnyPredicate._
   import Condition._
 
   val namePred = SimplePredicate(UserItem, EQ[name.type](name, "piticli"))
-  val agePred = AND(namePred, age < 18)
+  val ageAndPred = AND(namePred, age < 18)
+  val  ageOrPred =  OR(namePred, age > 18)
+  val agePred = namePred and (age < 18)
 
   val emailPred = SimplePredicate(FunnyUserItem, EQ[email.type](email, "oh@uh.com"))
 
-  val orNamePred = UserItem ? (name === "piticli") or (name === "clipiti")
-  // wrong! no mixing and/or
-  // val andAgePred = orNamePred and (age ≥ 5)
-  val orAge = orNamePred or (age ≥ 5)
+  val longOrPred  = UserItem ? (name === "piticli") or (name === "clipiti") or (age < 10) or (age > 34)
+  val longAndPred = UserItem ? (name === "piticli") and (name === "clipiti") and (age < 10) and (age > 34)
+  val orAgeExt = longOrPred or (age ≥ 5)
+  // No mixing and/or
+  illTyped("longOrPred and (age ≥ 5)")
 
   val userHasName = UserItem ? (name isThere)
 
   val userNotInDpt = FunnyUserItem ? (departments ∌ "sales")
   val userInDpt = FunnyUserItem ? (departments ∋ "IT")
 
+  // import OnlyWitnKeyConditions._
+  implicitly[OnlyWitnKeyConditions[namePred.type]]   //(OnlyWitnKeyConditions.simple)
+  implicitly[OnlyWitnKeyConditions[ageOrPred.type]]  //(OnlyWitnKeyConditions2.or)
+  implicitly[OnlyWitnKeyConditions[ageAndPred.type]] //(OnlyWitnKeyConditions2.and)
+  implicitly[OnlyWitnKeyConditions[agePred.type]]
+  illTyped("implicitly[OnlyWitnKeyConditions[userHasName.type]]")
+  illTyped("implicitly[OnlyWitnKeyConditions[userInDpt.type]]")
 }

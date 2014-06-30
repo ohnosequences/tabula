@@ -9,29 +9,24 @@ import ohnosequences.scarph._
   A table contains only the static part of a table, things hat cannot be changed once the the table is created. Dynamic data lives in `AnyTableState`. The only exception to this is the `Account`; this is so because normally it is something that is retrieved dynamically from the environment.
 */
 trait AnyTable extends AnyDynamoDBResource {
+  val name: String
+
+  type HashKey <: AnyAttribute
+  val  hashKey: HashKey
 
   type ResourceType = Table.type
-  val resourceType = Table
+  val  resourceType = Table
 
   type Region <: AnyRegion
-  val region: Region
-
-  val name: String
+  val  region: Region
 }
 
 /*
   Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation only makes sense on a table with a composite key.
 */
-sealed trait AnyHashKeyTable extends AnyTable { 
-
-  type HashKey <: AnyAttribute
-  val hashKey: HashKey
-}
+sealed trait AnyHashKeyTable extends AnyTable 
 
 sealed trait AnyCompositeKeyTable extends AnyTable { 
-
-  type HashKey <: AnyAttribute
-  val hashKey: HashKey
 
   type RangeKey <: AnyAttribute
   val rangeKey: RangeKey
@@ -40,12 +35,11 @@ sealed trait AnyCompositeKeyTable extends AnyTable {
 class HashKeyTable [
   HK <: AnyAttribute,
   R <: AnyRegion
-](
-  val name: String,
+](val name: String,
   val hashKey: HK,
   val region: R
 )(implicit
-  val ev_k: oneOf[PrimaryKeyValues]#is[HK#Raw]
+  val ev_k: HK#Raw :<: PrimaryKeyValues
 ) extends AnyHashKeyTable {
 
   type Region = R
@@ -56,72 +50,23 @@ class CompositeKeyTable [
   HK <: AnyAttribute,
   RK <: AnyAttribute,
   R <: AnyRegion
-](
-  val name: String,
+](val name: String,
   val hashKey: HK,
   val rangeKey: RK,
   val region: R
-) 
-(implicit 
-  val ev_h: oneOf[PrimaryKeyValues]#is[HK#Raw],
-  val ev_r: oneOf[PrimaryKeyValues]#is[RK#Raw]
-)
-extends AnyCompositeKeyTable {
+)(implicit
+  val ev_h: HK#Raw :<: PrimaryKeyValues,
+  val ev_r: RK#Raw :<: PrimaryKeyValues
+) extends AnyCompositeKeyTable {
 
   type Region = R
   type HashKey = HK
   type RangeKey = RK
 }
 
-/*
-  ### table states
-
-*/
-trait AnyTableState extends AnyDynamoDBState {
-
-  type Resource <: AnyTable
-  
-  val throughputStatus: ThroughputStatus
-
-  // TODO table ARN  
+object AnyTable {
+  type inRegion[R <: AnyRegion] = AnyTable { type Region = R }
 }
-
-sealed trait ThroughputStatus {
-
-  val readCapacity: Int
-  val writeCapacity: Int
-  val lastIncrease: java.util.Date
-  val lastDecrease: java.util.Date
-  val numberOfDecreasesToday: Int
-}
-  
-case class InitialThroughput(
-  val readCapacity: Int,
-  val writeCapacity: Int,
-  val lastIncrease: java.util.Date = new java.util.Date(),
-  val lastDecrease: java.util.Date = new java.util.Date(),
-  val numberOfDecreasesToday: Int = 0
-) 
-extends ThroughputStatus {}
-
-case class InitialState[T <: Singleton with AnyTable](
-  val resource: T,
-  val account: Account,
-  val initialThroughput: InitialThroughput
-) 
-extends AnyTableState {
-
-  type Resource = T
-
-  val throughputStatus = initialThroughput
-  
-}
-trait Creating extends AnyTableState
-trait Updating extends AnyTableState
-trait Active extends AnyTableState
-trait Deleting extends AnyTableState  
-
-object AnyTable {}
 
 
 // trait AnyHashKeyTable extends AnyTable { table =>

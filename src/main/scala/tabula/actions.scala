@@ -1,109 +1,46 @@
 package ohnosequences.tabula
 
-trait AnyAction {
+import ohnosequences.scarph._
 
+
+trait AnyAction { action =>
   // this should be an HList of Resources; it is hard to express though
-  type Input
-  val input: Input
-  // same for this
-  type Output
+  type Resources
+  val  resources: Resources
 
   type InputState
-  val state: InputState
+  val  inputState: InputState
+
   type OutputState
+
+  // these are input and output that are not resources
+  type Input
+  val  input: Input
+
+  type Output
 }
 
 object AnyAction {
-
-  type Of[S <: AnyDynamoDBService] = AnyAction { type Service = S }
+  // TODO: this won't work with ResourcesList
+  type inRegion[R <: AnyRegion] = AnyAction { type Resources <: AnyDynamoDBResource.inRegion[R] }
 }
 
-// actions
 
-trait AnyCreateTable extends AnyAction {
+trait AnyTableAction extends AnyAction {
+  type Table <: Singleton with AnyTable
+  val  table: Table
 
-  type Input <: Singleton with AnyTable
-  type InputState = InitialState[Input]
-
-  type Output = Input
-  // TODO this should be something concrete
-  type OutputState = AnyTableState { type Resource = Input }
+  // TODO: change this to ResourcesList
+  type Resources = Table //:+: RNil
+  val  resources = table
 }
 
-case class CreateTable[T <: Singleton with AnyTable](val input: T, val state: InitialState[T]) extends AnyCreateTable {
-
-  type Input = T
+trait AnyTableItemAction extends AnyTableAction {
+  type Item <: Singleton with AnyItem.ofTable[Table]
+  val  item: Item
 }
 
-trait AnyDeleteTable extends AnyAction {
-
-  type Input <: Singleton with AnyTable
-  type InputState <: AnyTableState { type Resource = Input }
-
-  type Output = Input
-  // TODO this should be something concrete
-  type OutputState = AnyTableState { type Resource = Input }
-}
-
-/*
-  #### GetItem
-
-  - [API - GetItem](http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_GetItem.html)
-
-  This action depends on the table type, and thus its signature and implementation will be different for each. In the case of a HashKeyTable we need as **input**
-  
-  - an `item` object of type `Item` (**not** `ItemType`)
-  - a value of type `table.hashKey.Rep`
-  - _optional_ consistent read, capacity
-
-  As per the output, we should get
-
-  - the corresponding `item.Rep` value
-  - possibly errors instead
-
-  ##### input, inputState
-
-  In principle, we should have something like
-
-  - `input` correspond to the table from which you want to read the item
-  - `inputState` being the key value, the `item` and whatever else is needed
-
-  This sounds like more orthodox in principle, but it could be confusing _if_ the action class mirrors this in its parameters: `service getItem(table, otherStuff(key, item))`. But this does not need to be so: just use the table inside `item` to set the input, and use a more intuitive set of parameters: `service getItem(item, key)`. Actually, as a table is the only resource in DynamoDB, for all DynamoDB actions the input is going to be formed by tables.
-
-*/
-trait AnyGetItem extends AnyAction {
-
-  type Input <: AnyItemType
-}
-
-/*
-  ### Query
-
-  - [API - Query](http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html)
-
-  We need as input
-
-  - a hash key value
-  - _optional_ a condition on the range key
-  - the item type over which we want to query
-  - _optional_ a predicate over it for filtering results service-side
-*/
-trait AnyQuery extends AnyAction {}
-
-
-trait Execute {
-
-  type Action <: AnyAction
-  val action: Action
-
-  type C[+X]
-
-  def apply(): Out
-
-  type Out = C[(action.Output, action.OutputState)]
-}
-
-object Execute {
-  
-  type For[A <: AnyAction] = Execute { type Action = A }
+object AnyTableAction {
+  type withHashKeyTable      = AnyTableAction { type Table <: Singleton with AnyHashKeyTable }
+  type withCompositeKeyTable = AnyTableAction { type Table <: Singleton with AnyCompositeKeyTable }
 }

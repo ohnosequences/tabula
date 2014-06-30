@@ -14,14 +14,16 @@ A table contains only the static part of a table, things hat cannot be changed o
 
 ```scala
 trait AnyTable extends AnyDynamoDBResource {
+  val name: String
+
+  type HashKey <: AnyAttribute
+  val  hashKey: HashKey
 
   type ResourceType = Table.type
-  val resourceType = Table
+  val  resourceType = Table
 
   type Region <: AnyRegion
-  val region: Region
-
-  val name: String
+  val  region: Region
 }
 ```
 
@@ -30,16 +32,9 @@ Tables can have two types of primary keys: simple or composite. This is static a
 
 
 ```scala
-sealed trait AnyHashKeyTable extends AnyTable { 
-
-  type HashKey <: AnyAttribute
-  val hashKey: HashKey
-}
+sealed trait AnyHashKeyTable extends AnyTable 
 
 sealed trait AnyCompositeKeyTable extends AnyTable { 
-
-  type HashKey <: AnyAttribute
-  val hashKey: HashKey
 
   type RangeKey <: AnyAttribute
   val rangeKey: RangeKey
@@ -48,12 +43,11 @@ sealed trait AnyCompositeKeyTable extends AnyTable {
 class HashKeyTable [
   HK <: AnyAttribute,
   R <: AnyRegion
-](
-  val name: String,
+](val name: String,
   val hashKey: HK,
   val region: R
 )(implicit
-  val ev_k: oneOf[PrimaryKeyValues]#is[HK#Raw]
+  val ev_k: HK#Raw :<: PrimaryKeyValues
 ) extends AnyHashKeyTable {
 
   type Region = R
@@ -64,75 +58,23 @@ class CompositeKeyTable [
   HK <: AnyAttribute,
   RK <: AnyAttribute,
   R <: AnyRegion
-](
-  val name: String,
+](val name: String,
   val hashKey: HK,
   val rangeKey: RK,
   val region: R
-) 
-(implicit 
-  val ev_h: oneOf[PrimaryKeyValues]#is[HK#Raw],
-  val ev_r: oneOf[PrimaryKeyValues]#is[RK#Raw]
-)
-extends AnyCompositeKeyTable {
+)(implicit
+  val ev_h: HK#Raw :<: PrimaryKeyValues,
+  val ev_r: RK#Raw :<: PrimaryKeyValues
+) extends AnyCompositeKeyTable {
 
   type Region = R
   type HashKey = HK
   type RangeKey = RK
 }
-```
 
-
-### table states
-
-
-
-```scala
-trait AnyTableState extends AnyDynamoDBState {
-
-  type Resource <: AnyTable
-  
-  val throughputStatus: ThroughputStatus
-
-  // TODO table ARN  
+object AnyTable {
+  type inRegion[R <: AnyRegion] = AnyTable { type Region = R }
 }
-
-sealed trait ThroughputStatus {
-
-  val readCapacity: Int
-  val writeCapacity: Int
-  val lastIncrease: java.util.Date
-  val lastDecrease: java.util.Date
-  val numberOfDecreasesToday: Int
-}
-  
-case class InitialThroughput(
-  val readCapacity: Int,
-  val writeCapacity: Int,
-  val lastIncrease: java.util.Date = new java.util.Date(),
-  val lastDecrease: java.util.Date = new java.util.Date(),
-  val numberOfDecreasesToday: Int = 0
-) 
-extends ThroughputStatus {}
-
-case class InitialState[T <: Singleton with AnyTable](
-  val resource: T,
-  val account: Account,
-  val initialThroughput: InitialThroughput
-) 
-extends AnyTableState {
-
-  type Resource = T
-
-  val throughputStatus = initialThroughput
-  
-}
-trait Creating extends AnyTableState
-trait Updating extends AnyTableState
-trait Active extends AnyTableState
-trait Deleting extends AnyTableState  
-
-object AnyTable {}
 
 
 // trait AnyHashKeyTable extends AnyTable { table =>
@@ -233,13 +175,38 @@ object AnyTable {}
     + scala
       + tabula
         + [simpleModel.scala][test/scala/tabula/simpleModel.scala]
+        + [resourceLists.scala][test/scala/tabula/resourceLists.scala]
+        + impl
+          + [irishService.scala][test/scala/tabula/impl/irishService.scala]
   + main
     + scala
       + [tabula.scala][main/scala/tabula.scala]
       + tabula
         + [predicates.scala][main/scala/tabula/predicates.scala]
         + [accounts.scala][main/scala/tabula/accounts.scala]
+        + impl
+          + [DynamoDBExecutors.scala][main/scala/tabula/impl/DynamoDBExecutors.scala]
+          + [Configuration.scala][main/scala/tabula/impl/Configuration.scala]
+          + executors
+            + [CreateTable.scala][main/scala/tabula/impl/executors/CreateTable.scala]
+            + [GetItem.scala][main/scala/tabula/impl/executors/GetItem.scala]
+            + [UpdateTable.scala][main/scala/tabula/impl/executors/UpdateTable.scala]
+            + [DeleteTable.scala][main/scala/tabula/impl/executors/DeleteTable.scala]
+            + [DeleteItem.scala][main/scala/tabula/impl/executors/DeleteItem.scala]
+            + [DescribeTable.scala][main/scala/tabula/impl/executors/DescribeTable.scala]
+            + [PutItem.scala][main/scala/tabula/impl/executors/PutItem.scala]
+          + [AttributeImplicits.scala][main/scala/tabula/impl/AttributeImplicits.scala]
         + [regions.scala][main/scala/tabula/regions.scala]
+        + [states.scala][main/scala/tabula/states.scala]
+        + actions
+          + [CreateTable.scala][main/scala/tabula/actions/CreateTable.scala]
+          + [GetItem.scala][main/scala/tabula/actions/GetItem.scala]
+          + [UpdateTable.scala][main/scala/tabula/actions/UpdateTable.scala]
+          + [DeleteTable.scala][main/scala/tabula/actions/DeleteTable.scala]
+          + [DeleteItem.scala][main/scala/tabula/actions/DeleteItem.scala]
+          + [DescribeTable.scala][main/scala/tabula/actions/DescribeTable.scala]
+          + [PutItem.scala][main/scala/tabula/actions/PutItem.scala]
+        + [executors.scala][main/scala/tabula/executors.scala]
         + [items.scala][main/scala/tabula/items.scala]
         + [resources.scala][main/scala/tabula/resources.scala]
         + [actions.scala][main/scala/tabula/actions.scala]
@@ -249,10 +216,31 @@ object AnyTable {}
         + [conditions.scala][main/scala/tabula/conditions.scala]
 
 [test/scala/tabula/simpleModel.scala]: ../../../test/scala/tabula/simpleModel.scala.md
+[test/scala/tabula/resourceLists.scala]: ../../../test/scala/tabula/resourceLists.scala.md
+[test/scala/tabula/impl/irishService.scala]: ../../../test/scala/tabula/impl/irishService.scala.md
 [main/scala/tabula.scala]: ../tabula.scala.md
 [main/scala/tabula/predicates.scala]: predicates.scala.md
 [main/scala/tabula/accounts.scala]: accounts.scala.md
+[main/scala/tabula/impl/DynamoDBExecutors.scala]: impl/DynamoDBExecutors.scala.md
+[main/scala/tabula/impl/Configuration.scala]: impl/Configuration.scala.md
+[main/scala/tabula/impl/executors/CreateTable.scala]: impl/executors/CreateTable.scala.md
+[main/scala/tabula/impl/executors/GetItem.scala]: impl/executors/GetItem.scala.md
+[main/scala/tabula/impl/executors/UpdateTable.scala]: impl/executors/UpdateTable.scala.md
+[main/scala/tabula/impl/executors/DeleteTable.scala]: impl/executors/DeleteTable.scala.md
+[main/scala/tabula/impl/executors/DeleteItem.scala]: impl/executors/DeleteItem.scala.md
+[main/scala/tabula/impl/executors/DescribeTable.scala]: impl/executors/DescribeTable.scala.md
+[main/scala/tabula/impl/executors/PutItem.scala]: impl/executors/PutItem.scala.md
+[main/scala/tabula/impl/AttributeImplicits.scala]: impl/AttributeImplicits.scala.md
 [main/scala/tabula/regions.scala]: regions.scala.md
+[main/scala/tabula/states.scala]: states.scala.md
+[main/scala/tabula/actions/CreateTable.scala]: actions/CreateTable.scala.md
+[main/scala/tabula/actions/GetItem.scala]: actions/GetItem.scala.md
+[main/scala/tabula/actions/UpdateTable.scala]: actions/UpdateTable.scala.md
+[main/scala/tabula/actions/DeleteTable.scala]: actions/DeleteTable.scala.md
+[main/scala/tabula/actions/DeleteItem.scala]: actions/DeleteItem.scala.md
+[main/scala/tabula/actions/DescribeTable.scala]: actions/DescribeTable.scala.md
+[main/scala/tabula/actions/PutItem.scala]: actions/PutItem.scala.md
+[main/scala/tabula/executors.scala]: executors.scala.md
 [main/scala/tabula/items.scala]: items.scala.md
 [main/scala/tabula/resources.scala]: resources.scala.md
 [main/scala/tabula/actions.scala]: actions.scala.md
