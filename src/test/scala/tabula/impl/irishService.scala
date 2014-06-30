@@ -144,7 +144,7 @@ class irishService extends FunSuite {
 
   }
 
-  ignore("complex example") {
+  test("complex example") {
     // CREATE TABLE
     val createResult = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
     val afterCreate = waitFor(table, createResult.state)
