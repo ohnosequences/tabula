@@ -59,11 +59,6 @@ class Item[T <: AnyTable, A <: TypeSet, R <: TypeSet]
 
 object AnyItem {
   type ofTable[T <: AnyTable] = AnyItem { type Table = T }
-
-  // NOTE: this is for compatibility with scarph, but I think it's not needed
-  // you can always say instead: `(implicit e: attribute.type ∈ item.Attributes`
-  implicit def itemAttributeOps[I <: AnyItem, A <: AnyAttribute]
-    (implicit e: A ∈ I#Attributes): I HasProperty A = new (I HasProperty A)
 }
 
 

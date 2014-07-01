@@ -1,7 +1,7 @@
 package ohnosequences.tabula
 
 import ohnosequences.scarph._
-
+import ohnosequences.typesets._
 
 /*
   ## Predicates
@@ -29,7 +29,7 @@ trait AnyOrPredicate extends AnyPredicate {
   type Body <: AnyOrPredicate
 
   def or[Head <: Condition](other: Head)(implicit 
-    ev: body.Item HasProperty other.Attribute
+    ev: other.Attribute ∈ body.item.Attributes
   ): OR[Body, Head] = 
      OR(body, other)
 }
@@ -51,7 +51,7 @@ trait AnyAndPredicate extends AnyPredicate {
   type Body <: AnyAndPredicate
 
   def and[Head <: Condition](other: Head)(implicit 
-    ev: body.Item HasProperty other.Attribute
+    ev: other.Attribute ∈ body.item.Attributes
   ): AND[Body, Head] = 
      AND(body, other)
 }
@@ -93,7 +93,7 @@ object AnyPredicate {
   implicit def itemPredicateOps[I <: Singleton with AnyItem](item: I): ItemPredicateOps[I] = ItemPredicateOps(item)
   case class   ItemPredicateOps[I <: Singleton with AnyItem](item: I) {
     def ?[C <: Condition](c: C)(implicit 
-        ev: item.type HasProperty c.Attribute
+        ev: c.Attribute ∈ item.Attributes
       ): SimplePredicate[I, C] = SimplePredicate(item, c)
   }
 }

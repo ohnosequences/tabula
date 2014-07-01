@@ -11,8 +11,8 @@ description := "tabula project"
 bucketSuffix := "era7.com"
 
 libraryDependencies ++= Seq(
-  "ohnosequences" %% "scarph" % "0.1.0-SNAPSHOT",
-  "ohnosequences" %% "type-sets" % "0.4.0-SNAPSHOT",
+  "ohnosequences" %% "scarph" % "0.1.0",
+  "ohnosequences" %% "type-sets" % "0.4.0",
   "org.scalatest" %% "scalatest" % "2.2.0" % "test",
   "com.amazonaws" % "aws-java-sdk" % "1.8.0"
 )
