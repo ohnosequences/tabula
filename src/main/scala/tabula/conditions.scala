@@ -28,6 +28,8 @@ trait Condition {
 trait KeyCondition extends Condition
 
 object Condition {
+  type On[A <: Singleton with AnyAttribute] = Condition { type Attribute = A }
+
   implicit def conditionNotSetOps[A <: Singleton with AnyAttribute](attribute: A)
     (implicit ev: A#Raw :<: NotSetValues): 
       ConditionNotSetOps[A] = 

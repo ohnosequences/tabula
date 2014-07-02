@@ -35,10 +35,24 @@ trait AnyTableAction extends AnyAction {
   val  resources = table
 }
 
+abstract class TableAction[T <: Singleton with AnyTable](val table: T)
+  extends AnyTableAction { type Table = T }
+
+
 trait AnyTableItemAction extends AnyTableAction {
   type Item <: Singleton with AnyItem.ofTable[Table]
   val  item: Item
 }
+
+abstract class TableItemAction[
+  T <: Singleton with AnyTable, 
+  I <: Singleton with AnyItem.ofTable[T]
+](val table: T, val item: I)
+  extends AnyTableItemAction { 
+    type Table = T
+    type Item = I 
+  }
+
 
 object AnyTableAction {
   type withHashKeyTable      = AnyTableAction { type Table <: Singleton with AnyHashKeyTable }
