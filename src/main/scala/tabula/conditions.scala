@@ -35,6 +35,11 @@ object Condition {
       ConditionNotSetOps[A] = 
       ConditionNotSetOps[A](attribute)
 
+  implicit def conditionWithPrefixOps[A <: Singleton with AnyAttribute](attribute: A)
+    (implicit ev: A#Raw :<: ValuesWithPrefixes): 
+      ConditionWithPrefixOps[A] = 
+      ConditionWithPrefixOps[A](attribute)
+
   implicit def conditionSetOps[A <: Singleton with AnyAttribute](attribute: A)
     (implicit ev: A#Raw :<: SetValues): 
       ConditionSetOps[A] = 
@@ -183,6 +188,12 @@ class ConditionAnyOps[A <: Singleton with AnyAttribute](attribute: A) {
 
   final def ===(value: A#Raw): EQ[A] = EQ(attribute, value)
   final def  eq(value: A#Raw): EQ[A] = EQ(attribute, value)
+}
+
+case class ConditionWithPrefixOps[A <: Singleton with AnyAttribute](attribute: A)
+    (implicit ev: A#Raw :<: ValuesWithPrefixes) { //extends ConditionAnyOps[A](attribute) {
+
+  final def beginsWith(value: A#Raw): BEGINS_WITH[A] = BEGINS_WITH(attribute, value)
 }
 
 case class ConditionNotSetOps[A <: Singleton with AnyAttribute](attribute: A)

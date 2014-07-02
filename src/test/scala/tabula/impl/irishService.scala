@@ -144,7 +144,7 @@ class irishService extends FunSuite {
 
   }
 
-  test("complex example") {
+  ignore("complex example") {
     // CREATE TABLE
     val createResult = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
     val afterCreate = waitFor(table, createResult.state)
@@ -179,6 +179,12 @@ class irishService extends FunSuite {
     val afterDel = waitFor(table, delResult.state)
     val getResult2 = service please (FromCompositeKeyTable(table, afterDel) getItem testItem withKeys (myItem.attr(id), myItem.attr(name)))
     assert(getResult2.output === GetItemFailure("java.lang.NullPointerException"))
+
+    // QUERY TABLE
+    import Condition._
+
+    val simpleQuery = QueryTable(table, afterDel) forItem testItem withHashKey 123
+    val normalQuery = QueryTable(table, afterDel) forItem testItem withHashKey 123 andRangeCondition (name beginsWith "my")
 
     // DELETE TABLE
     val lastState = waitFor(table, getResult2.state)
