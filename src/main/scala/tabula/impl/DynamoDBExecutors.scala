@@ -52,6 +52,12 @@ case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
     GetItemCompositeKeyExecutor[A](a)(dynamoClient)
 
 
+  /* QUERY */
+  implicit def queryExecutor[A <: AnyQueryAction with SDKRepParser](a: A):
+    QueryExecutor[A] =
+    QueryExecutor[A](a)(dynamoClient)
+
+
   /* DELETE ITEM */
   implicit def deleteItemHashKeyExecutor[A <: AnyDeleteItemHashKeyAction](a: A):
     DeleteItemHashKeyExecutor[A] =

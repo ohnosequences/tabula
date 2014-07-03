@@ -2,7 +2,8 @@ package ohnosequences.tabula.impl
 
 import ohnosequences.typesets._
 import ohnosequences.tabula._
-import com.amazonaws.services.dynamodbv2.model.{AttributeValue, ScalarAttributeType, AttributeDefinition}
+import com.amazonaws.services.dynamodbv2.model.{AttributeValue, ScalarAttributeType, AttributeDefinition, ConditionalOperator}
+import com.amazonaws.services.dynamodbv2.model.{Condition => SDKCondition}
 import scala.reflect._
 import shapeless._, poly._
 
@@ -73,4 +74,34 @@ object ImplicitConversions {
     }
   }
 
+  /* Conditions-related conversions */
+  implicit def toSDKCondition[C <: Condition](cond: C): SDKCondition = {
+
+    val sdkCond = new SDKCondition().withComparisonOperator(cond.getClass.getName)
+
+    cond match {
+      case c: NullaryCondition[_] => sdkCond
+      case _ => {
+        val attrValList = cond match {
+          case c:  SimpleCondition[_] => List(c.value)
+          case c:      CONTAINS[_, _] => List(c.value)
+          case c:  NOT_CONTAINS[_, _] => List(c.value)
+          case c:          BETWEEN[_] => List(c.start, c.end)
+          case c:               IN[_] => c.values
+        }
+        sdkCond.withAttributeValueList(attrValList)
+      }
+    }
+  }
+
+  implicit def toSDKPredicate[P <: AnyPredicate](pred: P): (ConditionalOperator, Map[String, SDKCondition]) = {
+    pred match {
+      case p: AnySimplePredicate => (ConditionalOperator.AND, Map(p.head.attribute.label -> toSDKCondition(p.head)))
+      case p: AnyAndPredicate => (ConditionalOperator.AND, 
+                                  toSDKPredicate(p)._2 + (p.head.attribute.label -> toSDKCondition(p.head)))
+      case p:  AnyOrPredicate => (ConditionalOperator.OR,
+                                  toSDKPredicate(p)._2 + (p.head.attribute.label -> toSDKCondition(p.head)))
+    }
+    
+  }
 }

@@ -144,7 +144,7 @@ class irishService extends FunSuite {
 
   }
 
-  ignore("complex example") {
+  test("complex example") {
     // CREATE TABLE
     val createResult = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
     val afterCreate = waitFor(table, createResult.state)
@@ -174,17 +174,20 @@ class irishService extends FunSuite {
     val getResult = service please (FromCompositeKeyTable(table, afterPut) getItem testItem withKeys (myItem.attr(id), myItem.attr(name)))
     assert(getResult.output === GetItemSuccess(myItem))
 
+    // QUERY TABLE
+    import Condition._
+
+    val simpleQuery = (QueryTable(table, afterPut) forItem testItem withHashKey 123)
+    // val normalQuery = QueryTable(table, afterDel) forItem testItem withHashKey 123 andRangeCondition (name beginsWith "my")
+
+    val queryResult = service please simpleQuery
+    println(queryResult.output)
+
     // DELETE ITEM + get again
     val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterPut) withKeys (myItem.attr(id), myItem.attr(name)))
     val afterDel = waitFor(table, delResult.state)
     val getResult2 = service please (FromCompositeKeyTable(table, afterDel) getItem testItem withKeys (myItem.attr(id), myItem.attr(name)))
     assert(getResult2.output === GetItemFailure("java.lang.NullPointerException"))
-
-    // QUERY TABLE
-    import Condition._
-
-    val simpleQuery = QueryTable(table, afterDel) forItem testItem withHashKey 123
-    val normalQuery = QueryTable(table, afterDel) forItem testItem withHashKey 123 andRangeCondition (name beginsWith "my")
 
     // DELETE TABLE
     val lastState = waitFor(table, getResult2.state)

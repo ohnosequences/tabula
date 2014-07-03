@@ -25,7 +25,7 @@ trait Condition {
   val  attribute: Attribute
 }
 
-trait KeyCondition extends Condition
+sealed trait KeyCondition extends Condition
 
 object Condition {
   type On[A <: Singleton with AnyAttribute] = Condition { type Attribute = A }
