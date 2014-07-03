@@ -30,6 +30,10 @@ sealed trait KeyCondition extends Condition
 object Condition {
   type On[A <: Singleton with AnyAttribute] = Condition { type Attribute = A }
 
+  implicit def conditionAnyOps[A <: Singleton with AnyAttribute](attribute: A):
+      ConditionAnyOps[A] = 
+      ConditionAnyOps[A](attribute)
+
   implicit def conditionNotSetOps[A <: Singleton with AnyAttribute](attribute: A)
     (implicit ev: A#Raw :<: NotSetValues): 
       ConditionNotSetOps[A] = 
@@ -182,7 +186,7 @@ case class IN[A <: Singleton with AnyAttribute](
 
 
 /* ## Method aliases for condition constructors */
-class ConditionAnyOps[A <: Singleton with AnyAttribute](attribute: A) {
+case class ConditionAnyOps[A <: Singleton with AnyAttribute](attribute: A) {
   final def isThere  = NOT_NULL(attribute)
   final def notThere =     NULL(attribute)
 
@@ -191,13 +195,13 @@ class ConditionAnyOps[A <: Singleton with AnyAttribute](attribute: A) {
 }
 
 case class ConditionWithPrefixOps[A <: Singleton with AnyAttribute](attribute: A)
-    (implicit ev: A#Raw :<: ValuesWithPrefixes) { //extends ConditionAnyOps[A](attribute) {
+    (implicit ev: A#Raw :<: ValuesWithPrefixes) {
 
   final def beginsWith(value: A#Raw): BEGINS_WITH[A] = BEGINS_WITH(attribute, value)
 }
 
 case class ConditionNotSetOps[A <: Singleton with AnyAttribute](attribute: A)
-    (implicit ev: A#Raw :<: NotSetValues) extends ConditionAnyOps[A](attribute) {
+    (implicit ev: A#Raw :<: NotSetValues) {
 
   final def <(value: A#Raw): LT[A] = LT(attribute, value)
   final def ≤(value: A#Raw): LE[A] = LE(attribute, value)
@@ -218,7 +222,7 @@ case class ConditionNotSetOps[A <: Singleton with AnyAttribute](attribute: A)
 }
 
 case class ConditionSetOps[A <: Singleton with AnyAttribute](attribute: A)
-    (implicit ev: A#Raw :<: SetValues) extends ConditionAnyOps[A](attribute) {
+    (implicit ev: A#Raw :<: SetValues) {
 
   final def ∋[V](value: V)(implicit eq: Set[V] =:= A#Raw):     CONTAINS[A, V] =     CONTAINS(attribute, value)
   final def ∌[V](value: V)(implicit eq: Set[V] =:= A#Raw): NOT_CONTAINS[A, V] = NOT_CONTAINS(attribute, value)

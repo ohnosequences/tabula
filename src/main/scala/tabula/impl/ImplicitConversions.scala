@@ -76,32 +76,35 @@ object ImplicitConversions {
 
   /* Conditions-related conversions */
   implicit def toSDKCondition[C <: Condition](cond: C): SDKCondition = {
+    import scala.collection.JavaConversions._
 
-    val sdkCond = new SDKCondition().withComparisonOperator(cond.getClass.getName)
+    val sdkCond = new SDKCondition().withComparisonOperator(cond.getClass.getSimpleName)
 
     cond match {
       case c: NullaryCondition[_] => sdkCond
       case _ => {
-        val attrValList = cond match {
+        val attrValList: java.util.Collection[AttributeValue] = (cond match {
           case c:  SimpleCondition[_] => List(c.value)
           case c:      CONTAINS[_, _] => List(c.value)
           case c:  NOT_CONTAINS[_, _] => List(c.value)
           case c:          BETWEEN[_] => List(c.start, c.end)
           case c:               IN[_] => c.values
-        }
+        }) map getAttrVal
+
         sdkCond.withAttributeValueList(attrValList)
       }
     }
   }
 
   implicit def toSDKPredicate[P <: AnyPredicate](pred: P): (ConditionalOperator, Map[String, SDKCondition]) = {
+
     pred match {
       case p: AnySimplePredicate => (ConditionalOperator.AND, Map(p.head.attribute.label -> toSDKCondition(p.head)))
       case p: AnyAndPredicate => (ConditionalOperator.AND, 
-                                  toSDKPredicate(p)._2 + (p.head.attribute.label -> toSDKCondition(p.head)))
+                                  toSDKPredicate(p.body)._2 + (p.head.attribute.label -> toSDKCondition(p.head)))
       case p:  AnyOrPredicate => (ConditionalOperator.OR,
-                                  toSDKPredicate(p)._2 + (p.head.attribute.label -> toSDKCondition(p.head)))
+                                  toSDKPredicate(p.body)._2 + (p.head.attribute.label -> toSDKCondition(p.head)))
     }
-    
   }
+    
 }

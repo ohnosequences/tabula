@@ -145,6 +145,11 @@ class irishService extends FunSuite {
   }
 
   test("complex example") {
+    import toSDKRep._
+    import fromSDKRep._
+    import Condition._
+    import AnyPredicate._
+
     // CREATE TABLE
     val createResult = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
     val afterCreate = waitFor(table, createResult.state)
@@ -156,32 +161,38 @@ class irishService extends FunSuite {
     // val afterUpdate2 = waitFor(table, updateResult2.state)
 
     // PUT ITEM
-    // import testItem._
     val myItem = testItem ->> (
       (id ->> 123) :~: 
       (name ->> "myItem") :~: 
       ∅
     )
 
-    // NOTE: don't know why these explicit import are needed..
-    import toSDKRep._
     val putResult = service please (InTable(table, afterCreate) putItem testItem withValue myItem)
     assert(putResult.output === PutItemSuccess)
     val afterPut = waitFor(table, putResult.state)
 
+    // QUERY TABLE
+
+    val simpleQueryResult = service please (QueryTable(table, afterPut) forItem testItem 
+                                            withHashKey myItem.attr(id))
+    assert(simpleQueryResult.output === QuerySuccess(List(myItem)))
+
+    val normalQueryResult = service please (QueryTable(table, afterPut) forItem testItem 
+                                            withHashKey myItem.attr(id) 
+                                            andRangeCondition (name beginsWith "my"))
+    assert(normalQueryResult.output === QuerySuccess(List(myItem)))
+
+    val emptyQueryResult = service please (QueryTable(table, afterPut) forItem testItem 
+                                            withHashKey myItem.attr(id) 
+                                            andRangeCondition (name beginsWith "foo"))
+    assert(emptyQueryResult.output === QuerySuccess(List()))
+
+    // TODO: change syntax to something nicer. maybe smth like this:
+    // (users, afterPut) query normalUser hash 123 range (name beginsWith "my")
+
     // GET ITEM
-    import fromSDKRep._
     val getResult = service please (FromCompositeKeyTable(table, afterPut) getItem testItem withKeys (myItem.attr(id), myItem.attr(name)))
     assert(getResult.output === GetItemSuccess(myItem))
-
-    // QUERY TABLE
-    import Condition._
-
-    val simpleQuery = (QueryTable(table, afterPut) forItem testItem withHashKey 123)
-    // val normalQuery = QueryTable(table, afterDel) forItem testItem withHashKey 123 andRangeCondition (name beginsWith "my")
-
-    val queryResult = service please simpleQuery
-    println(queryResult.output)
 
     // DELETE ITEM + get again
     val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterPut) withKeys (myItem.attr(id), myItem.attr(name)))

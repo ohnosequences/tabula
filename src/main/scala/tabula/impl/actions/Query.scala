@@ -14,7 +14,7 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
       val parser: ToItem[SDKRep, i.type], 
       val hasHashKey: t.HashKey ∈ i.Attributes
     ) extends AnySimpleQueryAction
-         with SDKRepParser {
+         with SDKRepParser { self =>
 
       type Table = T
       val  table = t: t.type
@@ -22,7 +22,8 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
       type Item = I
       val  item = i: i.type
 
-      val input = hashKeyValue
+      val input = SimplePredicate(item, EQ(table.hashKey, hashKeyValue))
+
       val inputState = inputSt
       val parseSDKRep = (m: SDKRep) => parser(m, i)
 
@@ -41,9 +42,11 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
           type RangeCondition = C
           val  rangeCondition = c: c.type
 
-          val input = hashKeyValue
+          val input = AND(SimplePredicate(item, EQ(table.hashKey, hashKeyValue)), c)
+
           val inputState = inputSt
           val parseSDKRep = (m: SDKRep) => parser(m, i)
+          val hasHashKey = self.hasHashKey
 
           override def toString = s"QueryTable ${t.name} forItem ${i.label} withHashKey ${hashKeyValue} andRangeCondition ${rangeCondition}"
       }

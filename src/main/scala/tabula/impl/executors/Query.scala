@@ -1,7 +1,8 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._, ImplicitConversions._
+import ohnosequences.tabula._, Condition._, AnyPredicate._, ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
+
 
 case class QueryExecutor[A <: AnyQueryAction with SDKRepParser](a: A)
   (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
@@ -13,7 +14,9 @@ case class QueryExecutor[A <: AnyQueryAction with SDKRepParser](a: A)
     println("executing: " + action)
 
     val res = try {
-      val (_, keyConditions) = toSDKPredicate(action.keyConditions)
+      // val predicate = SimplePredicate(action.item, EQ(action.table.hashKey, action.input))
+      // val (_, keyConditions) = toSDKPredicate(predicate)
+      val (_, keyConditions) = toSDKPredicate(action.input)
 
       val queryRequest = new QueryRequest()
         .withTableName(action.table.name)
