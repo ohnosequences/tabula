@@ -13,9 +13,15 @@ case class GetItemHashKeyExecutor[A <: AnyGetItemHashKeyAction with SDKRepParser
     println("executing: " + action)
 
     val res = try {
-      val toSDKRep = dynamoClient.client.getItem(action.table.name, Map(
-        action.table.hashKey.label -> getAttrVal(action.input)
-      )).getItem
+
+      val getItemRequest = new GetItemRequest()
+        .withTableName(action.table.name)
+        .withKey(Map(
+          action.table.hashKey.label -> getAttrVal(action.input)
+        ))
+
+      val toSDKRep = dynamoClient.client.getItem(getItemRequest).getItem
+
       GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
     } catch {
       case t: Exception => GetItemFailure[action.Item](t.toString)
@@ -35,10 +41,16 @@ case class GetItemCompositeKeyExecutor[A <: AnyGetItemCompositeKeyAction with SD
     println("executing: " + action)
 
     val res = try {
-      val toSDKRep = dynamoClient.client.getItem(action.table.name, Map(
-        action.table.hashKey.label -> getAttrVal(action.input._1),
-        action.table.rangeKey.label -> getAttrVal(action.input._2)
-      )).getItem
+
+      val getItemRequest = new GetItemRequest()
+        .withTableName(action.table.name)
+        .withKey(Map(
+          action.table.hashKey.label -> getAttrVal(action.input._1),
+          action.table.rangeKey.label -> getAttrVal(action.input._2)
+        ))
+
+      val toSDKRep = dynamoClient.client.getItem(getItemRequest).getItem
+
       GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
     } catch {
       case t: Exception => GetItemFailure[action.Item](t.toString)
