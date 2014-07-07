@@ -5,7 +5,9 @@ import ohnosequences.scarph._
 import scala.reflect.ClassTag
 
 /* Basically attributes are just another name for properties from scarph */
-sealed trait AnyAttribute extends AnyProperty 
+sealed trait AnyAttribute extends AnyProperty {
+  final def ~(r: this.Raw): this.Rep = this ->> r
+}
 
 /* But their Raw type is restricted */
 class Attribute[V](implicit 

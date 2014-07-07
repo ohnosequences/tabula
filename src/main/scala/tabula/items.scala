@@ -36,10 +36,31 @@ trait AnyItem extends Representable { item =>
 
     def attr[A <: Singleton with AnyAttribute](a: A)
       (implicit 
-        // isThere: A ∈ item.Attributes, // lookup does this check anyway 
+        isThere: A ∈ item.Attributes, // lookup does this check anyway 
         lookup: Lookup[item.Raw, a.Rep]
       ): a.Rep = lookup(rep)
+
+    def as[I <: AnyItem](i: I)
+      (implicit 
+        check: i.Attributes ⊂ item.Attributes,
+        project: Projection.Aux[item.Raw, i.Raw, i.Raw]
+      ): i.Rep = i ->> project(rep)
+
+    // sealed class MissingAttributes[]
+    def extendTo[I <: AnyItem, Rest <: TypeSet, Uni <: TypeSet, Missing <: TypeSet](i: I, rest: Rest)
+      (implicit
+        missing: SubtractSets.Aux[i.Raw, item.Raw, Missing],
+        allMissing: Rest ~ Missing,
+        uni: UnionSets.Aux[item.Raw, Rest, Uni],
+        project: Projection.Aux[Uni, i.Raw, i.Raw]
+      ): i.Rep = i ->> project(uni(rep, rest))
+
   }
+
+  def ~[R <: TypeSet](r: R)(implicit 
+    e: R ~ item.Raw, 
+    p: Projection.Aux[R, item.Raw, item.Raw]
+  ): item.Rep = item ->> p(r)
 
 }
 
@@ -85,7 +106,7 @@ object Represented {
 
   implicit val empty: ∅ By ∅ = new Represented[∅] { type Out = ∅ }
 
-  implicit def cons[H <: Singleton with Representable,  T <: TypeSet]
+  implicit def cons[H <: Singleton with Representable, T <: TypeSet]
     (implicit t: Represented[T]): (H :~: T) By (H#Rep :~: t.Out) =
           new Represented[H :~: T] { type Out = H#Rep :~: t.Out }
 }

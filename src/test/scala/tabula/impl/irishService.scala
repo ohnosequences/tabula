@@ -12,7 +12,7 @@ import ohnosequences.tabula._
 import ohnosequences.tabula.impl._, actions._, ImplicitConversions._
 
 import shapeless._, poly._
-import shapeless.test.{typed, illTyped}
+import shapeless.test.typed
 import AnyTag._
 
 object TestSetting {
@@ -68,87 +68,6 @@ class irishService extends FunSuite {
         waitFor(table, s)
       }
     }
-  }
-
-  test("item attribute witnesses") {
-
-    val wid = implicitly[Witness.Aux[id.type]]
-    typed[id.type](wid.value)
-    typed[wid.T](id)
-    implicitly[wid.T =:= id.type]
-    implicitly[wid.value.Raw =:= Int]
-    assert(wid.value == id)
-    
-    val wname = implicitly[Witness.Aux[name.type]]
-
-
-    val x = name ->> "foo"
-    val y = implicitly[name.Rep => name.type]
-    assert(y(x) == name)
-
-    ///////
-
-    implicitly[Represented.By[∅, ∅]]
-    implicitly[Represented.By[id.type :~: name.type :~: ∅, TaggedWith[id.type] :~: TaggedWith[name.type] :~: ∅]] 
-    implicitly[Represented.By[id.type :~: name.type :~: ∅, id.Rep :~: name.Rep :~: ∅]] 
-
-    implicitly[simpleUser.Raw =:= (id.Rep :~: name.Rep :~: ∅)]
-    implicitly[simpleUser.representedAttributes.Out =:= (id.Rep :~: name.Rep :~: ∅)]
-
-    // creating item is easy and neat:
-    val i = simpleUser ->> (
-      (id ->> 123) :~: 
-      (name ->> "foo") :~: 
-      ∅
-    )
-
-    // you have to set _all_ attributes
-    illTyped("""
-    val wrongAttrSet = simpleUser ->> (
-      (id ->> 123) :~: ∅
-    )
-    """)
-
-    // and in the _fixed order_
-    illTyped("""
-    val wrongOrder = simpleUser ->> (
-      (name ->> "foo") :~: 
-      (id ->> 123) :~:
-      ∅
-    )
-    """)
-
-    assert(i.attr(id) === 123)
-    assert(i.attr(name) === "foo")
-
-    // val keys = implicitly[Keys.Aux[id.Rep :~: name.Rep :~: ∅, id.type :~: name.type :~: ∅]]
-    val tags = TagsOf[id.Rep :~: name.Rep :~: ∅]
-    assert(tags(i) === simpleUser.attributes)
-    assert(tags(i) === (id :~: name :~: ∅))
-
-
-    // transforming simpleUser to Map
-    val tr = FromAttributes[
-      id.type :~: name.type :~: ∅, 
-      id.Rep  :~: name.Rep  :~: ∅,
-      toSDKRep.type,
-      SDKRep
-    ]
-    val map1 = tr(i)
-    println(map1)
-
-    val t = implicitly[FromAttributes.Aux[simpleUser.Attributes, simpleUser.Raw, toSDKRep.type, SDKRep]]
-    val ti = implicitly[FromAttributes.ItemAux[simpleUser.type, toSDKRep.type, SDKRep]]
-    val map2 = ti(i)
-    println(map2)
-    assert(map1 == map2)
-
-    // forming simpleUser from Map
-    val form = ToAttributes[SDKRep, simpleUser.Attributes, simpleUser.Raw, fromSDKRep.type](ToAttributes.cons)
-    val i2 = form(map2, simpleUser.attributes)
-    println(i2)
-    assert(i2 == i)
-
   }
 
   ignore("complex example") {
