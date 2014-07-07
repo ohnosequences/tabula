@@ -148,28 +148,30 @@ class itemsSuite extends FunSuite {
     val more = simpleUser.attributes U (email :~: color :~: ∅)
     case object extendedUser extends Item(table, more)
 
-    assert(user1.extendTo(normalUser,
-      (color ~ "orange") :~:
-      (email ~ "foo@bar.qux") :~:
-      ∅
-    ) == user2)
+    assertResult(user2) {
+      (user1 to normalUser)(
+        (color ~ "orange") :~:
+        (email ~ "foo@bar.qux") :~:
+        ∅
+      )
+    }
 
     // you cannot provide less that it's missing
     assertTypeError("""
-    val less = user1.extendTo(normalUser,
-      (email ~ "foo@bar.qux") :~:
-      ∅
-    )
+    val less = (user1 to normalUser)(
+        (email ~ "foo@bar.qux") :~:
+        ∅
+      )
     """)
 
     // neither you can provide more that was missing
     assertTypeError("""
-    val more = user1.extendTo(normalUser,
-      (color ~ "orange") :~:
-      (id ~ 4012) :~:
-      (email ~ "foo@bar.qux") :~:
-      ∅
-    )
+    val more = (user1 to normalUser)(
+        (color ~ "orange") :~:
+        (id ~ 4012) :~:
+        (email ~ "foo@bar.qux") :~:
+        ∅
+      )
     """)
   }
 

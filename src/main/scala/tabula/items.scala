@@ -47,7 +47,7 @@ trait AnyItem extends Representable { item =>
       ): i.Rep = i ->> project(rep)
 
     // sealed class MissingAttributes[]
-    def extendTo[I <: AnyItem, Rest <: TypeSet, Uni <: TypeSet, Missing <: TypeSet](i: I, rest: Rest)
+    def to[I <: AnyItem, Rest <: TypeSet, Uni <: TypeSet, Missing <: TypeSet](i: I)(rest: Rest)
       (implicit
         missing: SubtractSets.Aux[i.Raw, item.Raw, Missing],
         allMissing: Rest ~ Missing,
