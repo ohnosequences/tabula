@@ -137,7 +137,9 @@ class itemsSuite extends FunSuite {
   }
 
   test("item projection") {
-    assert((user2 as simpleUser) == user1)
+    assertResult(user1) {
+      user2 as simpleUser
+    }
 
     assertTypeError("""
     val wrong = user1 as normalUser
@@ -149,7 +151,7 @@ class itemsSuite extends FunSuite {
     case object extendedUser extends Item(table, more)
 
     assertResult(user2) {
-      (user1 to normalUser)(
+      user1 as (normalUser,
         (color ~ "orange") :~:
         (email ~ "foo@bar.qux") :~:
         ∅
@@ -158,7 +160,7 @@ class itemsSuite extends FunSuite {
 
     // you cannot provide less that it's missing
     assertTypeError("""
-    val less = (user1 to normalUser)(
+    val less = user1 as (normalUser,
         (email ~ "foo@bar.qux") :~:
         ∅
       )
@@ -166,7 +168,7 @@ class itemsSuite extends FunSuite {
 
     // neither you can provide more that was missing
     assertTypeError("""
-    val more = (user1 to normalUser)(
+    val more = user1 as (normalUser,
         (color ~ "orange") :~:
         (id ~ 4012) :~:
         (email ~ "foo@bar.qux") :~:

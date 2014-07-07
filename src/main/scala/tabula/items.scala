@@ -40,14 +40,7 @@ trait AnyItem extends Representable { item =>
         lookup: Lookup[item.Raw, a.Rep]
       ): a.Rep = lookup(rep)
 
-    def as[I <: AnyItem](i: I)
-      (implicit 
-        check: i.Attributes ⊂ item.Attributes,
-        project: Projection.Aux[item.Raw, i.Raw, i.Raw]
-      ): i.Rep = i ->> project(rep)
-
-    // sealed class MissingAttributes[]
-    def to[I <: AnyItem, Rest <: TypeSet, Uni <: TypeSet, Missing <: TypeSet](i: I)(rest: Rest)
+    def as[I <: AnyItem, Rest <: TypeSet, Uni <: TypeSet, Missing <: TypeSet](i: I, rest: Rest = ∅)
       (implicit
         missing: SubtractSets.Aux[i.Raw, item.Raw, Missing],
         allMissing: Rest ~ Missing,
