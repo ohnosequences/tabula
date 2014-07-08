@@ -20,7 +20,7 @@ trait AnyItem extends Representable { item =>
   type Attributes <: TypeSet
   val  attributes: Attributes
   // should be provided implicitly:
-  val  attributesBound: boundedBy[AnyAttribute]#is[Attributes]
+  val  attributesBound: Attributes << AnyAttribute
 
   /* Then the raw presentation of the item is kind of a record 
      in which the keys set is exactly the `Attributes` type,
@@ -58,7 +58,7 @@ trait AnyItem extends Representable { item =>
         missing: (i.Raw \ item.Raw) { type Out = Missing },
         allMissing: Rest ~ Missing,
         uni: (item.Raw ∪ Rest) { type Out = Uni },
-        project: Projection[Uni, i.Raw]
+        project: Choose[Uni, i.Raw]
       ): i.Rep = i ->> project(uni(rep, rest))
 
   }
@@ -69,17 +69,17 @@ trait AnyItem extends Representable { item =>
 
 }
 
-class Item[T <: AnyTable, A <: TypeSet, R <: TypeSet]
-  (val table: T, val attributes: A)
+class Item[T <: AnyTable, As <: TypeSet, R <: TypeSet]
+  (val table: T, val attributes: As)
   (implicit 
-    val representedAttributes: Represented.By[A, R],
-    val attributesBound: boundedBy[AnyAttribute]#is[A]
+    val representedAttributes: Represented.By[As, R],
+    val attributesBound: As << AnyAttribute
   ) extends AnyItem {
 
   val label = this.toString
 
   type Table = T
-  type Attributes = A
+  type Attributes = As
   type Raw = R
 }
 
