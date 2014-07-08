@@ -2,7 +2,6 @@ package ohnosequences.tabula
 
 import ohnosequences.typesets._
 import ohnosequences.scarph._
-import shapeless._, poly._
 
 /*
   ## Items
@@ -34,25 +33,38 @@ trait AnyItem extends Representable { item =>
   implicit def attributeOps(rep: item.Rep): AttributeOps = AttributeOps(rep)
   case class   AttributeOps(rep: item.Rep) {
 
-    def attr[A <: Singleton with AnyAttribute](a: A)
+    def get[A <: Singleton with AnyAttribute](a: A)
       (implicit 
-        isThere: A ∈ item.Attributes, // lookup does this check anyway 
+        isThere: A ∈ item.Attributes,
         lookup: Lookup[item.Raw, a.Rep]
       ): a.Rep = lookup(rep)
 
+
+    def update[A <: Singleton with AnyAttribute, S <: TypeSet](arep: A#Rep)
+      (implicit 
+        isThere: A ∈ item.Attributes,
+        replace: Replace[item.Raw, (A#Rep :~: ∅)]
+      ): item.Rep = item ->> replace(rep, arep :~: ∅)
+
+    def update[As <: TypeSet, S <: TypeSet](as: As)
+      (implicit 
+        check: As ⊂ item.Raw,
+        replace: Replace[item.Raw, As]
+      ): item.Rep = item ->> replace(rep, as)
+
+
     def as[I <: AnyItem, Rest <: TypeSet, Uni <: TypeSet, Missing <: TypeSet](i: I, rest: Rest = ∅)
       (implicit
-        missing: SubtractSets.Aux[i.Raw, item.Raw, Missing],
+        missing: (i.Raw \ item.Raw) { type Out = Missing },
         allMissing: Rest ~ Missing,
-        uni: UnionSets.Aux[item.Raw, Rest, Uni],
-        project: Projection.Aux[Uni, i.Raw, i.Raw]
+        uni: (item.Raw ∪ Rest) { type Out = Uni },
+        project: Projection[Uni, i.Raw]
       ): i.Rep = i ->> project(uni(rep, rest))
 
   }
 
   def ~[R <: TypeSet](r: R)(implicit 
-    e: R ~ item.Raw, 
-    p: Projection.Aux[R, item.Raw, item.Raw]
+    p: R ~> item.Raw
   ): item.Rep = item ->> p(r)
 
 }
@@ -106,6 +118,8 @@ object Represented {
 
 
 /* Takes a set of Reps and returns the set of what they represent */
+import shapeless._, poly._
+
 trait TagsOf[S <: TypeSet] extends DepFn1[S] { type Out <: TypeSet }
 
 object TagsOf {

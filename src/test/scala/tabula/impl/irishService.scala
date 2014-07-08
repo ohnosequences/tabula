@@ -127,18 +127,18 @@ class irishService extends FunSuite {
 
     // here we get both users by the hash key
     val simpleQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser 
-                                            withHashKey user1.attr(id))
+                                            withHashKey user1.get(id))
     assert(simpleQueryResult.output === QuerySuccess(List(user1, user2)))
 
     // here we would get the same, but we add a range condition on the name
     val normalQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser
-                                            withHashKey user1.attr(id) 
+                                            withHashKey user1.get(id) 
                                             andRangeCondition (name beginsWith "Evd"))
     assert(normalQueryResult.output === QuerySuccess(List(user2)))
 
     // here we don't get anything
     val emptyQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser 
-                                            withHashKey user1.attr(id) 
+                                            withHashKey user1.get(id) 
                                             andRangeCondition (name beginsWith "foo"))
     assert(emptyQueryResult.output === QuerySuccess(List()))
 
@@ -147,15 +147,15 @@ class irishService extends FunSuite {
 
     // GET ITEM
     // NOTE: here we check that we can get a simpleUser instead of the normalUser and we will get only those attributes
-    val getResult = service please (FromCompositeKeyTable(table, afterPut3) getItem simpleUser withKeys (user1.attr(id), user1.attr(name)))
+    val getResult = service please (FromCompositeKeyTable(table, afterPut3) getItem simpleUser withKeys (user1.get(id), user1.get(name)))
     assert(getResult.output === GetItemSuccess(
       simpleUser ->> ((id ->> 1) :~: (name ->> "Edu") :~: ∅)
     ))
 
     // DELETE ITEM + get again
-    val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterPut3) withKeys (user1.attr(id), user1.attr(name)))
+    val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterPut3) withKeys (user1.get(id), user1.get(name)))
     val afterDel = waitFor(table, delResult.state)
-    val getResult2 = service please (FromCompositeKeyTable(table, afterDel) getItem normalUser withKeys (user1.attr(id), user1.attr(name)))
+    val getResult2 = service please (FromCompositeKeyTable(table, afterDel) getItem normalUser withKeys (user1.get(id), user1.get(name)))
     assert(getResult2.output === GetItemFailure("java.lang.NullPointerException"))
 
     // DELETE TABLE

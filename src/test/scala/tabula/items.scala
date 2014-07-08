@@ -101,8 +101,8 @@ class itemsSuite extends FunSuite {
   }
 
   test("accessing item attributes") {
-    assert(user1.attr(id) === 123)
-    assert(user1.attr(name) === "foo")
+    assert(user1.get(id) === 123)
+    assert(user1.get(name) === "foo")
   }
 
   test("tags/keys of a representation") {
@@ -147,7 +147,7 @@ class itemsSuite extends FunSuite {
   }
 
   test("item extension") {
-    val more = simpleUser.attributes U (email :~: color :~: ∅)
+    val more = simpleUser.attributes ∪ (email :~: color :~: ∅)
     case object extendedUser extends Item(table, more)
 
     assertResult(user2) {
@@ -175,6 +175,38 @@ class itemsSuite extends FunSuite {
         ∅
       )
     """)
+  }
+
+  test("item update") {
+    val martin = normalUser ~ (
+      (name ~ "Martin") :~:
+      (id ~ 1) :~:
+      (color ~ "dark-salmon") :~:
+      (email ~ "coolmartin@scala.org") :~:
+      ∅
+    )
+
+    assert((user2 update (name ~ "qux")) === 
+      normalUser ~ (
+          (id ~ user2.get(id)) :~: 
+          (name ~ "qux") :~: 
+          (color ~ user2.get(color)) :~:
+          (email ~ user2.get(email)) :~:
+          ∅
+        )
+    )
+
+    assert((user2 update ((name ~ "qux") :~: (id ~ 42) :~: ∅)) === 
+      normalUser ~ (
+          (id ~ 42) :~: 
+          (name ~ "qux") :~: 
+          (color ~ user2.get(color)) :~:
+          (email ~ user2.get(email)) :~:
+          ∅
+        )
+    )
+
+    assert((user2 update (martin: normalUser.Raw)) === martin)
   }
 
 }
