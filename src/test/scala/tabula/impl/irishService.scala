@@ -111,33 +111,33 @@ class irishService extends FunSuite {
       ∅
     )
 
-    val putResul1 = service please (InTable(table, afterCreate) putItem simpleUser withValue (user1 as simpleUser))
+    val putResul1 = service please (InTable(afterCreate) putItem simpleUser withValue (user1 as simpleUser))
     assert(putResul1.output === PutItemSuccess)
     val afterPut1 = waitFor(table, putResul1.state)
 
-    val putResul2 = service please (InTable(table, afterPut1) putItem normalUser withValue user2)
+    val putResul2 = service please (InTable(afterPut1) putItem normalUser withValue user2)
     assert(putResul2.output === PutItemSuccess)
     val afterPut2 = waitFor(table, putResul2.state)
 
-    val putResult3 = service please (InTable(table, afterPut2) putItem normalUser withValue user3)
+    val putResult3 = service please (InTable(afterPut2) putItem normalUser withValue user3)
     assert(putResult3.output === PutItemSuccess)
     val afterPut3 = waitFor(table, putResult3.state)
 
     // QUERY TABLE
 
     // here we get both users by the hash key
-    val simpleQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser 
+    val simpleQueryResult = service please (QueryTable(afterPut3) forItem normalUser 
                                             withHashKey user1.get(id))
     assert(simpleQueryResult.output === QuerySuccess(List(user1, user2)))
 
     // here we would get the same, but we add a range condition on the name
-    val normalQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser
+    val normalQueryResult = service please (QueryTable(afterPut3) forItem normalUser
                                             withHashKey user1.get(id) 
                                             andRangeCondition (name beginsWith "Evd"))
     assert(normalQueryResult.output === QuerySuccess(List(user2)))
 
     // here we don't get anything
-    val emptyQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser 
+    val emptyQueryResult = service please (QueryTable(afterPut3) forItem normalUser 
                                             withHashKey user1.get(id) 
                                             andRangeCondition (name beginsWith "foo"))
     assert(emptyQueryResult.output === QuerySuccess(List()))
@@ -147,7 +147,7 @@ class irishService extends FunSuite {
 
     // GET ITEM
     // NOTE: here we check that we can get a simpleUser instead of the normalUser and we will get only those attributes
-    val getResult = service please (FromCompositeKeyTable(table, afterPut3) getItem simpleUser withKeys (user1.get(id), user1.get(name)))
+    val getResult = service please (FromCompositeKeyTable(afterPut3) getItem simpleUser withKeys (user1.get(id), user1.get(name)))
     assert(getResult.output === GetItemSuccess(
       simpleUser ->> ((id ->> 1) :~: (name ->> "Edu") :~: ∅)
     ))
@@ -155,7 +155,7 @@ class irishService extends FunSuite {
     // DELETE ITEM + get again
     val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterPut3) withKeys (user1.get(id), user1.get(name)))
     val afterDel = waitFor(table, delResult.state)
-    val getResult2 = service please (FromCompositeKeyTable(table, afterDel) getItem normalUser withKeys (user1.get(id), user1.get(name)))
+    val getResult2 = service please (FromCompositeKeyTable(afterDel) getItem normalUser withKeys (user1.get(id), user1.get(name)))
     assert(getResult2.output === GetItemFailure("java.lang.NullPointerException"))
 
     // DELETE TABLE
