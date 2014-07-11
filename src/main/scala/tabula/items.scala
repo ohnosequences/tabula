@@ -2,7 +2,6 @@ package ohnosequences.tabula
 
 import ohnosequences.typesets._
 import ohnosequences.scarph._
-import shapeless._, poly._
 
 /*
   ## Items
@@ -21,7 +20,7 @@ trait AnyItem extends Representable { item =>
   type Attributes <: TypeSet
   val  attributes: Attributes
   // should be provided implicitly:
-  val  attributesBound: boundedBy[AnyAttribute]#is[Attributes]
+  val  attributesBound: Attributes << AnyAttribute
 
   /* Then the raw presentation of the item is kind of a record 
      in which the keys set is exactly the `Attributes` type,
@@ -34,26 +33,58 @@ trait AnyItem extends Representable { item =>
   implicit def attributeOps(rep: item.Rep): AttributeOps = AttributeOps(rep)
   case class   AttributeOps(rep: item.Rep) {
 
-    def attr[A <: Singleton with AnyAttribute](a: A)
+    def get[A <: Singleton with AnyAttribute](a: A)
       (implicit 
-        // isThere: A ∈ item.Attributes, // lookup does this check anyway 
+        isThere: A ∈ item.Attributes,
         lookup: Lookup[item.Raw, a.Rep]
       ): a.Rep = lookup(rep)
+
+
+    def update[A <: Singleton with AnyAttribute, S <: TypeSet](arep: A#Rep)
+      (implicit 
+        isThere: A ∈ item.Attributes,
+        replace: Replace[item.Raw, (A#Rep :~: ∅)]
+      ): item.Rep = item ->> replace(rep, arep :~: ∅)
+
+    def update[As <: TypeSet, S <: TypeSet](as: As)
+      (implicit 
+        check: As ⊂ item.Raw,
+        replace: Replace[item.Raw, As]
+      ): item.Rep = item ->> replace(rep, as)
+
+
+    def as[I <: AnyItem](i: I)(implicit
+      project: Choose[item.Raw, i.Raw]
+    ): i.Rep = i ->> project(rep)
+
+    def as[I <: AnyItem, Rest <: TypeSet, Uni <: TypeSet, Missing <: TypeSet](i: I, rest: Rest)
+      (implicit
+        missing: (i.Raw \ item.Raw) { type Out = Missing },
+        allMissing: Rest ~ Missing,
+        uni: (item.Raw ∪ Rest) { type Out = Uni },
+        project: Choose[Uni, i.Raw]
+      ): i.Rep = i ->> project(uni(rep, rest))
+
   }
+
+  /* Same as just tagging with `->>`, but you can pass fields in any order */
+  def fields[R <: TypeSet](r: R)(implicit 
+    p: R ~> item.Raw
+  ): item.Rep = item ->> p(r)
 
 }
 
-class Item[T <: AnyTable, A <: TypeSet, R <: TypeSet]
-  (val table: T, val attributes: A)
+class Item[T <: AnyTable, As <: TypeSet, R <: TypeSet]
+  (val table: T, val attributes: As)
   (implicit 
-    val representedAttributes: Represented.By[A, R],
-    val attributesBound: boundedBy[AnyAttribute]#is[A]
+    val representedAttributes: Represented.By[As, R],
+    val attributesBound: As << AnyAttribute
   ) extends AnyItem {
 
   val label = this.toString
 
   type Table = T
-  type Attributes = A
+  type Attributes = As
   type Raw = R
 }
 
@@ -85,13 +116,15 @@ object Represented {
 
   implicit val empty: ∅ By ∅ = new Represented[∅] { type Out = ∅ }
 
-  implicit def cons[H <: Singleton with Representable,  T <: TypeSet]
+  implicit def cons[H <: Singleton with Representable, T <: TypeSet]
     (implicit t: Represented[T]): (H :~: T) By (H#Rep :~: t.Out) =
           new Represented[H :~: T] { type Out = H#Rep :~: t.Out }
 }
 
 
 /* Takes a set of Reps and returns the set of what they represent */
+import shapeless._, poly._
+
 trait TagsOf[S <: TypeSet] extends DepFn1[S] { type Out <: TypeSet }
 
 object TagsOf {

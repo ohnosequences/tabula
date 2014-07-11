@@ -12,7 +12,7 @@ import ohnosequences.tabula._
 import ohnosequences.tabula.impl._, actions._, ImplicitConversions._
 
 import shapeless._, poly._
-import shapeless.test.{typed, illTyped}
+import shapeless.test.typed
 import AnyTag._
 
 object TestSetting {
@@ -70,87 +70,6 @@ class irishService extends FunSuite {
     }
   }
 
-  test("item attribute witnesses") {
-
-    val wid = implicitly[Witness.Aux[id.type]]
-    typed[id.type](wid.value)
-    typed[wid.T](id)
-    implicitly[wid.T =:= id.type]
-    implicitly[wid.value.Raw =:= Int]
-    assert(wid.value == id)
-    
-    val wname = implicitly[Witness.Aux[name.type]]
-
-
-    val x = name ->> "foo"
-    val y = implicitly[name.Rep => name.type]
-    assert(y(x) == name)
-
-    ///////
-
-    implicitly[Represented.By[∅, ∅]]
-    implicitly[Represented.By[id.type :~: name.type :~: ∅, TaggedWith[id.type] :~: TaggedWith[name.type] :~: ∅]] 
-    implicitly[Represented.By[id.type :~: name.type :~: ∅, id.Rep :~: name.Rep :~: ∅]] 
-
-    implicitly[simpleUser.Raw =:= (id.Rep :~: name.Rep :~: ∅)]
-    implicitly[simpleUser.representedAttributes.Out =:= (id.Rep :~: name.Rep :~: ∅)]
-
-    // creating item is easy and neat:
-    val i = simpleUser ->> (
-      (id ->> 123) :~: 
-      (name ->> "foo") :~: 
-      ∅
-    )
-
-    // you have to set _all_ attributes
-    illTyped("""
-    val wrongAttrSet = simpleUser ->> (
-      (id ->> 123) :~: ∅
-    )
-    """)
-
-    // and in the _fixed order_
-    illTyped("""
-    val wrongOrder = simpleUser ->> (
-      (name ->> "foo") :~: 
-      (id ->> 123) :~:
-      ∅
-    )
-    """)
-
-    assert(i.attr(id) === 123)
-    assert(i.attr(name) === "foo")
-
-    // val keys = implicitly[Keys.Aux[id.Rep :~: name.Rep :~: ∅, id.type :~: name.type :~: ∅]]
-    val tags = TagsOf[id.Rep :~: name.Rep :~: ∅]
-    assert(tags(i) === simpleUser.attributes)
-    assert(tags(i) === (id :~: name :~: ∅))
-
-
-    // transforming simpleUser to Map
-    val tr = FromAttributes[
-      id.type :~: name.type :~: ∅, 
-      id.Rep  :~: name.Rep  :~: ∅,
-      toSDKRep.type,
-      SDKRep
-    ]
-    val map1 = tr(i)
-    println(map1)
-
-    val t = implicitly[FromAttributes.Aux[simpleUser.Attributes, simpleUser.Raw, toSDKRep.type, SDKRep]]
-    val ti = implicitly[FromAttributes.ItemAux[simpleUser.type, toSDKRep.type, SDKRep]]
-    val map2 = ti(i)
-    println(map2)
-    assert(map1 == map2)
-
-    // forming simpleUser from Map
-    val form = ToAttributes[SDKRep, simpleUser.Attributes, simpleUser.Raw, fromSDKRep.type](ToAttributes.cons)
-    val i2 = form(map2, simpleUser.attributes)
-    println(i2)
-    assert(i2 == i)
-
-  }
-
   ignore("complex example") {
     import toSDKRep._
     import fromSDKRep._
@@ -192,7 +111,7 @@ class irishService extends FunSuite {
       ∅
     )
 
-    val putResul1 = service please (InTable(table, afterCreate) putItem normalUser withValue user1)
+    val putResul1 = service please (InTable(table, afterCreate) putItem simpleUser withValue (user1 as simpleUser))
     assert(putResul1.output === PutItemSuccess)
     val afterPut1 = waitFor(table, putResul1.state)
 
@@ -208,18 +127,18 @@ class irishService extends FunSuite {
 
     // here we get both users by the hash key
     val simpleQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser 
-                                            withHashKey user1.attr(id))
+                                            withHashKey user1.get(id))
     assert(simpleQueryResult.output === QuerySuccess(List(user1, user2)))
 
     // here we would get the same, but we add a range condition on the name
     val normalQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser
-                                            withHashKey user1.attr(id) 
+                                            withHashKey user1.get(id) 
                                             andRangeCondition (name beginsWith "Evd"))
     assert(normalQueryResult.output === QuerySuccess(List(user2)))
 
     // here we don't get anything
     val emptyQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser 
-                                            withHashKey user1.attr(id) 
+                                            withHashKey user1.get(id) 
                                             andRangeCondition (name beginsWith "foo"))
     assert(emptyQueryResult.output === QuerySuccess(List()))
 
@@ -228,15 +147,15 @@ class irishService extends FunSuite {
 
     // GET ITEM
     // NOTE: here we check that we can get a simpleUser instead of the normalUser and we will get only those attributes
-    val getResult = service please (FromCompositeKeyTable(table, afterPut3) getItem simpleUser withKeys (user1.attr(id), user1.attr(name)))
+    val getResult = service please (FromCompositeKeyTable(table, afterPut3) getItem simpleUser withKeys (user1.get(id), user1.get(name)))
     assert(getResult.output === GetItemSuccess(
       simpleUser ->> ((id ->> 1) :~: (name ->> "Edu") :~: ∅)
     ))
 
     // DELETE ITEM + get again
-    val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterPut3) withKeys (user1.attr(id), user1.attr(name)))
+    val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterPut3) withKeys (user1.get(id), user1.get(name)))
     val afterDel = waitFor(table, delResult.state)
-    val getResult2 = service please (FromCompositeKeyTable(table, afterDel) getItem normalUser withKeys (user1.attr(id), user1.attr(name)))
+    val getResult2 = service please (FromCompositeKeyTable(table, afterDel) getItem normalUser withKeys (user1.get(id), user1.get(name)))
     assert(getResult2.output === GetItemFailure("java.lang.NullPointerException"))
 
     // DELETE TABLE
