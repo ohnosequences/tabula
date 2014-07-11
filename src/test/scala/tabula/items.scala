@@ -32,12 +32,12 @@ object TestSetting {
     ∅
   )
 
-  // with the := operator, the order of attributes doesn't matter
-  val user2 = normalUser ~ (
-    (name ~ "foo") :~: 
-    (color ~ "orange") :~:
-    (id ~ 123) :~: 
-    (email ~ "foo@bar.qux") :~:
+  // this way the order of attributes doesn't matter
+  val user2 = normalUser fields (
+    (name is "foo") :~: 
+    (color is "orange") :~:
+    (id is 123) :~: 
+    (email is "foo@bar.qux") :~:
     ∅
   )
 
@@ -92,7 +92,7 @@ class itemsSuite extends FunSuite {
 
     // but you still have to present all attributes:
     assertTypeError("""
-    val wrongAttrSet = normalUser ~ (
+    val wrongAttrSet = normalUser fields (
       (id ->> 123) :~:
       (name ->> "foo") :~: 
       ∅
@@ -152,8 +152,8 @@ class itemsSuite extends FunSuite {
 
     assertResult(user2) {
       user1 as (normalUser,
-        (color ~ "orange") :~:
-        (email ~ "foo@bar.qux") :~:
+        (color is "orange") :~:
+        (email is "foo@bar.qux") :~:
         ∅
       )
     }
@@ -161,7 +161,7 @@ class itemsSuite extends FunSuite {
     // you cannot provide less that it's missing
     assertTypeError("""
     val less = user1 as (normalUser,
-        (email ~ "foo@bar.qux") :~:
+        (email is "foo@bar.qux") :~:
         ∅
       )
     """)
@@ -169,41 +169,41 @@ class itemsSuite extends FunSuite {
     // neither you can provide more that was missing
     assertTypeError("""
     val more = user1 as (normalUser,
-        (color ~ "orange") :~:
-        (id ~ 4012) :~:
-        (email ~ "foo@bar.qux") :~:
+        (color is "orange") :~:
+        (id is 4012) :~:
+        (email is "foo@bar.qux") :~:
         ∅
       )
     """)
   }
 
   test("item update") {
-    val martin = normalUser ~ (
-      (name ~ "Martin") :~:
-      (id ~ 1) :~:
-      (color ~ "dark-salmon") :~:
-      (email ~ "coolmartin@scala.org") :~:
+    val martin = normalUser fields (
+      (name is "Martin") :~:
+      (id is 1) :~:
+      (color is "dark-salmon") :~:
+      (email is "coolmartin@scala.org") :~:
       ∅
     )
 
-    assert((user2 update (name ~ "qux")) === 
-      normalUser ~ (
-          (id ~ user2.get(id)) :~: 
-          (name ~ "qux") :~: 
-          (color ~ user2.get(color)) :~:
-          (email ~ user2.get(email)) :~:
+    assert((user2 update (name is "qux")) === 
+      (normalUser fields (
+          (id is user2.get(id)) :~: 
+          (name is "qux") :~: 
+          (color is user2.get(color)) :~:
+          (email is user2.get(email)) :~:
           ∅
-        )
+        ))
     )
 
-    assert((user2 update ((name ~ "qux") :~: (id ~ 42) :~: ∅)) === 
-      normalUser ~ (
-          (id ~ 42) :~: 
-          (name ~ "qux") :~: 
-          (color ~ user2.get(color)) :~:
-          (email ~ user2.get(email)) :~:
+    assert((user2 update ((name is "qux") :~: (id is 42) :~: ∅)) === 
+      (normalUser fields (
+          (id is 42) :~: 
+          (name is "qux") :~: 
+          (color is user2.get(color)) :~:
+          (email is user2.get(email)) :~:
           ∅
-        )
+        ))
     )
 
     assert((user2 update (martin: normalUser.Raw)) === martin)

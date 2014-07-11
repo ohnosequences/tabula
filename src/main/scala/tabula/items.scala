@@ -53,7 +53,11 @@ trait AnyItem extends Representable { item =>
       ): item.Rep = item ->> replace(rep, as)
 
 
-    def as[I <: AnyItem, Rest <: TypeSet, Uni <: TypeSet, Missing <: TypeSet](i: I, rest: Rest = ∅)
+    def as[I <: AnyItem](i: I)(implicit
+      project: Choose[item.Raw, i.Raw]
+    ): i.Rep = i ->> project(rep)
+
+    def as[I <: AnyItem, Rest <: TypeSet, Uni <: TypeSet, Missing <: TypeSet](i: I, rest: Rest)
       (implicit
         missing: (i.Raw \ item.Raw) { type Out = Missing },
         allMissing: Rest ~ Missing,
@@ -63,7 +67,8 @@ trait AnyItem extends Representable { item =>
 
   }
 
-  def ~[R <: TypeSet](r: R)(implicit 
+  /* Same as just tagging with `->>`, but you can pass fields in any order */
+  def fields[R <: TypeSet](r: R)(implicit 
     p: R ~> item.Raw
   ): item.Rep = item ->> p(r)
 

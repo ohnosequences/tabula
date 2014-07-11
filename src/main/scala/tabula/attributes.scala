@@ -6,7 +6,7 @@ import scala.reflect.ClassTag
 
 /* Basically attributes are just another name for properties from scarph */
 sealed trait AnyAttribute extends AnyProperty {
-  final def ~(r: this.Raw): this.Rep = this ->> r
+  final def is(r: this.Raw): this.Rep = this ->> r
 }
 
 /* But their Raw type is restricted */

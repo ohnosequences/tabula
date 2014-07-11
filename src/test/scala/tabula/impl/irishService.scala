@@ -111,7 +111,7 @@ class irishService extends FunSuite {
       ∅
     )
 
-    val putResul1 = service please (InTable(table, afterCreate) putItem normalUser withValue user1)
+    val putResul1 = service please (InTable(table, afterCreate) putItem simpleUser withValue (user1 as simpleUser))
     assert(putResul1.output === PutItemSuccess)
     val afterPut1 = waitFor(table, putResul1.state)
 
