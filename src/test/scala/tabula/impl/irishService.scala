@@ -4,7 +4,7 @@ import org.scalatest.FunSuite
 
 import com.amazonaws.regions._
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
-import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue, AttributeAction}
+import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue} //, PropertyAction}
 
 import ohnosequences.typesets._
 import ohnosequences.scarph._
@@ -18,10 +18,10 @@ import AnyTag._
 object TestSetting {
   case object service extends AnyDynamoDBService {
     type Region = EU.type
-    val region = EU
+    val  region = EU
 
     type Account = ohnosequences.tabula.Account
-    val account: Account = Account("", "")
+    val  account: Account = Account("", "")
 
     def endpoint: String = "" //shouldn't be here
   }
@@ -33,17 +33,17 @@ object TestSetting {
       }
     )
 
-  case object id extends Attribute[Int]
-  case object name extends Attribute[String]
+  case object id extends Property[Num]
+  case object name extends Property[String]
 
   object table extends CompositeKeyTable("tabula_test_1", id, name, service.region)
 
   case object simpleUser extends Item(table, id :~: name :~: ∅)
 
 
-  // more attributes:
-  case object email extends Attribute[String]
-  case object color extends Attribute[String]
+  // more properties:
+  case object email extends Property[String]
+  case object color extends Property[String]
 
   case object normalUser extends Item(table, id :~: name :~: email :~: color :~: ∅)
 }
@@ -146,7 +146,7 @@ class irishService extends FunSuite {
     // (users, afterPut3) query normalUser hash 123 range (name beginsWith "my")
 
     // GET ITEM
-    // NOTE: here we check that we can get a simpleUser instead of the normalUser and we will get only those attributes
+    // NOTE: here we check that we can get a simpleUser instead of the normalUser and we will get only those properties
     val getResult = service please (FromCompositeKeyTable(table, afterPut3) getItem simpleUser withKeys (user1.get(id), user1.get(name)))
     assert(getResult.output === GetItemSuccess(
       simpleUser ->> ((id ->> 1) :~: (name ->> "Edu") :~: ∅)

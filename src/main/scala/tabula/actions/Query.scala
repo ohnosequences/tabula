@@ -15,7 +15,7 @@ trait AnyQueryAction extends AnyTableItemAction { action =>
   // quieries make sense only for the composite key tables
   type Table <: Singleton with AnyCompositeKeyTable
 
-  val hasHashKey: table.HashKey ∈ item.Attributes
+  val hasHashKey: table.HashKey ∈ item.Properties
 
   //require updating or creating
   type InputState  = AnyTableState.For[Table] with ReadyTable

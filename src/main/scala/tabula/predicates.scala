@@ -8,7 +8,7 @@ import ohnosequences.typesets._
 
   Predicates represent expressions combining several conditions for a particular item.
   You can combine conditions **either** by `OR` or by `AND` conditional operator (_you can't mix them_).
-  Predicate constructors check that the item has the attribute used in the applied condition.
+  Predicate constructors check that the item has the property used in the applied condition.
 */
 trait AnyPredicate {
   type Body <: AnyPredicate
@@ -29,7 +29,7 @@ trait AnyOrPredicate extends AnyPredicate {
   type Body <: AnyOrPredicate
 
   def or[Head <: Condition](other: Head)(implicit 
-    ev: other.Attribute ∈ body.item.Attributes
+    ev: other.Property ∈ body.item.Properties
   ): OR[Body, Head] = 
      OR(body, other)
 }
@@ -51,7 +51,7 @@ trait AnyAndPredicate extends AnyPredicate {
   type Body <: AnyAndPredicate
 
   def and[Head <: Condition](other: Head)(implicit 
-    ev: other.Attribute ∈ body.item.Attributes
+    ev: other.Property ∈ body.item.Properties
   ): AND[Body, Head] = 
      AND(body, other)
 }
@@ -93,7 +93,7 @@ object AnyPredicate {
   implicit def itemPredicateOps[I <: Singleton with AnyItem](item: I): ItemPredicateOps[I] = ItemPredicateOps(item)
   case class   ItemPredicateOps[I <: Singleton with AnyItem](item: I) {
     def ?[C <: Condition](c: C)(implicit 
-        ev: c.Attribute ∈ item.Attributes
+        ev: c.Property ∈ item.Properties
       ): SimplePredicate[I, C] = SimplePredicate(item, c)
   }
 }

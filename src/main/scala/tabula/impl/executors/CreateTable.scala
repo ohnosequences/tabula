@@ -11,7 +11,7 @@ case class CreateHashKeyTableExecutor[A <: AnyCreateTable with AnyTableAction.wi
   def apply(): Out = {
     println("executing: " + action)
 
-    val attributeDefinition = getAttrDef(a.table.hashKey)
+    val propertyDefinition = getAttrDef(a.table.hashKey)
     val keySchemaElement = new KeySchemaElement(action.table.hashKey.label, "HASH")
     val throughput = new ProvisionedThroughput(
       action.inputState.throughputStatus.readCapacity, 
@@ -21,7 +21,7 @@ case class CreateHashKeyTableExecutor[A <: AnyCreateTable with AnyTableAction.wi
       .withTableName(action.table.name)
       .withProvisionedThroughput(throughput)
       .withKeySchema(keySchemaElement)
-      .withAttributeDefinitions(attributeDefinition)
+      .withAttributeDefinitions(propertyDefinition)
 
     try {
       dynamoClient.client.createTable(request)

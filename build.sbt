@@ -13,7 +13,7 @@ bucketSuffix := "era7.com"
 skip in update := true
 
 libraryDependencies ++= Seq(
-  "ohnosequences" %% "scarph" % "0.1.0",
+  "ohnosequences" %% "scarph" % "0.2.0-SNAPSHOT",
   "ohnosequences" %% "type-sets" % "0.5.0-SNAPSHOT",
   "org.scalatest" %% "scalatest" % "2.2.0" % "test",
   "com.amazonaws" % "aws-java-sdk" % "1.8.0"

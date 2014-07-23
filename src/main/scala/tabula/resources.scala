@@ -15,10 +15,10 @@ object Table extends AnyDynamoDBResourceType {
 trait AnyDynamoDBResource {
 
   type ResourceType <: AnyDynamoDBResourceType
-  val resourceType: ResourceType
+  val  resourceType: ResourceType
 
   type Region <: AnyRegion
-  val region: Region
+  val  region: Region
 
   val name: String
 }
@@ -28,7 +28,7 @@ object AnyDynamoDBResource {
 }
 
 /*
-  see http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/UsingIAMWithDDB.html#ARN_ToAttributesat
+  see http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/UsingIAMWithDDB.html#ARN_ToPropertiesat
 */
 case class DynamoDBARN[R <: AnyDynamoDBResource](resource: R, account: Account) {
 
@@ -60,9 +60,9 @@ case class :+:[+H <: AnyDynamoDBResource, +T <: ResourceList](
 ) extends ResourceList {
 
   type Head = h.type
-  val head = h: h.type
+  val  head = h: h.type
   type Tail = t.type
-  val tail = t: t.type
+  val  tail = t: t.type
 }
 
 sealed trait RNil extends ResourceList {
@@ -72,9 +72,9 @@ sealed trait RNil extends ResourceList {
 object RNil extends RNil with AnyDynamoDBResource {
 
   type Head = RNil.type
-  val head = RNil
+  val  head = RNil
   type Tail = RNil.type
-  val tail = RNil
+  val  tail = RNil
 
   val name: String = ???
   val region: ohnosequences.tabula.RNil.Region = ???

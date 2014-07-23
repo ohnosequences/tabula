@@ -7,19 +7,14 @@ import shapeless.test._
 
 object simpleModel {
 
-  case object id extends Attribute[Int]
-  case object name extends Attribute[String]
-  object age extends Attribute[Int]
-  object email extends Attribute[String]
-  object serializedCrap extends Attribute[Bytes]
-  object departments extends Attribute[Set[String]]
+  case object id extends Property[Num]
+  case object name extends Property[String]
+  object age extends Property[Num]
+  object email extends Property[String]
+  object serializedCrap extends Property[Bytes]
+  object departments extends Property[Set[String]]
 
-  // Float is not a valid type for an attribute
-  illTyped("""
-  object nono extends Attribute[Traversable[Array[Float]]]
-  """)
-
-  // departments attribute cannot be a primary key:
+  // departments property cannot be a primary key:
   illTyped("""
   object WrongHashTable extends HashKeyTable (
     name = "users",
@@ -30,7 +25,7 @@ object simpleModel {
 
   case object UsersTable extends HashKeyTable (
     name = "users",
-    hashKey = id,
+    hashKey = name,
     region = EU
   )
 
@@ -40,6 +35,13 @@ object simpleModel {
     rangeKey = name,
     region = EU
   )
+
+  // you can create a property of any type
+  case object boolProperty extends Property[Boolean]
+  // but you cannot use it for creating an Item, because it's one of `ValidValues` type union
+  illTyped("""
+  case object WrongItem extends Item(UsersTable, boolProperty :~: ∅)
+  """)
 
   case object UserItem extends Item(UsersTable, name :~: age :~: ∅)
 
