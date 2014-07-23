@@ -70,7 +70,7 @@ class irishService extends FunSuite {
     }
   }
 
-  ignore("complex example") {
+  test("complex example") {
     import toSDKRep._
     import fromSDKRep._
     import Condition._
@@ -111,15 +111,15 @@ class irishService extends FunSuite {
       ∅
     )
 
-    val putResul1 = service please (InTable(table, afterCreate) putItem simpleUser withValue (user1 as simpleUser))
+    val putResul1 = service please (InCompositeKeyTable(table, afterCreate) putItem normalUser withValue user1)
     assert(putResul1.output === PutItemSuccess)
     val afterPut1 = waitFor(table, putResul1.state)
 
-    val putResul2 = service please (InTable(table, afterPut1) putItem normalUser withValue user2)
+    val putResul2 = service please (InCompositeKeyTable(table, afterPut1) putItem normalUser withValue user2)
     assert(putResul2.output === PutItemSuccess)
     val afterPut2 = waitFor(table, putResul2.state)
 
-    val putResult3 = service please (InTable(table, afterPut2) putItem normalUser withValue user3)
+    val putResult3 = service please (InCompositeKeyTable(table, afterPut2) putItem simpleUser withValue (user3 as simpleUser))
     assert(putResult3.output === PutItemSuccess)
     val afterPut3 = waitFor(table, putResult3.state)
 
