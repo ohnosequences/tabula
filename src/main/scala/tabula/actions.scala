@@ -9,8 +9,6 @@ trait AnyAction { action =>
   val  resources: Resources
 
   type InputState
-  val  inputState: InputState
-
   type OutputState
 
   // these are input and output that are not resources
@@ -27,7 +25,7 @@ object AnyAction {
 
 
 trait AnyTableAction extends AnyAction {
-  type Table <: Singleton with AnyTable
+  type Table <: AnyTable
   val  table: Table
 
   // TODO: change this to ResourcesList
@@ -40,18 +38,15 @@ abstract class TableAction[T <: Singleton with AnyTable](val table: T)
 
 
 trait AnyTableItemAction extends AnyTableAction {
-  type Item <: Singleton with AnyItem.ofTable[Table]
+  type Item <: Singleton with AnyItem
   val  item: Item
+
+  type Table = item.Table
+  val  table = item.table
 }
 
-abstract class TableItemAction[
-  T <: Singleton with AnyTable, 
-  I <: Singleton with AnyItem.ofTable[T]
-](val table: T, val item: I)
-  extends AnyTableItemAction { 
-    type Table = T
-    type Item = I 
-  }
+abstract class TableItemAction[I <: Singleton with AnyItem](val item: I)
+  extends AnyTableItemAction { type Item = I }
 
 
 object AnyTableAction {

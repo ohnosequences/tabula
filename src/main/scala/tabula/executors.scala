@@ -1,19 +1,18 @@
 package ohnosequences.tabula
 
-case class ExecutorResult[O, R, OS](output: O, resources: R, state: OS)
+case class ExecutorResult[O, S](output: O, state: S)
 
 trait AnyExecutor {
   type Action <: AnyAction
-  val  action: Action
+  // val  action: Action
 
   type OutC[X]
-  type Out = OutC[ExecutorResult[action.Output, action.Resources, action.OutputState]]
+  // type Out = 
 
-  def apply(): Out
+  def apply(action: Action)(inputState: action.InputState): OutC[ExecutorResult[action.Output, action.OutputState]]
 }
 
-abstract class Executor[A <: AnyAction](val action: A) 
-  extends AnyExecutor { type Action = A }
+abstract class Executor[A <: AnyAction] extends AnyExecutor { type Action = A }
 
 object Executor {
   type Aux[A <: AnyAction, C[_]] = AnyExecutor { type Action = A; type OutC[X] = C[X] }

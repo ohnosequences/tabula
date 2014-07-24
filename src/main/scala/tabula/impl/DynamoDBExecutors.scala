@@ -7,39 +7,33 @@ import com.amazonaws.services.dynamodbv2.model._
 case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
 
   /* CREATE TABLE */
-  // implicit def createHashKeyTableExecutor
-  //   [A <: AnyCreateTable with AnyTableAction.withHashKeyTable](a: A):
-  //     CreateHashKeyTableExecutor[A] =
-  //     CreateHashKeyTableExecutor[A](a)(dynamoClient)
-
-  // implicit def createCompositeKeyTableExecutor
-  //   [A <: AnyCreateTable with AnyTableAction.withCompositeKeyTable](a: A):
-  //     CreateCompositeKeyTableExecutor[A] =
-  //     CreateCompositeKeyTableExecutor[A](a)(dynamoClient)
+  implicit def createTableExecutor[A <: AnyCreateTable]:
+    CreateTableExecutor[A] =
+    CreateTableExecutor[A](dynamoClient)
 
 
   /* DELETE TABLE */
-  implicit def deleteTableExecutor[A <: AnyDeleteTable](a: A):
+  implicit def deleteTableExecutor[A <: AnyDeleteTable]:
     DeleteTableExecutor[A] =
-    DeleteTableExecutor[A](a)(dynamoClient)
+    DeleteTableExecutor[A](dynamoClient)
 
 
   /* DESCRIBE TABLE */
-  implicit def describeTableExecutor[A <: AnyDescribeTable](a: A):
+  implicit def describeTableExecutor[A <: AnyDescribeTable]:
     DescribeTableExecutor[A] =
-    DescribeTableExecutor[A](a)(dynamoClient)
+    DescribeTableExecutor[A](dynamoClient)
 
 
   /* UPDATE TABLE */
-  implicit def updateTableExecutor[A <: AnyUpdateTableAction](a: A):
+  implicit def updateTableExecutor[A <: AnyUpdateTableAction]:
     UpdateTableExecutor[A] =
-    UpdateTableExecutor[A](a)(dynamoClient)
+    UpdateTableExecutor[A](dynamoClient)
 
 
   /* PUT ITEM */
-  implicit def putItemExecutor[A <: AnyPutItemAction with SDKRepGetter](a: A):
+  implicit def putItemExecutor[A <: AnyPutItemAction with SDKRepGetter]:
     PutItemExecutor[A] =
-    PutItemExecutor[A](a)(dynamoClient)
+    PutItemExecutor[A](dynamoClient)
 
 
   /* GET ITEM */
@@ -53,9 +47,9 @@ case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
 
 
   /* QUERY */
-  implicit def queryExecutor[A <: AnyQueryAction with SDKRepParser](a: A):
+  implicit def queryExecutor[A <: AnyQueryAction with SDKRepParser]:
     QueryExecutor[A] =
-    QueryExecutor[A](a)(dynamoClient)
+    QueryExecutor[A](dynamoClient)
 
 
   /* DELETE ITEM */

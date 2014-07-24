@@ -44,6 +44,17 @@ object ImplicitConversions {
   trait SDKRepGetter extends AnyTableItemAction {
     val getSDKRep: item.Rep => SDKRep
   }
+  // abstract class SDKRepGetter[A <: AnyTableItemAction] {
+  //   type Action = A
+  //   val action: Action
+  //   def getSDKRep(rep: action.item.Rep): SDKRep
+  // }
+
+  // implicit def autoSDKGetter[A <: AnyTableItemAction](a: A)(implicit transf: FromProperties.Item[a.Item, SDKRep]):
+  //   SDKRepGetter[A] = new SDKRepGetter[A] {
+  //     val action = a
+  //     def getSDKRep(rep: a.item.Rep): SDKRep = transf(rep)
+  //   }
 
 
   /* Properties-related conversions */

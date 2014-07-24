@@ -9,6 +9,5 @@ trait AnyDeleteTable extends AnyTableAction {
   type Output = None.type
 }
 
-case class DeleteTable[T <: Singleton with AnyTable]
-  (table: T, inputState: Active[T])
-    extends AnyDeleteTable { type Table = T }
+case class DeleteTable[T <: Singleton with AnyTable](table: T)
+  extends AnyDeleteTable { type Table = T }

@@ -191,6 +191,7 @@ object FromProperties {
       type Reps = R
     }
 
+  type Action[A <: AnyTableItemAction, Out] = FromProperties[A#Item#Properties, Out] { type Reps = A#Item#Raw }
   type Item[I <: AnyItem, Out] = FromProperties[I#Properties, Out] { type Reps = I#Raw }
   type ItemAux[I <: AnyItem, F <: Singleton with Poly, Out] = 
     FromProperties[I#Properties, Out] { 

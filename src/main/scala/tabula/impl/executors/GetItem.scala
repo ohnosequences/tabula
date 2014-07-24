@@ -27,7 +27,7 @@
 //       case t: Exception => GetItemFailure[action.Item](t.toString)
 //     }
 
-//     ExecutorResult(res, action.table, action.inputState)
+//     ExecutorResult(res, action.table, inputState)
 //   }
 // }
 
@@ -56,6 +56,6 @@
 //       case t: Exception => GetItemFailure[action.Item](t.toString)
 //     }
 
-//     ExecutorResult(res, action.table, action.inputState)
+//     ExecutorResult(res, action.table, inputState)
 //   }
 // }

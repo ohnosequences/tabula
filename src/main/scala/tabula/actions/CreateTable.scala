@@ -9,6 +9,5 @@ trait AnyCreateTable extends AnyTableAction {
   type Output = None.type
 }
 
-case class CreateTable[T <: Singleton with AnyTable]
-  (table: T, inputState: InitialState[T])
-    extends AnyCreateTable { type Table = T }
+case class CreateTable[T <: Singleton with AnyTable](table: T)
+  extends AnyCreateTable { type Table = T }

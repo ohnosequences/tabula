@@ -13,7 +13,8 @@ case class QuerySuccess[I <: Singleton with AnyItem](item: List[I#Raw]) extends 
 /* ### Common action trait */
 trait AnyQueryAction extends AnyTableItemAction { action =>
   // quieries make sense only for the composite key tables
-  type Table <: Singleton with AnyTable.withCompositeKey
+  // type Table <: Singleton with AnyTable.withCompositeKey
+  type Item <: Singleton with AnyItem { type Table <: AnyTable.withCompositeKey }
 
   // val hasHashKey: table.primaryKey.hash ∈ item.Properties
   // val hasRangeKey: table.primaryKey.range ∈ item.Properties

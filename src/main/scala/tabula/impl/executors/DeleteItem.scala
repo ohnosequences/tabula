@@ -21,7 +21,7 @@
 //       case t: Exception => println(t.printStackTrace); DeleteItemFail
 //     }
 
-//     ExecutorResult(res, action.table, action.inputState)
+//     ExecutorResult(res, action.table, inputState)
 //   }
 // }
 
@@ -44,6 +44,6 @@
 //       case t: Exception => println(t.printStackTrace); DeleteItemFail
 //     }
 
-//     ExecutorResult(res, action.table, action.inputState)
+//     ExecutorResult(res, action.table, inputState)
 //   }
 // }
