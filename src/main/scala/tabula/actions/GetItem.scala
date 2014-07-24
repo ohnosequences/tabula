@@ -20,13 +20,13 @@ trait AnyGetItemAction extends AnyTableItemAction {
 
 
 /* ### Hash key table */
-trait AnyGetItemHashKeyAction extends AnyGetItemAction {
-  type Table <: Singleton with AnyHashKeyTable
-  type Input = table.hashKey.Raw
-}
+// trait AnyGetItemHashKeyAction extends AnyGetItemAction {
+//   type Table <: Singleton with AnyTable.withHashKey
+//   type Input = table.hashKey.Raw
+// }
 
-/* ### Composite key table */
-trait AnyGetItemCompositeKeyAction extends AnyGetItemAction {
-  type Table <: Singleton with AnyCompositeKeyTable
-  type Input = (table.hashKey.Raw, table.rangeKey.Raw)
-}
+// /* ### Composite key table */
+// trait AnyGetItemCompositeKeyAction extends AnyGetItemAction {
+//   type Table <: Singleton with AnyTable.withCompositeKey
+//   type Input = (table.hashKey.Raw, table.rangeKey.Raw)
+// }

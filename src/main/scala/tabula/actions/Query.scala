@@ -13,9 +13,10 @@ case class QuerySuccess[I <: Singleton with AnyItem](item: List[I#Raw]) extends 
 /* ### Common action trait */
 trait AnyQueryAction extends AnyTableItemAction { action =>
   // quieries make sense only for the composite key tables
-  type Table <: Singleton with AnyCompositeKeyTable
+  type Table <: Singleton with AnyTable.withCompositeKey
 
-  val hasHashKey: table.HashKey ∈ item.Properties
+  // val hasHashKey: table.primaryKey.hash ∈ item.Properties
+  // val hasRangeKey: table.primaryKey.range ∈ item.Properties
 
   //require updating or creating
   type InputState  = AnyTableState.For[Table] with ReadyTable
@@ -27,13 +28,13 @@ trait AnyQueryAction extends AnyTableItemAction { action =>
 }
 
 trait AnySimpleQueryAction extends AnyQueryAction {
-  type Input = SimplePredicate[Item, EQ[table.HashKey]]
+  type Input = SimplePredicate[Item, EQ[table.primaryKey.Hash]]
 }
 
 // the range key condition is optional
 trait AnyNormalQueryAction extends AnyQueryAction {
-  type RangeCondition <: Condition.On[table.RangeKey] with KeyCondition
+  type RangeCondition <: Condition.On[table.primaryKey.Range] with KeyCondition
   val  rangeCondition: RangeCondition
 
-  type Input = AND[SimplePredicate[Item, EQ[table.HashKey]], RangeCondition]
+  type Input = AND[SimplePredicate[Item, EQ[table.primaryKey.Hash]], RangeCondition]
 }

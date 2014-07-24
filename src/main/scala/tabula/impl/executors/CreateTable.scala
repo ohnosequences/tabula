@@ -1,66 +1,66 @@
-package ohnosequences.tabula.impl
+// package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._, ImplicitConversions._
-import com.amazonaws.services.dynamodbv2.model._
+// import ohnosequences.tabula._, ImplicitConversions._
+// import com.amazonaws.services.dynamodbv2.model._
 
-case class CreateHashKeyTableExecutor[A <: AnyCreateTable with AnyTableAction.withHashKeyTable](a: A)
-  (dynamoClient: AnyDynamoDBClient) extends Executor(a) {
+// case class CreateHashKeyTableExecutor[A <: AnyCreateTable with AnyTableAction.withHashKeyTable](a: A)
+//   (dynamoClient: AnyDynamoDBClient) extends Executor(a) {
 
-  type OutC[X] = X
+//   type OutC[X] = X
 
-  def apply(): Out = {
-    println("executing: " + action)
+//   def apply(): Out = {
+//     println("executing: " + action)
 
-    val propertyDefinition = getAttrDef(a.table.hashKey)
-    val keySchemaElement = new KeySchemaElement(action.table.hashKey.label, "HASH")
-    val throughput = new ProvisionedThroughput(
-      action.inputState.throughputStatus.readCapacity, 
-      action.inputState.throughputStatus.writeCapacity
-    )
-    val request = new CreateTableRequest()
-      .withTableName(action.table.name)
-      .withProvisionedThroughput(throughput)
-      .withKeySchema(keySchemaElement)
-      .withAttributeDefinitions(propertyDefinition)
+//     val propertyDefinition = getAttrDef(a.table.hashKey)
+//     val keySchemaElement = new KeySchemaElement(action.table.hashKey.label, "HASH")
+//     val throughput = new ProvisionedThroughput(
+//       action.inputState.throughputStatus.readCapacity, 
+//       action.inputState.throughputStatus.writeCapacity
+//     )
+//     val request = new CreateTableRequest()
+//       .withTableName(action.table.name)
+//       .withProvisionedThroughput(throughput)
+//       .withKeySchema(keySchemaElement)
+//       .withAttributeDefinitions(propertyDefinition)
 
-    try {
-      dynamoClient.client.createTable(request)
-    } catch {
-      case e: ResourceInUseException => println("warning: table " + action.table.name + " is in use")
-    }
+//     try {
+//       dynamoClient.client.createTable(request)
+//     } catch {
+//       case e: ResourceInUseException => println("warning: table " + action.table.name + " is in use")
+//     }
 
-    ExecutorResult(None, action.table, action.inputState.creating)
-  }
-}
+//     ExecutorResult(None, action.table, action.inputState.creating)
+//   }
+// }
 
-case class CreateCompositeKeyTableExecutor[A <: AnyCreateTable with AnyTableAction.withCompositeKeyTable](a: A)
-  (dynamoClient: AnyDynamoDBClient) extends Executor(a) {
+// case class CreateCompositeKeyTableExecutor[A <: AnyCreateTable with AnyTableAction.withCompositeKeyTable](a: A)
+//   (dynamoClient: AnyDynamoDBClient) extends Executor(a) {
 
-  type OutC[X] = X
+//   type OutC[X] = X
 
-  def apply(): Out = {
-    println("executing: " + action)
+//   def apply(): Out = {
+//     println("executing: " + action)
 
-    val hashAttributeDefinition = getAttrDef(a.table.hashKey)
-    val rangeAttributeDefinition = getAttrDef(a.table.rangeKey)
-    val hashSchemaElement = new KeySchemaElement(action.table.hashKey.label, "HASH")
-    val rangeSchemaElement = new KeySchemaElement(action.table.rangeKey.label, "RANGE")
-    val throughput = new ProvisionedThroughput(
-      action.inputState.throughputStatus.readCapacity, 
-      action.inputState.throughputStatus.writeCapacity
-    )
-    val request = new CreateTableRequest()
-      .withTableName(action.table.name)
-      .withProvisionedThroughput(throughput)
-      .withKeySchema(hashSchemaElement, rangeSchemaElement)
-      .withAttributeDefinitions(hashAttributeDefinition, rangeAttributeDefinition)
+//     val hashAttributeDefinition = getAttrDef(a.table.hashKey)
+//     val rangeAttributeDefinition = getAttrDef(a.table.rangeKey)
+//     val hashSchemaElement = new KeySchemaElement(action.table.hashKey.label, "HASH")
+//     val rangeSchemaElement = new KeySchemaElement(action.table.rangeKey.label, "RANGE")
+//     val throughput = new ProvisionedThroughput(
+//       action.inputState.throughputStatus.readCapacity, 
+//       action.inputState.throughputStatus.writeCapacity
+//     )
+//     val request = new CreateTableRequest()
+//       .withTableName(action.table.name)
+//       .withProvisionedThroughput(throughput)
+//       .withKeySchema(hashSchemaElement, rangeSchemaElement)
+//       .withAttributeDefinitions(hashAttributeDefinition, rangeAttributeDefinition)
 
-    try {
-      dynamoClient.client.createTable(request)
-    } catch {
-      case t: ResourceInUseException => println("already exists")
-    }
+//     try {
+//       dynamoClient.client.createTable(request)
+//     } catch {
+//       case t: ResourceInUseException => println("already exists")
+//     }
 
-    ExecutorResult(None, action.table, action.inputState.creating)
-  }
-}
+//     ExecutorResult(None, action.table, action.inputState.creating)
+//   }
+// }

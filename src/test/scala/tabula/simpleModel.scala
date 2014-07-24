@@ -23,16 +23,15 @@ object simpleModel {
   )
   """)
 
-  case object UsersTable extends HashKeyTable (
+  case object UsersTable extends Table (
     name = "users",
-    hashKey = name,
+    primaryKey = HashKey(name),
     region = EU
   )
 
-  case object RandomTable extends CompositeKeyTable (
+  case object RandomTable extends Table (
     name = "someStuff",
-    hashKey = id,
-    rangeKey = name,
+    primaryKey = CompositeKey(id, name),
     region = EU
   )
 

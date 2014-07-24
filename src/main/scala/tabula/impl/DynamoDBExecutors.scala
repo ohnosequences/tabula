@@ -7,15 +7,15 @@ import com.amazonaws.services.dynamodbv2.model._
 case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
 
   /* CREATE TABLE */
-  implicit def createHashKeyTableExecutor
-    [A <: AnyCreateTable with AnyTableAction.withHashKeyTable](a: A):
-      CreateHashKeyTableExecutor[A] =
-      CreateHashKeyTableExecutor[A](a)(dynamoClient)
+  // implicit def createHashKeyTableExecutor
+  //   [A <: AnyCreateTable with AnyTableAction.withHashKeyTable](a: A):
+  //     CreateHashKeyTableExecutor[A] =
+  //     CreateHashKeyTableExecutor[A](a)(dynamoClient)
 
-  implicit def createCompositeKeyTableExecutor
-    [A <: AnyCreateTable with AnyTableAction.withCompositeKeyTable](a: A):
-      CreateCompositeKeyTableExecutor[A] =
-      CreateCompositeKeyTableExecutor[A](a)(dynamoClient)
+  // implicit def createCompositeKeyTableExecutor
+  //   [A <: AnyCreateTable with AnyTableAction.withCompositeKeyTable](a: A):
+  //     CreateCompositeKeyTableExecutor[A] =
+  //     CreateCompositeKeyTableExecutor[A](a)(dynamoClient)
 
 
   /* DELETE TABLE */
@@ -43,13 +43,13 @@ case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
 
 
   /* GET ITEM */
-  implicit def getItemHashKeyExecutor[A <: AnyGetItemHashKeyAction with SDKRepParser](a: A):
-    GetItemHashKeyExecutor[A] =
-    GetItemHashKeyExecutor[A](a)(dynamoClient)
+  // implicit def getItemHashKeyExecutor[A <: AnyGetItemHashKeyAction with SDKRepParser](a: A):
+  //   GetItemHashKeyExecutor[A] =
+  //   GetItemHashKeyExecutor[A](a)(dynamoClient)
 
-  implicit def getItemCompositeKeyExecutor[A <: AnyGetItemCompositeKeyAction with SDKRepParser](a: A):
-    GetItemCompositeKeyExecutor[A] =
-    GetItemCompositeKeyExecutor[A](a)(dynamoClient)
+  // implicit def getItemCompositeKeyExecutor[A <: AnyGetItemCompositeKeyAction with SDKRepParser](a: A):
+  //   GetItemCompositeKeyExecutor[A] =
+  //   GetItemCompositeKeyExecutor[A](a)(dynamoClient)
 
 
   /* QUERY */
@@ -59,12 +59,12 @@ case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
 
 
   /* DELETE ITEM */
-  implicit def deleteItemHashKeyExecutor[A <: AnyDeleteItemHashKeyAction](a: A):
-    DeleteItemHashKeyExecutor[A] =
-    DeleteItemHashKeyExecutor[A](a)(dynamoClient)
+  // implicit def deleteItemHashKeyExecutor[A <: AnyDeleteItemHashKeyAction](a: A):
+  //   DeleteItemHashKeyExecutor[A] =
+  //   DeleteItemHashKeyExecutor[A](a)(dynamoClient)
 
-  implicit def deleteItemCompositeKeyExecutor[A <: AnyDeleteItemCompositeKeyAction](a: A):
-    DeleteItemCompositeKeyExecutor[A] =
-    DeleteItemCompositeKeyExecutor[A](a)(dynamoClient)
+  // implicit def deleteItemCompositeKeyExecutor[A <: AnyDeleteItemCompositeKeyAction](a: A):
+  //   DeleteItemCompositeKeyExecutor[A] =
+  //   DeleteItemCompositeKeyExecutor[A](a)(dynamoClient)
 
 }

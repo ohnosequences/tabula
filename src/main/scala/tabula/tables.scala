@@ -8,70 +8,123 @@ import ohnosequences.scarph._
 
   A table contains only the static part of a table, things hat cannot be changed once the the table is created. Dynamic data lives in `AnyTableState`. The only exception to this is the `Account`; this is so because normally it is something that is retrieved dynamically from the environment.
 */
+sealed trait AnyPrimaryKey
+
+sealed trait AnyHashKey extends AnyPrimaryKey {
+  type Hash <: Singleton with AnyProperty
+  val  hash: Hash
+
+  // should be provided implicitly:
+  val hashHasValidType: Hash#Raw :<: PrimaryKeyValues
+}
+case class HashKey[HP <: Singleton with AnyProperty]
+  (val hash: HP)(implicit val hashHasValidType: HP#Raw :<: PrimaryKeyValues)
+    extends AnyHashKey{ type Hash = HP }
+
+
+sealed trait AnyCompositeKey extends AnyPrimaryKey {
+  type Hash <: Singleton with AnyProperty
+  val  hash: Hash
+
+  type Range <: Singleton with AnyProperty
+  val  range: Range
+
+  // should be provided implicitly:
+  val  hashHasValidType:  Hash#Raw :<: PrimaryKeyValues
+  val rangeHasValidType: Range#Raw :<: PrimaryKeyValues
+}
+case class CompositeKey[HP <: Singleton with AnyProperty, RP <: Singleton with AnyProperty]
+  (val hash: HP, val range: RP)(implicit
+    val  hashHasValidType: HP#Raw :<: PrimaryKeyValues,
+    val rangeHasValidType: RP#Raw :<: PrimaryKeyValues
+  )
+  extends AnyCompositeKey { 
+    type Hash = HP 
+    type Range = RP 
+  }
+
+
 trait AnyTable extends AnyDynamoDBResource {
   val name: String
 
-  type HashKey <: Singleton with AnyProperty
-  val  hashKey: HashKey
+  type PrimaryKey <: AnyPrimaryKey
+  val  primaryKey: PrimaryKey
 
-  type ResourceType = Table.type
-  val  resourceType = Table
+  type ResourceType = TableResourceType.type
+  val  resourceType = TableResourceType
 
   type Region <: AnyRegion
   val  region: Region
 }
 
+class Table [
+  PK <: AnyPrimaryKey,
+  R <: AnyRegion
+](val name: String,
+  val primaryKey: PK,
+  val region: R
+) extends AnyTable {
+
+  type PrimaryKey = PK
+  type Region = R
+}
+
 /*
   Tables can have two types of primary keys: simple or composite. This is static and affects the operations that can be performed on them. For example, a `query` operation only makes sense on a table with a composite key.
 */
-sealed trait AnyHashKeyTable extends AnyTable 
+// sealed trait AnyTable.withHashKey extends AnyTable {
+//   type PrimaryKey <: HashKey
+// }
 
-sealed trait AnyCompositeKeyTable extends AnyTable { 
+// sealed trait AnyTable.withCompositeKey extends AnyTable { 
 
-  type RangeKey <: Singleton with AnyProperty
-  val rangeKey: RangeKey
-}
+//   type RangeKey <: Singleton with AnyProperty
+//   val rangeKey: RangeKey
+// }
 
-class HashKeyTable [
-  HK <: Singleton with AnyProperty,
-  R <: AnyRegion
-](val name: String,
-  val hashKey: HK,
-  val region: R
-)(implicit
-  val ev_k: HK#Raw :<: PrimaryKeyValues
-) extends AnyHashKeyTable {
+// class HashKeyTable [
+//   HK <: Singleton with AnyProperty,
+//   R <: AnyRegion
+// ](val name: String,
+//   val hashKey: HK,
+//   val region: R
+// )(implicit
+//   val ev_k: HK#Raw :<: PrimaryKeyValues
+// ) extends AnyTable.withHashKey {
 
-  type Region = R
-  type HashKey = HK
-}
+//   type Region = R
+//   type HashKey = HK
+// }
 
-class CompositeKeyTable [
-  HK <: Singleton with AnyProperty,
-  RK <: Singleton with AnyProperty,
-  R <: AnyRegion
-](val name: String,
-  val hashKey: HK,
-  val rangeKey: RK,
-  val region: R
-)(implicit
-  val ev_h: HK#Raw :<: PrimaryKeyValues,
-  val ev_r: RK#Raw :<: PrimaryKeyValues
-) extends AnyCompositeKeyTable {
+// class CompositeKeyTable [
+//   HK <: Singleton with AnyProperty,
+//   RK <: Singleton with AnyProperty,
+//   R <: AnyRegion
+// ](val name: String,
+//   val hashKey: HK,
+//   val rangeKey: RK,
+//   val region: R
+// )(implicit
+//   val ev_h: HK#Raw :<: PrimaryKeyValues,
+//   val ev_r: RK#Raw :<: PrimaryKeyValues
+// ) extends AnyTable.withCompositeKey {
 
-  type Region = R
-  type HashKey = HK
-  type RangeKey = RK
-}
+//   type Region = R
+//   type HashKey = HK
+//   type RangeKey = RK
+// }
 
 object AnyTable {
   type inRegion[R <: AnyRegion] = AnyTable { type Region = R }
+
+  type withHashKey      = AnyTable { type PrimaryKey <: AnyHashKey }
+  type withCompositeKey = AnyTable { type PrimaryKey <: AnyCompositeKey }
 }
 
 
-// trait AnyHashKeyTable extends AnyTable { table =>
+// trait AnyTable.withHashKey extends AnyTable { table =>
   
-//   type Tpe <: AnyHashKeyTableType
+//   type Tpe <: AnyTable.withHashKeyType
 
 //   trait AnyGetItem {
 
@@ -108,9 +161,9 @@ object AnyTable {
 // }
 
 
-// trait AnyCompositeKeyTable extends AnyTable { table =>
+// trait AnyTable.withCompositeKey extends AnyTable { table =>
   
-//   type Tpe <: AnyCompositeKeyTableType
+//   type Tpe <: AnyTable.withCompositeKeyType
 
 //   trait AnyGetItem {
 

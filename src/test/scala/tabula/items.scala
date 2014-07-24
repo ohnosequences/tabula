@@ -15,7 +15,7 @@ object TestSetting {
   case object id extends Property[Num]
   case object name extends Property[String]
 
-  object table extends CompositeKeyTable("foo_table", id, name, EU)
+  object table extends Table("foo_table", CompositeKey(id, name), EU)
 
   case object simpleUser extends Item(table, id :~: name :~: ∅)
 

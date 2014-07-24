@@ -55,6 +55,6 @@ abstract class TableItemAction[
 
 
 object AnyTableAction {
-  type withHashKeyTable      = AnyTableAction { type Table <: Singleton with AnyHashKeyTable }
-  type withCompositeKeyTable = AnyTableAction { type Table <: Singleton with AnyCompositeKeyTable }
+  type withHashKeyTable      = AnyTableAction { type Table <: Singleton with AnyTable.withHashKey }
+  type withCompositeKeyTable = AnyTableAction { type Table <: Singleton with AnyTable.withCompositeKey }
 }

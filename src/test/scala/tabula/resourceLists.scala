@@ -18,7 +18,7 @@ object ResourceLists {
     type Resources <: AnyTable :+: AnyTable :+: RNil
     val resources: Resources
 
-    val scndTblKey = resources.tail.head.hashKey
+    val scndTblKey = resources.tail.head.primaryKey
   }
 
   case class JoinTables[
