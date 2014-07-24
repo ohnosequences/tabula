@@ -4,7 +4,7 @@ import org.scalatest.FunSuite
 
 import com.amazonaws.regions._
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
-import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue, AttributeAction}
+import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue} //, PropertyAction}
 
 import ohnosequences.typesets._
 import ohnosequences.scarph._
@@ -18,10 +18,10 @@ import AnyTag._
 object TestSetting {
   case object service extends AnyDynamoDBService {
     type Region = EU.type
-    val region = EU
+    val  region = EU
 
     type Account = ohnosequences.tabula.Account
-    val account: Account = Account("", "")
+    val  account: Account = Account("", "")
 
     def endpoint: String = "" //shouldn't be here
   }
@@ -33,17 +33,17 @@ object TestSetting {
       }
     )
 
-  case object id extends Attribute[Int]
-  case object name extends Attribute[String]
+  case object id extends Property[Num]
+  case object name extends Property[String]
 
   object table extends CompositeKeyTable("tabula_test_1", id, name, service.region)
 
   case object simpleUser extends Item(table, id :~: name :~: ∅)
 
 
-  // more attributes:
-  case object email extends Attribute[String]
-  case object color extends Attribute[String]
+  // more properties:
+  case object email extends Property[String]
+  case object color extends Property[String]
 
   case object normalUser extends Item(table, id :~: name :~: email :~: color :~: ∅)
 }
@@ -70,7 +70,7 @@ class irishService extends FunSuite {
     }
   }
 
-  ignore("complex example") {
+  test("complex example") {
     import toSDKRep._
     import fromSDKRep._
     import Condition._
@@ -111,15 +111,15 @@ class irishService extends FunSuite {
       ∅
     )
 
-    val putResul1 = service please (InTable(afterCreate) putItem simpleUser withValue (user1 as simpleUser))
+    val putResul1 = service please (InCompositeKeyTable(afterCreate) putItem normalUser withValue user1)
     assert(putResul1.output === PutItemSuccess)
     val afterPut1 = waitFor(table, putResul1.state)
 
-    val putResul2 = service please (InTable(afterPut1) putItem normalUser withValue user2)
+    val putResul2 = service please (InCompositeKeyTable(afterPut1) putItem normalUser withValue user2)
     assert(putResul2.output === PutItemSuccess)
     val afterPut2 = waitFor(table, putResul2.state)
 
-    val putResult3 = service please (InTable(afterPut2) putItem normalUser withValue user3)
+    val putResult3 = service please (InCompositeKeyTable(afterPut2) putItem simpleUser withValue (user3 as simpleUser))
     assert(putResult3.output === PutItemSuccess)
     val afterPut3 = waitFor(table, putResult3.state)
 

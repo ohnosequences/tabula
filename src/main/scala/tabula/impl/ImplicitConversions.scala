@@ -1,6 +1,7 @@
 package ohnosequences.tabula.impl
 
 import ohnosequences.typesets._
+import ohnosequences.scarph._
 import ohnosequences.tabula._
 import com.amazonaws.services.dynamodbv2.model.{AttributeValue, ScalarAttributeType, AttributeDefinition, ConditionalOperator}
 import com.amazonaws.services.dynamodbv2.model.{Condition => SDKCondition}
@@ -24,14 +25,14 @@ object ImplicitConversions {
   }
 
   case object toSDKRep extends Poly1 {
-    implicit def default[A <: AnyAttribute, R <: A#Raw] = 
+    implicit def default[A <: AnyProperty, R <: A#Raw] = 
       at[(A, R)] { case (a, r) => (a.label, getAttrVal(r)) }
   }
 
   case object fromSDKRep extends Poly1 {
-    implicit def caseN[A <: Singleton with AnyAttribute.With[Int]] = 
+    implicit def caseN[A <: Singleton with AnyProperty.ofType[Num]] = 
       at[(SDKRep, A)]{ case (m, a) => (a ->> m(a.label).getN.toInt): A#Rep }
-    implicit def caseS[A <: Singleton with AnyAttribute.With[String]] = 
+    implicit def caseS[A <: Singleton with AnyProperty.ofType[String]] = 
       at[(SDKRep, A)]{ case (m, a) => (a ->> m(a.label).getS.toString): A#Rep }
     // TODO: a case for Bytes
   }
@@ -45,12 +46,12 @@ object ImplicitConversions {
   }
 
 
-  /* Attributes-related conversions */
-  implicit def getAttrDef[A <: AnyAttribute](attr: A): AttributeDefinition = {
+  /* Properties-related conversions */
+  implicit def getAttrDef[A <: AnyProperty](attr: A): AttributeDefinition = {
     val attrDef = new AttributeDefinition().withAttributeName(attr.label)
 
     attr.classTag.runtimeClass.asInstanceOf[Class[attr.Raw]] match {
-      case c if c == classOf[Int]    => attrDef.withAttributeType(ScalarAttributeType.N)
+      case c if c == classOf[Num]    => attrDef.withAttributeType(ScalarAttributeType.N)
       case c if c == classOf[String] => attrDef.withAttributeType(ScalarAttributeType.S)
       case c if c == classOf[Bytes]  => attrDef.withAttributeType(ScalarAttributeType.B)
     }
@@ -62,7 +63,7 @@ object ImplicitConversions {
 
     // val B = TypeCase[Bytes]
     attr match {
-      case _: Int    => new AttributeValue().withN(attr.toString)
+      case _: Num    => new AttributeValue().withN(attr.toString)
       case _: String => new AttributeValue().withS(attr.toString)
       // TODO: test the Bytes case
       case a: Bytes => { 
@@ -99,11 +100,11 @@ object ImplicitConversions {
   implicit def toSDKPredicate[P <: AnyPredicate](pred: P): (ConditionalOperator, Map[String, SDKCondition]) = {
 
     pred match {
-      case p: AnySimplePredicate => (ConditionalOperator.AND, Map(p.head.attribute.label -> toSDKCondition(p.head)))
+      case p: AnySimplePredicate => (ConditionalOperator.AND, Map(p.head.property.label -> toSDKCondition(p.head)))
       case p: AnyAndPredicate => (ConditionalOperator.AND, 
-                                  toSDKPredicate(p.body)._2 + (p.head.attribute.label -> toSDKCondition(p.head)))
+                                  toSDKPredicate(p.body)._2 + (p.head.property.label -> toSDKCondition(p.head)))
       case p:  AnyOrPredicate => (ConditionalOperator.OR,
-                                  toSDKPredicate(p.body)._2 + (p.head.attribute.label -> toSDKCondition(p.head)))
+                                  toSDKPredicate(p.body)._2 + (p.head.property.label -> toSDKCondition(p.head)))
     }
   }
     

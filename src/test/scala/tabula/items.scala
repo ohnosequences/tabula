@@ -12,16 +12,16 @@ import shapeless.test.typed
 import AnyTag._
 
 object TestSetting {
-  case object id extends Attribute[Int]
-  case object name extends Attribute[String]
+  case object id extends Property[Num]
+  case object name extends Property[String]
 
   object table extends CompositeKeyTable("foo_table", id, name, EU)
 
   case object simpleUser extends Item(table, id :~: name :~: ∅)
 
-  // more attributes:
-  case object email extends Attribute[String]
-  case object color extends Attribute[String]
+  // more properties:
+  case object email extends Property[String]
+  case object color extends Property[String]
 
   case object normalUser extends Item(table, id :~: name :~: email :~: color :~: ∅)
 
@@ -32,7 +32,7 @@ object TestSetting {
     ∅
   )
 
-  // this way the order of attributes doesn't matter
+  // this way the order of properties doesn't matter
   val user2 = normalUser fields (
     (name is "foo") :~: 
     (color is "orange") :~:
@@ -46,13 +46,13 @@ object TestSetting {
 class itemsSuite extends FunSuite {
   import TestSetting._
 
-  test("item attribute witnesses") {
+  test("item property witnesses") {
 
     val wid = implicitly[Witness.Aux[id.type]]
     typed[id.type](wid.value)
     typed[wid.T](id)
     implicitly[wid.T =:= id.type]
-    implicitly[wid.value.Raw =:= Int]
+    implicitly[wid.value.Raw =:= Num]
     assert(wid.value == id)
     
     val wname = implicitly[Witness.Aux[name.type]]
@@ -63,18 +63,18 @@ class itemsSuite extends FunSuite {
     assert(y(x) == name)
   }
 
-  test("representing attribute sets") {
+  test("representing property sets") {
 
     implicitly[Represented.By[∅, ∅]]
     implicitly[Represented.By[id.type :~: name.type :~: ∅, TaggedWith[id.type] :~: TaggedWith[name.type] :~: ∅]] 
     implicitly[Represented.By[id.type :~: name.type :~: ∅, id.Rep :~: name.Rep :~: ∅]] 
 
     implicitly[simpleUser.Raw =:= (id.Rep :~: name.Rep :~: ∅)]
-    implicitly[simpleUser.representedAttributes.Out =:= (id.Rep :~: name.Rep :~: ∅)]
+    implicitly[simpleUser.representedProperties.Out =:= (id.Rep :~: name.Rep :~: ∅)]
   }
 
   test("invalid item values") {
-    // you have to set _all_ attributes
+    // you have to set _all_ properties
     assertTypeError("""
     val wrongAttrSet = simpleUser ->> (
       (id ->> 123) :~: ∅
@@ -90,7 +90,7 @@ class itemsSuite extends FunSuite {
     )
     """)
 
-    // but you still have to present all attributes:
+    // but you still have to present all properties:
     assertTypeError("""
     val wrongAttrSet = normalUser fields (
       (id ->> 123) :~:
@@ -100,7 +100,7 @@ class itemsSuite extends FunSuite {
     """)
   }
 
-  test("accessing item attributes") {
+  test("accessing item properties") {
     assert(user1.get(id) === 123)
     assert(user1.get(name) === "foo")
   }
@@ -108,13 +108,13 @@ class itemsSuite extends FunSuite {
   test("tags/keys of a representation") {
     // val keys = implicitly[Keys.Aux[id.Rep :~: name.Rep :~: ∅, id.type :~: name.type :~: ∅]]
     val tags = TagsOf[id.Rep :~: name.Rep :~: ∅]
-    assert(tags(user1) === simpleUser.attributes)
+    assert(tags(user1) === simpleUser.properties)
     assert(tags(user1) === (id :~: name :~: ∅))
   }
 
   test("items serializaion") {
     // transforming simpleUser to Map
-    val tr = FromAttributes[
+    val tr = FromProperties[
       id.type :~: name.type :~: ∅, 
       id.Rep  :~: name.Rep  :~: ∅,
       toSDKRep.type,
@@ -123,15 +123,15 @@ class itemsSuite extends FunSuite {
     val map1 = tr(user1)
     println(map1)
 
-    val t = implicitly[FromAttributes.Aux[simpleUser.Attributes, simpleUser.Raw, toSDKRep.type, SDKRep]]
-    val ti = implicitly[FromAttributes.ItemAux[simpleUser.type, toSDKRep.type, SDKRep]]
+    val t = implicitly[FromProperties.Aux[simpleUser.Properties, simpleUser.Raw, toSDKRep.type, SDKRep]]
+    val ti = implicitly[FromProperties.ItemAux[simpleUser.type, toSDKRep.type, SDKRep]]
     val map2 = ti(user1)
     println(map2)
     assert(map1 == map2)
 
     // forming simpleUser from Map
-    val form = ToAttributes[SDKRep, simpleUser.Attributes, simpleUser.Raw, fromSDKRep.type](ToAttributes.cons)
-    val i2 = form(map2, simpleUser.attributes)
+    val form = ToProperties[SDKRep, simpleUser.Properties, simpleUser.Raw, fromSDKRep.type](ToProperties.cons)
+    val i2 = form(map2, simpleUser.properties)
     println(i2)
     assert(i2 == user1)
   }
@@ -147,7 +147,7 @@ class itemsSuite extends FunSuite {
   }
 
   test("item extension") {
-    val more = simpleUser.attributes ∪ (email :~: color :~: ∅)
+    val more = simpleUser.properties ∪ (email :~: color :~: ∅)
     case object extendedUser extends Item(table, more)
 
     assertResult(user2) {

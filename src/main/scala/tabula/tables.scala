@@ -11,7 +11,7 @@ import ohnosequences.scarph._
 trait AnyTable extends AnyDynamoDBResource {
   val name: String
 
-  type HashKey <: Singleton with AnyAttribute
+  type HashKey <: Singleton with AnyProperty
   val  hashKey: HashKey
 
   type ResourceType = Table.type
@@ -28,12 +28,12 @@ sealed trait AnyHashKeyTable extends AnyTable
 
 sealed trait AnyCompositeKeyTable extends AnyTable { 
 
-  type RangeKey <: Singleton with AnyAttribute
+  type RangeKey <: Singleton with AnyProperty
   val rangeKey: RangeKey
 }
 
 class HashKeyTable [
-  HK <: Singleton with AnyAttribute,
+  HK <: Singleton with AnyProperty,
   R <: AnyRegion
 ](val name: String,
   val hashKey: HK,
@@ -47,8 +47,8 @@ class HashKeyTable [
 }
 
 class CompositeKeyTable [
-  HK <: Singleton with AnyAttribute,
-  RK <: Singleton with AnyAttribute,
+  HK <: Singleton with AnyProperty,
+  RK <: Singleton with AnyProperty,
   R <: AnyRegion
 ](val name: String,
   val hashKey: HK,

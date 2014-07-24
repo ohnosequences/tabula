@@ -4,7 +4,7 @@ package ohnosequences.tabula
 trait AnyDynamoDBState { state =>
 
   type Resource <: AnyDynamoDBResource
-  val resource: Resource
+  val  resource: Resource
 
   val account: Account
 
@@ -51,6 +51,9 @@ extends AnyThroughputStatus {}
 sealed trait AnyTableState extends AnyDynamoDBState {
 
   type Resource <: Singleton with AnyTable
+
+  type Table = Resource
+  val  table = resource
   
   val throughputStatus: AnyThroughputStatus
 
