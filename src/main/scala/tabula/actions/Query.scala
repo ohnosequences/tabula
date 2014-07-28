@@ -8,14 +8,14 @@ import ohnosequences.tabula.impl.ImplicitConversions._
 
 sealed trait QueryResult { type Item <: AnyItem }
 case class QueryFailure[I <: AnyItem](msg: String) extends QueryResult { type Item = I }
-case class QuerySuccess[I <: Singleton with AnyItem](item: List[I#Raw]) extends QueryResult { type Item = I }
+case class QuerySuccess[I <: Singleton with AnyItem](item: List[I#Rep]) extends QueryResult { type Item = I }
 
 /* ### Common action trait */
 trait AnyQueryAction extends AnyTableItemAction { action =>
   // quieries make sense only for the composite key tables
   type Table <: Singleton with AnyCompositeKeyTable
 
-  val hasHashKey: table.HashKey ∈ item.Properties
+  val hasHashKey: table.HashKey ∈ item.record.Properties
 
   //require updating or creating
   type InputState  = AnyTableState.For[Table] with ReadyTable

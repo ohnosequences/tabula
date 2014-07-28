@@ -7,7 +7,7 @@ import ohnosequences.tabula.impl.ImplicitConversions._
 
 sealed trait GetItemResult { type Item <: AnyItem }
 case class GetItemFailure[I <: AnyItem](msg: String) extends GetItemResult { type Item = I }
-case class GetItemSuccess[I <: Singleton with AnyItem](item: I#Raw) extends GetItemResult { type Item = I }
+case class GetItemSuccess[I <: Singleton with AnyItem](item: I#Rep) extends GetItemResult { type Item = I }
 
 /* ### Common action trait */
 trait AnyGetItemAction extends AnyTableItemAction {

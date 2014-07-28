@@ -1,6 +1,6 @@
 package ohnosequences.tabula
 
-import ohnosequences.typesets._
+import ohnosequences.typesets._, AnyTag._
 import ohnosequences.scarph._
 import shapeless._
 
@@ -10,29 +10,39 @@ import shapeless._
   This is the type of items of a given table. A table can hold different kinds of records, as you could want to restrict access to some items for example; there's even functionality in IAM for this. By separating the item type from the table we can easily model this scenario as different item types for the same table.
 */
 
-trait AnyItem extends AnyRecord { item =>
+trait AnyItem extends Representable { item =>
+
   val label: String
 
   /* The table is accessible through the item type */
   type Table <: AnyTable
   val  table: Table
 
-  val  propertiesHaveValidTypes: everyElementOf[Raw]#isOneOf[ValidValues]
+  type Record <: AnyRecord
+  val record: Record
+
+  type Raw = record.Raw
+
+  val  propertiesHaveValidTypes: everyElementOf[Record#Raw]#isOneOf[ValidValues]
+
+  // double tagging FTW!
+  final def fields[R <: TypeSet](r: R)(implicit 
+    p: R ~> record.Raw
+  ): item.Rep = item ->> (record ->> p(r))
+
+  implicit def propertyOps(rep: item.Rep): record.PropertyOps = record.PropertyOps(record ->> rep)
 }
 
-class Item[T <: AnyTable, Ps <: TypeSet, RawProperties <: TypeSet]
-  (val table: T, val properties: Ps)
-  (implicit 
-    val representedProperties: Represented.By[Ps, RawProperties],
-    val propertiesBound: Ps << AnyProperty,
-    val propertiesHaveValidTypes: everyElementOf[RawProperties]#isOneOf[ValidValues]
-  ) extends AnyItem {
+class Item[T <: AnyTable, R <: Singleton with AnyRecord](val table: T, val record: R)(implicit 
+  val propertiesHaveValidTypes: everyElementOf[R#Raw]#isOneOf[ValidValues]
+) 
+  extends AnyItem 
+{
 
   val label = this.toString
 
   type Table = T
-  type Properties = Ps
-  type Raw = RawProperties
+  type Record = R
 }
 
 object AnyItem {
@@ -51,18 +61,18 @@ object ToItem {
   type Aux[In, I <: Singleton with AnyItem, F <: Singleton with Poly] = ToItem[In, I] { type Fun = F }
 
   implicit def buah[In, I <: Singleton with AnyItem, F <: Singleton with Poly, Out]
-    (implicit fr: ToProperties.Aux[In, I#Properties, I#Raw, F]): ToItem.Aux[In, I, F] =
+    (implicit fr: ToProperties.Aux[In, I#Record#Properties, I#Raw, F]): ToItem.Aux[In, I, F] =
       new ToItem[In, I] {
         type Fun = F
-        def apply(in: In, i: I): Out = (i: I) ->> fr(in, i.properties)
+        def apply(in: In, i: I): Out = (i: I) ->> fr(in, i.record.properties)
       }
 }
 
 object From {
 
-  type Item[I <: AnyItem, Out] = FromProperties[I#Properties, Out] { type Reps = I#Raw }
-  type ItemAux[I <: AnyItem, F <: Singleton with Poly, Out] = 
-    FromProperties[I#Properties, Out] { 
+  type Item[I <: Singleton with AnyItem, Out] = FromProperties[I#Record#Properties, Out] { type Reps = I#Raw }
+  type ItemAux[I <: Singleton with AnyItem, F <: Poly, Out] = 
+    FromProperties[I#Record#Properties, Out] { 
       type Reps = I#Raw
       type Fun = F
     }

@@ -13,7 +13,7 @@ case class FromHashKeyTable[T <: Singleton with AnyHashKeyTable]
     case class withKey(hashKeyValue: t.hashKey.Raw)
     (implicit
       val form: ToItem[SDKRep, i.type],
-      val hasHashKey: t.HashKey ∈ i.Properties
+      val hasHashKey: t.HashKey ∈ i.record.Properties
     ) extends AnyGetItemHashKeyAction with SDKRepParser {
       type Table = T
       val  table = t: t.type
@@ -46,8 +46,8 @@ case class FromCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
       rangeKeyValue: t.rangeKey.Raw
     )(implicit
       val form: ToItem[SDKRep, i.type],
-      val hasHashKey:  t.HashKey  ∈ i.Properties,
-      val hasRangeKey: t.RangeKey ∈ i.Properties
+      val hasHashKey:  t.HashKey  ∈ i.record.Properties,
+      val hasRangeKey: t.RangeKey ∈ i.record.Properties
     ) extends AnyGetItemCompositeKeyAction with SDKRepParser {
       type Table = T
       val  table = t: t.type

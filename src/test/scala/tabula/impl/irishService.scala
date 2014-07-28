@@ -35,17 +35,19 @@ object TestSetting {
 
   case object id extends Property[Num]
   case object name extends Property[String]
+  case object simpleUserRecord extends Record(id :~: name :~: ∅)
+  case object normalUserRecord extends Record(id :~: name :~: email :~: color :~: ∅)
 
-  object table extends CompositeKeyTable("tabula_test_1", id, name, service.region)
+  case object table extends CompositeKeyTable("tabula_test_1", id, name, service.region)
 
-  case object simpleUser extends Item(table, id :~: name :~: ∅)
+  case object simpleUser extends Item(table, simpleUserRecord)
 
 
   // more properties:
   case object email extends Property[String]
   case object color extends Property[String]
 
-  case object normalUser extends Item(table, id :~: name :~: email :~: color :~: ∅)
+  case object normalUser extends Item(table, normalUserRecord)
 }
 
 class irishService extends FunSuite {
@@ -87,7 +89,7 @@ class irishService extends FunSuite {
     // val afterUpdate2 = waitFor(table, updateResult2.state)
 
     // PUT ITEM
-    val user1 = normalUser ->> (
+    val user1 = normalUser fields (
       (id ->> 1) :~: 
       (name ->> "Edu") :~: 
       (email ->> "eparejatobes@ohnosequences.com") :~:
@@ -95,7 +97,7 @@ class irishService extends FunSuite {
       ∅
     )
 
-    val user2 = normalUser ->> (
+    val user2 = normalUser fields (
       (id ->> 1) :~: 
       (name ->> "Evdokim") :~: 
       (email ->> "evdokim@ohnosequences.com") :~:
@@ -103,7 +105,7 @@ class irishService extends FunSuite {
       ∅
     )
 
-    val user3 = normalUser ->> (
+    val user3 = normalUser fields (
       (id ->> 3) :~: 
       (name ->> "Lyosha") :~: 
       (email ->> "aalekhin@ohnosequences.com") :~:
@@ -119,7 +121,13 @@ class irishService extends FunSuite {
     assert(putResul2.output === PutItemSuccess)
     val afterPut2 = waitFor(table, putResul2.state)
 
-    val putResult3 = service please (InCompositeKeyTable(table, afterPut2) putItem simpleUser withValue (user3 as simpleUser))
+    val putResult3 = service please (
+
+      InCompositeKeyTable(table, afterPut2) putItem simpleUser withValue (
+
+        simpleUser fields ((user3 as simpleUser.record):simpleUser.record.Raw)
+      )
+    )
     assert(putResult3.output === PutItemSuccess)
     val afterPut3 = waitFor(table, putResult3.state)
 
@@ -149,7 +157,7 @@ class irishService extends FunSuite {
     // NOTE: here we check that we can get a simpleUser instead of the normalUser and we will get only those properties
     val getResult = service please (FromCompositeKeyTable(table, afterPut3) getItem simpleUser withKeys (user1.get(id), user1.get(name)))
     assert(getResult.output === GetItemSuccess(
-      simpleUser ->> ((id ->> 1) :~: (name ->> "Edu") :~: ∅)
+      simpleUser fields ((id is 1) :~: (name is "Edu") :~: ∅)
     ))
 
     // DELETE ITEM + get again
