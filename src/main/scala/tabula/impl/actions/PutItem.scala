@@ -11,7 +11,7 @@ case class InHashKeyTable[T <: Singleton with AnyHashKeyTable]
   case class putItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
 
     case class withValue(itemRep: i.Rep)(implicit
-      val transf: FromProperties.Item[i.type, SDKRep],
+      val transf: From.Item[i.type, SDKRep],
       val hasHashKey:  t.HashKey  ∈ i.Properties
     ) extends AnyPutItemAction with SDKRepGetter {
       type Table = T
@@ -39,7 +39,7 @@ case class InCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
   case class putItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
 
     case class withValue(itemRep: i.Rep)(implicit
-      val transf: FromProperties.Item[i.type, SDKRep],
+      val transf: From.Item[i.type, SDKRep],
       val hasHashKey:  t.HashKey  ∈ i.Properties,
       val hasRangeKey: t.RangeKey ∈ i.Properties 
     ) extends AnyPutItemAction with SDKRepGetter {

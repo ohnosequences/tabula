@@ -124,7 +124,7 @@ class itemsSuite extends FunSuite {
     println(map1)
 
     val t = implicitly[FromProperties.Aux[simpleUser.Properties, simpleUser.Raw, toSDKRep.type, SDKRep]]
-    val ti = implicitly[FromProperties.ItemAux[simpleUser.type, toSDKRep.type, SDKRep]]
+    val ti = implicitly[From.ItemAux[simpleUser.type, toSDKRep.type, SDKRep]]
     val map2 = ti(user1)
     println(map2)
     assert(map1 == map2)
