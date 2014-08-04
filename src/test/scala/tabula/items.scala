@@ -2,7 +2,7 @@ package ohnosequences.tabula
 
 import org.scalatest.FunSuite
 
-import ohnosequences.typesets._, Property._
+import ohnosequences.typesets._, Property._, AnyTag._, TagsOf._
 import ohnosequences.scarph._
 import ohnosequences.tabula._
 import ohnosequences.tabula.impl._, ImplicitConversions._
@@ -28,14 +28,14 @@ object TestSetting {
   case object normalUser extends Item(table, normalUserRecord)
 
   // creating item is easy and neat:
-  val user1: simpleUser.Rep = simpleUser fields (
+  val user1 = simpleUser fields (
     (id ->> 123) :~: 
     (name ->> "foo") :~: 
     ∅
   )
 
   // this way the order of properties doesn't matter
-  val user2: normalUser.Rep = normalUser fields (
+  val user2 = normalUser fields (
     (name is "foo") :~: 
     (color is "orange") :~:
     (id is 123) :~: 
@@ -58,17 +58,18 @@ class itemsSuite extends FunSuite {
   }
 
   test("tags/keys of a representation") {
+    // won't work; need the alias :-|
     // val keys = implicitly[Keys.Aux[id.Rep :~: name.Rep :~: ∅, id.type :~: name.type :~: ∅]]
-    val tags = TagsOf[id.Rep :~: name.Rep :~: ∅]
+    val tags = TagsOf[TaggedWith[id.type] :~: TaggedWith[name.type] :~: ∅]
     assert(tags(user1) === simpleUser.record.properties)
     assert(tags(user1) === (id :~: name :~: ∅))
   }
 
-  test("items serializaion") {
+  test("items serialization") {
     // transforming simpleUser to Map
     val tr = FromProperties[
       id.type :~: name.type :~: ∅, 
-      id.Rep  :~: name.Rep  :~: ∅,
+      TaggedWith[id.type]  :~: TaggedWith[name.type]  :~: ∅,
       toSDKRep.type,
       SDKRep
     ]

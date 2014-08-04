@@ -18,10 +18,10 @@ trait AnyItem extends Representable { item =>
   type Table <: AnyTable
   val  table: Table
 
-  type Record <: AnyRecord
+  type Record <: Singleton with AnyRecord
   val record: Record
 
-  type Raw = record.Raw
+  type Raw = Record#Raw
 
   val  propertiesHaveValidTypes: everyElementOf[Record#Raw]#isOneOf[ValidValues]
 
@@ -30,7 +30,10 @@ trait AnyItem extends Representable { item =>
     p: R ~> record.Raw
   ): item.Rep = item ->> (record ->> p(r))
 
-  implicit def propertyOps(rep: item.Rep): record.PropertyOps = record.PropertyOps(record ->> rep)
+  implicit def propertyOps(rep: TaggedWith[Record]): AnyRecord.OtherPropertyOps[Record] = 
+    AnyRecord.OtherPropertyOps[Record] (
+      (record:Record) ->> rep
+    )
 }
 
 class Item[T <: AnyTable, R <: Singleton with AnyRecord](val table: T, val record: R)(implicit 
@@ -46,13 +49,29 @@ class Item[T <: AnyTable, R <: Singleton with AnyRecord](val table: T, val recor
 }
 
 object AnyItem {
+
   type ofTable[T <: AnyTable] = AnyItem { type Table = T }
+  type withRecord[R <: AnyRecord] = AnyItem { type Record = R }
+
+  implicit def propertyOps[R <: Singleton with AnyItem](entry: TaggedWith[R])(implicit
+    getItem: TaggedWith[R] => R
+  ): AnyRecord.OtherPropertyOps[R#Record] = {
+
+    val uh = getItem(entry)
+
+    AnyRecord.OtherPropertyOps(
+
+        (uh.record:R#Record) ->> entry
+      )
+
+  }
+      
 }
 
 //////////////////////////////////////////////
 
 trait ToItem[In, I <: Singleton with AnyItem] {
-  type Out = I#Rep
+  type Out = TaggedWith[I]
   type Fun <: Singleton with Poly
   def apply(in: In, i: I): Out
 }
@@ -70,10 +89,13 @@ object ToItem {
 
 object From {
 
-  type Item[I <: Singleton with AnyItem, Out] = FromProperties[I#Record#Properties, Out] { type Reps = I#Raw }
+  type Item[I <: Singleton with AnyItem, Out] = FromProperties[I#Record#Properties, Out] { type Reps = I#Record#Raw }
+
   type ItemAux[I <: Singleton with AnyItem, F <: Poly, Out] = 
+  
     FromProperties[I#Record#Properties, Out] { 
-      type Reps = I#Raw
+
+      type Reps = I#Record#Raw
       type Fun = F
     }
 }

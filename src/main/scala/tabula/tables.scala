@@ -26,10 +26,21 @@ trait AnyTable extends AnyDynamoDBResource {
 */
 sealed trait AnyHashKeyTable extends AnyTable 
 
+object AnyHashKeyTable {
+
+  type withKey[P <: Singleton with AnyProperty] = AnyHashKeyTable { type HashKey = P }
+}
+
 sealed trait AnyCompositeKeyTable extends AnyTable { 
 
   type RangeKey <: Singleton with AnyProperty
   val rangeKey: RangeKey
+}
+
+object AnyCompositeKeyTable {
+
+  type withHashKey[P <: Singleton with AnyProperty] = AnyCompositeKeyTable { type HashKey = P }
+  type withRangeKey[P <: Singleton with AnyProperty] = AnyCompositeKeyTable { type RangeKey = P }
 }
 
 class HashKeyTable [

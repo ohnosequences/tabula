@@ -1,6 +1,6 @@
 package ohnosequences.tabula
 
-import ohnosequences.typesets._
+import ohnosequences.typesets._, AnyTag._
 import ohnosequences.scarph._
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import ohnosequences.tabula.impl.ImplicitConversions._
@@ -14,7 +14,7 @@ trait AnyPutItemAction extends AnyTableItemAction {
   type InputState  = AnyTableState.For[Table] with ReadyTable
   type OutputState = InputState
 
-  type Input = item.Rep
+  type Input = TaggedWith[Item]
   val  input: Input
 
   type Output = PutItemResult
