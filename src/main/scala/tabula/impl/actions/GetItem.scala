@@ -1,25 +1,28 @@
 package ohnosequences.tabula.impl.actions
 
-import ohnosequences.typesets._
+import ohnosequences.typesets._, AnyTag._
 import ohnosequences.scarph._
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 import ohnosequences.tabula._, impl._, ImplicitConversions._
 
 case class FromHashKeyTable[T <: Singleton with AnyHashKeyTable]
-  (t: T, inputSt: AnyTableState.For[T] with ReadyTable) {
+  (val t: T, val inputSt: AnyTableState.For[T] with ReadyTable) {
 
-  case class getItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
+  case class getItem[I <: Singleton with AnyItem with AnyItem.ofTable[T]](val i: I) {
 
-    case class withKey(hashKeyValue: t.hashKey.Raw)
+    case class withKey (
+      hashKeyValue: t.hashKey.Raw
+    )
     (implicit
-      val form: ToItem[SDKRep, i.type],
-      val hasHashKey: t.HashKey ∈ i.record.Properties
+      val form: ToItem[SDKRep, I],
+      val hasHashKey: T#HashKey ∈ I#Record#Properties
     ) extends AnyGetItemHashKeyAction with SDKRepParser {
+
       type Table = T
-      val  table = t: t.type
+      val  table = t
 
       type Item = I
-      val  item = i: i.type
+      val  item = i
 
       val input = hashKeyValue
 
@@ -45,15 +48,16 @@ case class FromCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
       hashKeyValue: t.hashKey.Raw,
       rangeKeyValue: t.rangeKey.Raw
     )(implicit
-      val form: ToItem[SDKRep, i.type],
+      val form: ToItem[SDKRep, I],
       val hasHashKey:  t.HashKey  ∈ i.record.Properties,
       val hasRangeKey: t.RangeKey ∈ i.record.Properties
     ) extends AnyGetItemCompositeKeyAction with SDKRepParser {
+      
       type Table = T
-      val  table = t: t.type
+      val  table = t
 
       type Item = I
-      val  item = i: i.type
+      val  item = i
 
       val input = (hashKeyValue, rangeKeyValue)
 

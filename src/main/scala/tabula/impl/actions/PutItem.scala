@@ -19,10 +19,10 @@ case class InHashKeyTable[T <: Singleton with AnyHashKeyTable]
     extends AnyPutItemAction with SDKRepGetter {
 
       type Table = T
-      val  table = t: t.type
+      val  table = t
 
       type Item = I
-      val  item = i: i.type
+      val  item = i
 
       val  input = itemRep
       val  getSDKRep = (r: I#Rep) => transf(r)

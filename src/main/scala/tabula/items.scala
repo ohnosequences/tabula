@@ -21,7 +21,7 @@ trait AnyItem extends Representable { item =>
   type Record <: Singleton with AnyRecord
   val record: Record
 
-  type Raw = Record#Raw
+  type Raw = AnyItem.RawOf[Record]
 
   val  propertiesHaveValidTypes: everyElementOf[Record#Raw]#isOneOf[ValidValues]
 
@@ -50,8 +50,12 @@ class Item[T <: AnyTable, R <: Singleton with AnyRecord](val table: T, val recor
 
 object AnyItem {
 
+  type RawOf[R <: Singleton with AnyRecord] = R#Raw
   type ofTable[T <: AnyTable] = AnyItem { type Table = T }
   type withRecord[R <: AnyRecord] = AnyItem { type Record = R }
+
+  type RecordOf[I <: AnyItem] = I#Record
+  type PropertiesOf[I <: AnyItem] = RecordOf[I]#Properties
 
   implicit def propertyOps[R <: Singleton with AnyItem](entry: TaggedWith[R])(implicit
     getItem: TaggedWith[R] => R
@@ -70,20 +74,34 @@ object AnyItem {
 
 //////////////////////////////////////////////
 
-trait ToItem[In, I <: Singleton with AnyItem] {
+trait ToItem[In, I <: AnyItem] {
+
   type Out = TaggedWith[I]
-  type Fun <: Singleton with Poly
+  type Fun <: Poly
   def apply(in: In, i: I): Out
 }
 
 object ToItem {
-  type Aux[In, I <: Singleton with AnyItem, F <: Singleton with Poly] = ToItem[In, I] { type Fun = F }
 
-  implicit def buah[In, I <: Singleton with AnyItem, F <: Singleton with Poly, Out]
-    (implicit fr: ToProperties.Aux[In, I#Record#Properties, I#Raw, F]): ToItem.Aux[In, I, F] =
+  import AnyItem.PropertiesOf
+
+  type Aux[In, I <: AnyItem, F <: Poly] = ToItem[In, I] { type Fun = F }
+
+  implicit def buah[In, I <: Singleton with AnyItem, F <: Singleton with Poly, Out](implicit 
+    fr: ToProperties.Aux[In, PropertiesOf[I], RawOf[I], F]
+  ): ToItem.Aux[In, I, F] =
+
       new ToItem[In, I] {
+
         type Fun = F
-        def apply(in: In, i: I): Out = (i: I) ->> fr(in, i.record.properties)
+
+        def apply(in: In, i: I): TaggedWith[I] = {
+
+          val props: I#Record#Properties = i.record.properties
+          val itemV: I#Raw = fr(in, props)
+
+          ((i: I) ->> itemV): TaggedWith[I]
+        }
       }
 }
 

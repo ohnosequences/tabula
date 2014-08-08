@@ -6,21 +6,22 @@ import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeV
 import ohnosequences.tabula._, impl._, ImplicitConversions._
 
 case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
-  (t: T, inputSt: AnyTableState.For[T] with ReadyTable) {
+  (val t: T, val inputSt: AnyTableState.For[T] with ReadyTable) {
 
-  case class forItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
+  case class forItem[I <: Singleton with AnyItem with AnyItem.ofTable[T]](val i: I) {
 
-    case class withHashKey(hashKeyValue: t.hashKey.Raw)(implicit 
-      val parser: ToItem[SDKRep, i.type], 
-      val hasHashKey: t.HashKey ∈ i.record.Properties
-    ) extends AnySimpleQueryAction
-         with SDKRepParser { self =>
+    case class withHashKey(hashKeyValue: t.hashKey.Raw)
+    (implicit 
+      val parser: ToItem[SDKRep, I], 
+      val hasHashKey: T#HashKey ∈ I#Record#Properties
+    ) 
+    extends AnySimpleQueryAction with SDKRepParser { self =>
 
       type Table = T
-      val  table = t: t.type
+      val  table = t
 
       type Item = I
-      val  item = i: i.type
+      val  item = i
 
       val input = SimplePredicate(item, EQ(table.hashKey, hashKeyValue))
 
@@ -29,18 +30,18 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
 
       override def toString = s"QueryTable ${t.name} forItem ${i.label} withHashKey ${hashKeyValue}"
 
-      case class andRangeCondition[C <: Condition.On[t.RangeKey] with KeyCondition](c: C)
+      case class andRangeCondition[C <: Condition.On[Table#RangeKey] with KeyCondition](c: C)
           extends AnyNormalQueryAction
              with SDKRepParser {
 
           type Table = T
-          val  table = t: t.type
+          val  table = t
 
           type Item = I
-          val  item = i: i.type
+          val  item = i
 
           type RangeCondition = C
-          val  rangeCondition = c: c.type
+          val  rangeCondition = c
 
           val input = AND(SimplePredicate(item, EQ(table.hashKey, hashKeyValue)), c)
 
