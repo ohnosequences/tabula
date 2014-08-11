@@ -16,15 +16,17 @@ import shapeless.test.typed
 import AnyTag._
 
 object TestSetting {
-  case object service extends AnyDynamoDBService {
-    type Region = EU.type
-    val  region = EU
+  
+    case object service extends AnyDynamoDBService {
 
-    type Account = ohnosequences.tabula.Account
-    val  account: Account = Account("", "")
+      type Region = EU.type
+      val  region = EU
 
-    def endpoint: String = "" //shouldn't be here
-  }
+      type Account = ohnosequences.tabula.Account
+      val  account: Account = Account("", "")
+
+      def endpoint: String = "" //shouldn't be here
+    }
 
   val executors = DynamoDBExecutors(
     new DynamoDBClient(EU,

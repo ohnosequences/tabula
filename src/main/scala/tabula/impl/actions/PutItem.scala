@@ -11,10 +11,10 @@ case class InHashKeyTable[T <: Singleton with AnyHashKeyTable]
   case class putItem[I <: Singleton with AnyItem with AnyItem.ofTable[T]](i: I) {
 
     case class withValue(
-      val itemRep: TaggedWith[I]
+      val itemRep: I#Rep
     )(implicit
       val transf: From.Item[I, SDKRep],
-      val hasHashKey:  T#HashKey ∈ I#Record#Properties
+      val hasHashKey:  t.HashKey ∈ i.record.Properties
     ) 
     extends AnyPutItemAction with SDKRepGetter {
 

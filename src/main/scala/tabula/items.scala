@@ -18,25 +18,27 @@ trait AnyItem extends Representable { item =>
   type Table <: AnyTable
   val  table: Table
 
+  // TODO remove Singleton
   type Record <: Singleton with AnyRecord
   val record: Record
 
-  type Raw = AnyItem.RawOf[Record]
+  type Raw = Record#Raw
 
-  val  propertiesHaveValidTypes: everyElementOf[Record#Raw]#isOneOf[ValidValues]
+  implicit val propertiesHaveValidTypes: everyElementOf[Record#Raw]#isOneOf[ValidValues]
 
   // double tagging FTW!
   final def fields[R <: TypeSet](r: R)(implicit 
     p: R ~> record.Raw
   ): item.Rep = item ->> (record ->> p(r))
 
-  implicit def propertyOps(rep: TaggedWith[Record]): AnyRecord.OtherPropertyOps[Record] = 
+  implicit def propertyOps(rep: Record#Rep): AnyRecord.OtherPropertyOps[Record] = 
     AnyRecord.OtherPropertyOps[Record] (
       (record:Record) ->> rep
     )
 }
 
-class Item[T <: AnyTable, R <: Singleton with AnyRecord](val table: T, val record: R)(implicit 
+abstract class Item[T <: AnyTable, R <: Singleton with AnyRecord](val table: T, val record: R)
+(implicit 
   val propertiesHaveValidTypes: everyElementOf[R#Raw]#isOneOf[ValidValues]
 ) 
   extends AnyItem 
@@ -74,10 +76,10 @@ object AnyItem {
 
 //////////////////////////////////////////////
 
-trait ToItem[In, I <: AnyItem] {
+trait ToItem[In, I <: Singleton with AnyItem] {
 
-  type Out = TaggedWith[I]
-  type Fun <: Poly
+  type Out = I#Rep
+  type Fun <: Singleton with Poly
   def apply(in: In, i: I): Out
 }
 
@@ -85,22 +87,23 @@ object ToItem {
 
   import AnyItem.PropertiesOf
 
-  type Aux[In, I <: AnyItem, F <: Poly] = ToItem[In, I] { type Fun = F }
+  type Aux[In, I <: Singleton with AnyItem, F <: Singleton with Poly] = ToItem[In, I] { type Fun = F }
 
   implicit def buah[In, I <: Singleton with AnyItem, F <: Singleton with Poly, Out](implicit 
-    fr: ToProperties.Aux[In, PropertiesOf[I], RawOf[I], F]
+    fr: ToProperties.Aux[In, I#Record#Properties, I#Raw, F]
   ): ToItem.Aux[In, I, F] =
 
       new ToItem[In, I] {
 
         type Fun = F
 
-        def apply(in: In, i: I): TaggedWith[I] = {
+        def apply(in: In, i: I): I#Rep = {
 
-          val props: I#Record#Properties = i.record.properties
-          val itemV: I#Raw = fr(in, props)
+          val rec = i.record
+          val props = rec.properties
+          val itemV = fr(in, props)
 
-          ((i: I) ->> itemV): TaggedWith[I]
+          ((i:I) ->> itemV)
         }
       }
 }
