@@ -15,7 +15,7 @@ trait AnyItem extends Representable { item =>
   val label: String
 
   /* The table is accessible through the item type */
-  type Table <: AnyTable
+  type Table <: Singleton with AnyTable
   val  table: Table
 
   // TODO remove Singleton
@@ -37,7 +37,7 @@ trait AnyItem extends Representable { item =>
     )
 }
 
-abstract class Item[T <: AnyTable, R <: Singleton with AnyRecord](val table: T, val record: R)
+abstract class Item[T <: Singleton with AnyTable, R <: Singleton with AnyRecord](val table: T, val rc: R)
 (implicit 
   val propertiesHaveValidTypes: everyElementOf[R#Raw]#isOneOf[ValidValues]
 ) 
@@ -48,6 +48,7 @@ abstract class Item[T <: AnyTable, R <: Singleton with AnyRecord](val table: T, 
 
   type Table = T
   type Record = R
+  val record = rc: rc.type
 }
 
 object AnyItem {
