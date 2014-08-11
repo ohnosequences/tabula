@@ -11,21 +11,21 @@ case class InHashKeyTable[T <: Singleton with AnyHashKeyTable]
   case class putItem[I <: Singleton with AnyItem with AnyItem.ofTable[T]](i: I) {
 
     case class withValue(
-      val itemRep: I#Rep
+      val itemRep: i.Rep
     )(implicit
-      val transf: From.Item[I, SDKRep],
+      val transf: From.Item[i.type, SDKRep],
       val hasHashKey:  t.HashKey ∈ i.record.Properties
     ) 
     extends AnyPutItemAction with SDKRepGetter {
 
       type Table = T
-      val  table = t
+      val  table = t:t.type
 
       type Item = I
-      val  item = i
+      val  item = i:i.type
 
       val  input = itemRep
-      val  getSDKRep = (r: I#Rep) => transf(r)
+      val  getSDKRep = (r:i.Rep) => transf(r)
 
       val inputState = inputSt
 
@@ -42,8 +42,8 @@ case class InCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
 
   case class putItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
 
-    case class withValue(itemRep: TaggedWith[I])(implicit
-      val transf: From.Item[I, SDKRep],
+    case class withValue(itemRep: i.Rep)(implicit
+      val transf: From.Item[i.type, SDKRep],
       val hasHashKey:  t.HashKey  ∈ i.record.Properties,
       val hasRangeKey: t.RangeKey ∈ i.record.Properties 
     ) extends AnyPutItemAction with SDKRepGetter {
@@ -54,7 +54,7 @@ case class InCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
       val  item = i: i.type
 
       val  input = itemRep
-      val  getSDKRep = (r: I#Rep) => transf(r)
+      val  getSDKRep = (r: i.Rep) => transf(r)
 
       val inputState = inputSt
 

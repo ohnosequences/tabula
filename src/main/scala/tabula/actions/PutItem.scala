@@ -14,7 +14,7 @@ trait AnyPutItemAction extends AnyTableItemAction {
   type InputState  = AnyTableState.For[Table] with ReadyTable
   type OutputState = InputState
 
-  type Input = TaggedWith[Item]
+  type Input = item.Rep
   val  input: Input
 
   type Output = PutItemResult
