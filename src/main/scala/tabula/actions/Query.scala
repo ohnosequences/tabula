@@ -16,7 +16,7 @@ trait AnyQueryAction extends AnyTableItemAction { action =>
   // quieries make sense only for the composite key tables
   type Table <: Singleton with AnyCompositeKeyTable
 
-  val hasHashKey: Table#HashKey ∈ Item#Record#Properties
+  val hasHashKey: table.HashKey ∈ item.record.Properties
 
   //require updating or creating
   type InputState  = AnyTableState.For[Table] with ReadyTable
@@ -29,14 +29,14 @@ trait AnyQueryAction extends AnyTableItemAction { action =>
 
 trait AnySimpleQueryAction extends AnyQueryAction {
 
-  type Input = SimplePredicate[Item, EQ[Table#HashKey]]
+  type Input = SimplePredicate[Item, EQ[table.HashKey]]
 }
 
 // the range key condition is optional
 trait AnyNormalQueryAction extends AnyQueryAction {
   
-  type RangeCondition <: Condition.On[Table#RangeKey] with KeyCondition
+  type RangeCondition <: Condition.On[table.RangeKey] with KeyCondition
   val  rangeCondition: RangeCondition
 
-  type Input = AND[SimplePredicate[Item, EQ[Table#HashKey]], RangeCondition]
+  type Input = AND[SimplePredicate[Item, EQ[table.HashKey]], RangeCondition]
 }

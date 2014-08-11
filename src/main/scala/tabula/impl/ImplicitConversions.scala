@@ -76,7 +76,7 @@ object ImplicitConversions {
   }
 
   trait SDKRepParser extends AnyTableItemAction {
-    val parseSDKRep: SDKRep => Item#Rep
+    val parseSDKRep: SDKRep => item.Rep
   }
 
   trait SDKRepGetter extends AnyTableItemAction {

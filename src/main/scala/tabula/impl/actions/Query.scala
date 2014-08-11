@@ -12,8 +12,8 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
 
     case class withHashKey(hashKeyValue: t.hashKey.Raw)
     (implicit 
-      val parser: ToItem[SDKRep, I], 
-      val hasHashKey: T#HashKey ∈ I#Record#Properties
+      val parser: ToItem[SDKRep, i.type], 
+      val hasHashKey: t.HashKey ∈ i.record.Properties
     ) 
     extends AnySimpleQueryAction with SDKRepParser { self =>
 

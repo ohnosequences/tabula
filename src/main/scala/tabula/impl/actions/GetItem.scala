@@ -19,16 +19,16 @@ case class FromHashKeyTable[T <: Singleton with AnyHashKeyTable]
     ) extends AnyGetItemHashKeyAction with SDKRepParser {
 
       type Table = T
-      val table = fromHashKeyTable.table
+      val table = fromHashKeyTable.table: fromHashKeyTable.table.type
 
       type Item = I
-      val item = getItem.item
+      val item = getItem.item: getItem.item.type
 
       val input = hashKeyValue
 
       val inputState = inputSt
 
-      val parseSDKRep = (m: SDKRep) => form(m, item)
+      val parseSDKRep = (m: SDKRep) => form(m, item: item.type)
 
       override def toString = s"FromTable ${table.name} getItem ${item.label} withKey ${hashKeyValue}"
     }
@@ -48,7 +48,7 @@ case class FromCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
       hashKeyValue: t.hashKey.Raw,
       rangeKeyValue: t.rangeKey.Raw
     )(implicit
-      val form: ToItem[SDKRep, I],
+      val form: ToItem[SDKRep, i.type],
       val hasHashKey:  t.HashKey  ∈ i.record.Properties,
       val hasRangeKey: t.RangeKey ∈ i.record.Properties
     ) extends AnyGetItemCompositeKeyAction with SDKRepParser {
@@ -57,13 +57,13 @@ case class FromCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
       val  table = t
 
       type Item = I
-      val  item = i
+      val  item = i:i.type
 
       val input = (hashKeyValue, rangeKeyValue)
 
       val inputState = inputSt
 
-      val parseSDKRep = (m: SDKRep) => form(m, i)
+      val parseSDKRep = (m: SDKRep) => form(m, i:item.type)
 
       override def toString = s"FromTable ${t.name} getItem ${i.label} withKeys ${(hashKeyValue, rangeKeyValue)}"
     }
