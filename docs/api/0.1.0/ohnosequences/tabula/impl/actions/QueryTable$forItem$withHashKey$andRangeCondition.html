@@ -1,0 +1,779 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>andRangeCondition - ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition</title>
+          <meta name="description" content="andRangeCondition - ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition" />
+          <meta name="keywords" content="andRangeCondition ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <img src="../../../../lib/class_big.png" />
+        <p id="owner"><a href="../../../package.html" class="extype" name="ohnosequences">ohnosequences</a>.<a href="../../package.html" class="extype" name="ohnosequences.tabula">tabula</a>.<a href="../package.html" class="extype" name="ohnosequences.tabula.impl">impl</a>.<a href="package.html" class="extype" name="ohnosequences.tabula.impl.actions">actions</a>.<a href="QueryTable.html" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable">QueryTable</a>.<a href="QueryTable$forItem.html" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem">forItem</a>.<a href="QueryTable$forItem$withHashKey.html" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey">withHashKey</a></p>
+        <h1>andRangeCondition</h1> <span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">andRangeCondition</span><span class="tparams">[<span name="C">C &lt;: <a href="../../Condition$.html#On[A&lt;:Singletonwithohnosequences.typesets.AnyProperty]=ohnosequences.tabula.Condition{typeProperty=A}" class="extmbr" name="ohnosequences.tabula.Condition.On">On</a>[<span class="extype" name="ohnosequences.tabula.AnyCompositeKeyTable.RangeKey">T.RangeKey</span>] with <a href="../../KeyCondition.html" class="extype" name="ohnosequences.tabula.KeyCondition">KeyCondition</a></span>]</span><span class="params">(<span name="c">c: <span class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.C">C</span></span>)</span><span class="result"> extends <a href="../../AnyNormalQueryAction.html" class="extype" name="ohnosequences.tabula.AnyNormalQueryAction">AnyNormalQueryAction</a> with <a href="../ImplicitConversions$$SDKRepParser.html" class="extype" name="ohnosequences.tabula.impl.ImplicitConversions.SDKRepParser">SDKRepParser</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="scala.Product">Product</span>, <span class="extype" name="scala.Equals">Equals</span>, <a href="../ImplicitConversions$$SDKRepParser.html" class="extype" name="ohnosequences.tabula.impl.ImplicitConversions.SDKRepParser">SDKRepParser</a>, <a href="../../AnyNormalQueryAction.html" class="extype" name="ohnosequences.tabula.AnyNormalQueryAction">AnyNormalQueryAction</a>, <a href="../../AnyQueryAction.html" class="extype" name="ohnosequences.tabula.AnyQueryAction">AnyQueryAction</a>, <a href="../../AnyTableItemAction.html" class="extype" name="ohnosequences.tabula.AnyTableItemAction">AnyTableItemAction</a>, <a href="../../AnyTableAction.html" class="extype" name="ohnosequences.tabula.AnyTableAction">AnyTableAction</a>, <a href="../../AnyAction.html" class="extype" name="ohnosequences.tabula.AnyAction">AnyAction</a>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition"><span>andRangeCondition</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="ohnosequences.tabula.impl.ImplicitConversions.SDKRepParser"><span>SDKRepParser</span></li><li class="in" name="ohnosequences.tabula.AnyNormalQueryAction"><span>AnyNormalQueryAction</span></li><li class="in" name="ohnosequences.tabula.AnyQueryAction"><span>AnyQueryAction</span></li><li class="in" name="ohnosequences.tabula.AnyTableItemAction"><span>AnyTableItemAction</span></li><li class="in" name="ohnosequences.tabula.AnyTableAction"><span>AnyTableAction</span></li><li class="in" name="ohnosequences.tabula.AnyAction"><span>AnyAction</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div id="constructors" class="members">
+              <h3>Instance Constructors</h3>
+              <ol><li name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(c:C):withHashKey.this.andRangeCondition[C]"></a>
+      <a id="&lt;init&gt;:andRangeCondition[C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">andRangeCondition</span><span class="params">(<span name="c">c: <span class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.C">C</span></span>)</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@&lt;init&gt;(c:C):withHashKey.this.andRangeCondition[C]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="ohnosequences.tabula.AnyNormalQueryAction.Input" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Input=ohnosequences.tabula.AND[ohnosequences.tabula.SimplePredicate[AnyNormalQueryAction.this.Item,ohnosequences.tabula.EQ[AnyNormalQueryAction.this.table.HashKey]],AnyNormalQueryAction.this.RangeCondition]"></a>
+      <a id="Input:Input"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Input</span><span class="result"> = <a href="../../AND.html" class="extype" name="ohnosequences.tabula.AND">AND</a>[<a href="../../SimplePredicate.html" class="extype" name="ohnosequences.tabula.SimplePredicate">SimplePredicate</a>[<a href="#Item=I" class="extmbr" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.Item">Item</a>, <a href="../../EQ.html" class="extype" name="ohnosequences.tabula.EQ">EQ</a>[<span class="extype" name="ohnosequences.tabula.AnyTable.HashKey">T.HashKey</span>]], <a href="#RangeCondition=C" class="extmbr" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.RangeCondition">RangeCondition</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@Input=ohnosequences.tabula.AND[ohnosequences.tabula.SimplePredicate[AnyNormalQueryAction.this.Item,ohnosequences.tabula.EQ[AnyNormalQueryAction.this.table.HashKey]],AnyNormalQueryAction.this.RangeCondition]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../AnyNormalQueryAction.html" class="extype" name="ohnosequences.tabula.AnyNormalQueryAction">AnyNormalQueryAction</a> → <a href="../../AnyQueryAction.html" class="extype" name="ohnosequences.tabula.AnyQueryAction">AnyQueryAction</a> → <a href="../../AnyAction.html" class="extype" name="ohnosequences.tabula.AnyAction">AnyAction</a></dd></dl></div>
+    </li><li name="ohnosequences.tabula.AnyQueryAction.InputState" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="InputState=ohnosequences.tabula.AnyTableState.For[AnyQueryAction.this.Table]withohnosequences.tabula.ReadyTable"></a>
+      <a id="InputState:InputState"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">InputState</span><span class="result"> = <a href="../../AnyTableState$.html#For[T]=ohnosequences.tabula.AnyTableState{typeResource=T}" class="extmbr" name="ohnosequences.tabula.AnyTableState.For">For</a>[<a href="#Table=T" class="extmbr" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.Table">Table</a>] with <a href="../../ReadyTable.html" class="extype" name="ohnosequences.tabula.ReadyTable">ReadyTable</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@InputState=ohnosequences.tabula.AnyTableState.For[AnyQueryAction.this.Table]withohnosequences.tabula.ReadyTable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../AnyQueryAction.html" class="extype" name="ohnosequences.tabula.AnyQueryAction">AnyQueryAction</a> → <a href="../../AnyAction.html" class="extype" name="ohnosequences.tabula.AnyAction">AnyAction</a></dd></dl></div>
+    </li><li name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.Item" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Item=I"></a>
+      <a id="Item:Item"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Item</span><span class="result"> = <span class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.I">I</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@Item=I" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition">andRangeCondition</a> → <a href="../../AnyTableItemAction.html" class="extype" name="ohnosequences.tabula.AnyTableItemAction">AnyTableItemAction</a></dd></dl></div>
+    </li><li name="ohnosequences.tabula.AnyQueryAction.Output" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Output=ohnosequences.tabula.QueryResult[AnyQueryAction.this.Item]"></a>
+      <a id="Output:Output"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Output</span><span class="result"> = <a href="../../QueryResult.html" class="extype" name="ohnosequences.tabula.QueryResult">QueryResult</a>[<a href="#Item=I" class="extmbr" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.Item">Item</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@Output=ohnosequences.tabula.QueryResult[AnyQueryAction.this.Item]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../AnyQueryAction.html" class="extype" name="ohnosequences.tabula.AnyQueryAction">AnyQueryAction</a> → <a href="../../AnyAction.html" class="extype" name="ohnosequences.tabula.AnyAction">AnyAction</a></dd></dl></div>
+    </li><li name="ohnosequences.tabula.AnyQueryAction.OutputState" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="OutputState=AnyQueryAction.this.InputState"></a>
+      <a id="OutputState:OutputState"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">OutputState</span><span class="result"> = <a href="../../AnyTableState$.html#For[T]=ohnosequences.tabula.AnyTableState{typeResource=T}" class="extmbr" name="ohnosequences.tabula.AnyTableState.For">For</a>[<a href="#Table=T" class="extmbr" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.Table">Table</a>] with <a href="../../ReadyTable.html" class="extype" name="ohnosequences.tabula.ReadyTable">ReadyTable</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@OutputState=AnyQueryAction.this.InputState" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../AnyQueryAction.html" class="extype" name="ohnosequences.tabula.AnyQueryAction">AnyQueryAction</a> → <a href="../../AnyAction.html" class="extype" name="ohnosequences.tabula.AnyAction">AnyAction</a></dd></dl></div>
+    </li><li name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.RangeCondition" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="RangeCondition=C"></a>
+      <a id="RangeCondition:RangeCondition"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">RangeCondition</span><span class="result"> = <span class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.C">C</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@RangeCondition=C" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition">andRangeCondition</a> → <a href="../../AnyNormalQueryAction.html" class="extype" name="ohnosequences.tabula.AnyNormalQueryAction">AnyNormalQueryAction</a></dd></dl></div>
+    </li><li name="ohnosequences.tabula.AnyTableAction.Resources" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Resources=AnyTableAction.this.Table"></a>
+      <a id="Resources:Resources"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Resources</span><span class="result"> = <a href="#Table=T" class="extmbr" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.Table">Table</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@Resources=AnyTableAction.this.Table" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../AnyTableAction.html" class="extype" name="ohnosequences.tabula.AnyTableAction">AnyTableAction</a> → <a href="../../AnyAction.html" class="extype" name="ohnosequences.tabula.AnyAction">AnyAction</a></dd></dl></div>
+    </li><li name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.Table" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Table=T"></a>
+      <a id="Table:Table"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Table</span><span class="result"> = <span class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.T">T</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@Table=T" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition">andRangeCondition</a> → <a href="../../AnyQueryAction.html" class="extype" name="ohnosequences.tabula.AnyQueryAction">AnyQueryAction</a> → <a href="../../AnyTableAction.html" class="extype" name="ohnosequences.tabula.AnyTableAction">AnyTableAction</a></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@##():Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition#c" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="c:C"></a>
+      <a id="c:C"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">c</span><span class="result">: <span class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.C">C</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@c:C" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition#hasHashKey" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hasHashKey:ohnosequences.typesets.∈[QueryTable.this.t.HashKey,forItem.this.i.record.Properties]"></a>
+      <a id="hasHashKey:∈[T.HashKey,AnyItem.Record.Properties]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hasHashKey</span><span class="result">: <span class="extype" name="ohnosequences.typesets.∈">∈</span>[<span class="extype" name="ohnosequences.tabula.AnyTable.HashKey">T.HashKey</span>, <span class="extype" name="ohnosequences.typesets.AnyRecord.Properties">AnyItem.Record.Properties</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@hasHashKey:ohnosequences.typesets.∈[QueryTable.this.t.HashKey,forItem.this.i.record.Properties]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition">andRangeCondition</a> → <a href="../../AnyQueryAction.html" class="extype" name="ohnosequences.tabula.AnyQueryAction">AnyQueryAction</a></dd></dl></div>
+    </li><li name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition#input" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="input:ohnosequences.tabula.AND[ohnosequences.tabula.SimplePredicate[I,ohnosequences.tabula.EQ[andRangeCondition.this.table.HashKey]],C]"></a>
+      <a id="input:AND[SimplePredicate[I,EQ[T.HashKey]],C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">input</span><span class="result">: <a href="../../AND.html" class="extype" name="ohnosequences.tabula.AND">AND</a>[<a href="../../SimplePredicate.html" class="extype" name="ohnosequences.tabula.SimplePredicate">SimplePredicate</a>[<span class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.I">I</span>, <a href="../../EQ.html" class="extype" name="ohnosequences.tabula.EQ">EQ</a>[<span class="extype" name="ohnosequences.tabula.AnyTable.HashKey">T.HashKey</span>]], <span class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.C">C</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@input:ohnosequences.tabula.AND[ohnosequences.tabula.SimplePredicate[I,ohnosequences.tabula.EQ[andRangeCondition.this.table.HashKey]],C]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition">andRangeCondition</a> → <a href="../../AnyAction.html" class="extype" name="ohnosequences.tabula.AnyAction">AnyAction</a></dd></dl></div>
+    </li><li name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition#inputState" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="inputState:ohnosequences.tabula.AnyTableState.For[T]withohnosequences.tabula.ReadyTable"></a>
+      <a id="inputState:For[T]withReadyTable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">inputState</span><span class="result">: <a href="../../AnyTableState$.html#For[T]=ohnosequences.tabula.AnyTableState{typeResource=T}" class="extmbr" name="ohnosequences.tabula.AnyTableState.For">For</a>[<span class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.T">T</span>] with <a href="../../ReadyTable.html" class="extype" name="ohnosequences.tabula.ReadyTable">ReadyTable</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@inputState:ohnosequences.tabula.AnyTableState.For[T]withohnosequences.tabula.ReadyTable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition">andRangeCondition</a> → <a href="../../AnyAction.html" class="extype" name="ohnosequences.tabula.AnyAction">AnyAction</a></dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition#item" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="item:forItem.this.i.type"></a>
+      <a id="item:i.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">item</span><span class="result">: <a href="QueryTable$forItem.html#i:I" class="extmbr" name="ohnosequences.tabula.impl.actions.QueryTable.forItem#i">i</a>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@item:forItem.this.i.type" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition">andRangeCondition</a> → <a href="../../AnyTableItemAction.html" class="extype" name="ohnosequences.tabula.AnyTableItemAction">AnyTableItemAction</a></dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition#parseSDKRep" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="parseSDKRep:ohnosequences.tabula.impl.ImplicitConversions.SDKRep=&gt;withHashKey.this.parser.Out"></a>
+      <a id="parseSDKRep:(SDKRep)⇒Out"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseSDKRep</span><span class="result">: (<a href="../ImplicitConversions$.html#SDKRep=Map[String,com.amazonaws.services.dynamodbv2.model.AttributeValue]" class="extmbr" name="ohnosequences.tabula.impl.ImplicitConversions.SDKRep">SDKRep</a>) ⇒ <a href="../../ToItem.html#Out=I#Rep" class="extmbr" name="ohnosequences.tabula.ToItem.Out">Out</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@parseSDKRep:ohnosequences.tabula.impl.ImplicitConversions.SDKRep=&gt;withHashKey.this.parser.Out" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition">andRangeCondition</a> → <a href="../ImplicitConversions$$SDKRepParser.html" class="extype" name="ohnosequences.tabula.impl.ImplicitConversions.SDKRepParser">SDKRepParser</a></dd></dl></div>
+    </li><li name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition#rangeCondition" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rangeCondition:C"></a>
+      <a id="rangeCondition:C"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rangeCondition</span><span class="result">: <span class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.C">C</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@rangeCondition:C" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition">andRangeCondition</a> → <a href="../../AnyNormalQueryAction.html" class="extype" name="ohnosequences.tabula.AnyNormalQueryAction">AnyNormalQueryAction</a></dd></dl></div>
+    </li><li name="ohnosequences.tabula.AnyTableAction#resources" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="resources:AnyTableAction.this.Table"></a>
+      <a id="resources:Table"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">resources</span><span class="result">: <a href="#Table=T" class="extmbr" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition.Table">Table</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@resources:AnyTableAction.this.Table" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../AnyTableAction.html" class="extype" name="ohnosequences.tabula.AnyTableAction">AnyTableAction</a> → <a href="../../AnyAction.html" class="extype" name="ohnosequences.tabula.AnyAction">AnyAction</a></dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition#table" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="table:QueryTable.this.t.type"></a>
+      <a id="table:t.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">table</span><span class="result">: <a href="QueryTable.html#t:T" class="extmbr" name="ohnosequences.tabula.impl.actions.QueryTable#t">t</a>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@table:QueryTable.this.t.type" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition">andRangeCondition</a> → <a href="../../AnyTableAction.html" class="extype" name="ohnosequences.tabula.AnyTableAction">AnyTableAction</a></dd></dl></div>
+    </li><li name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@toString():String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ohnosequences.tabula.impl.actions.QueryTable.forItem.withHashKey.andRangeCondition">andRangeCondition</a> → AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ohnosequences.tabula.impl.actions.QueryTable$forItem$withHashKey$andRangeCondition@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scala.Serializable">
+              <h3>Inherited from <span class="extype" name="scala.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="java.io.Serializable">
+              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="scala.Product">
+              <h3>Inherited from <span class="extype" name="scala.Product">Product</span></h3>
+            </div><div class="parent" name="scala.Equals">
+              <h3>Inherited from <span class="extype" name="scala.Equals">Equals</span></h3>
+            </div><div class="parent" name="ohnosequences.tabula.impl.ImplicitConversions.SDKRepParser">
+              <h3>Inherited from <a href="../ImplicitConversions$$SDKRepParser.html" class="extype" name="ohnosequences.tabula.impl.ImplicitConversions.SDKRepParser">SDKRepParser</a></h3>
+            </div><div class="parent" name="ohnosequences.tabula.AnyNormalQueryAction">
+              <h3>Inherited from <a href="../../AnyNormalQueryAction.html" class="extype" name="ohnosequences.tabula.AnyNormalQueryAction">AnyNormalQueryAction</a></h3>
+            </div><div class="parent" name="ohnosequences.tabula.AnyQueryAction">
+              <h3>Inherited from <a href="../../AnyQueryAction.html" class="extype" name="ohnosequences.tabula.AnyQueryAction">AnyQueryAction</a></h3>
+            </div><div class="parent" name="ohnosequences.tabula.AnyTableItemAction">
+              <h3>Inherited from <a href="../../AnyTableItemAction.html" class="extype" name="ohnosequences.tabula.AnyTableItemAction">AnyTableItemAction</a></h3>
+            </div><div class="parent" name="ohnosequences.tabula.AnyTableAction">
+              <h3>Inherited from <a href="../../AnyTableAction.html" class="extype" name="ohnosequences.tabula.AnyTableAction">AnyTableAction</a></h3>
+            </div><div class="parent" name="ohnosequences.tabula.AnyAction">
+              <h3>Inherited from <a href="../../AnyAction.html" class="extype" name="ohnosequences.tabula.AnyAction">AnyAction</a></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
