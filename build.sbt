@@ -1,7 +1,5 @@
 Nice.scalaProject
 
-scalaVersion := "2.11.1"
-
 organization := "ohnosequences"
 
 name := "tabula"
@@ -10,21 +8,19 @@ description := "tabula project"
 
 bucketSuffix := "era7.com"
 
-skip in update := true
+scalaVersion := "2.11.2"
 
 libraryDependencies ++= Seq(
-  "ohnosequences" %% "scarph" % "0.2.0-SNAPSHOT",
-  "ohnosequences" %% "type-sets" % "0.5.0-SNAPSHOT",
-  "org.scalatest" %% "scalatest" % "2.2.0" % "test",
-  "com.amazonaws" % "aws-java-sdk" % "1.8.0"
+  "ohnosequences" %% "scarph" % "0.2.0",
+  "ohnosequences" %% "type-sets" % "0.5.0",
+  "org.scalatest" %% "scalatest" % "2.2.2" % "test",
+  "com.amazonaws" % "aws-java-sdk" % "1.8.9.1"
 )
 
 dependencyOverrides ++= Set(
-  "ohnosequences" %% "type-sets" % "0.5.0-SNAPSHOT",
   "org.apache.httpcomponents" % "httpclient" % "4.2",
-  "commons-codec" % "commons-codec" % "1.7",
   "com.fasterxml.jackson.core" % "jackson-core" % "2.1.2",
   "com.fasterxml.jackson.core" % "jackson-databind" % "2.1.2",
   "com.fasterxml.jackson.core" % "jackson-annotations" % "2.1.2",
-  "joda-time" % "joda-time" % "2.3"
+  "joda-time" % "joda-time" % "2.4"
 )

@@ -2,17 +2,25 @@ package ohnosequences.tabula.impl
 
 import ohnosequences.tabula._, ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
+import ohnosequences.typesets.AnyTag._
 
-case class GetItemHashKeyExecutor[A <: AnyGetItemHashKeyAction with SDKRepParser](a: A)
-  (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
+case class GetItemHashKeyExecutor [
+  A <: AnyGetItemHashKeyAction with SDKRepParser
+](
+  val a: A
+)(
+ val dynamoClient: AnyDynamoDBClient
+) extends Executor[A](a) {
 
   type OutC[X] = X
 
   import scala.collection.JavaConversions._
+
   def apply(): Out = {
+
     println("executing: " + action)
 
-    val res = try {
+    val res: ohnosequences.tabula.GetItemResult[action.Item] = try {
 
       val getItemRequest = new GetItemRequest()
         .withTableName(action.table.name)
@@ -24,7 +32,7 @@ case class GetItemHashKeyExecutor[A <: AnyGetItemHashKeyAction with SDKRepParser
 
       GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
     } catch {
-      case t: Exception => GetItemFailure[action.Item](t.toString)
+      case t: Exception => GetItemFailure(t.toString)
     }
 
     ExecutorResult(res, action.table, action.inputState)
@@ -40,7 +48,7 @@ case class GetItemCompositeKeyExecutor[A <: AnyGetItemCompositeKeyAction with SD
   def apply(): Out = {
     println("executing: " + action)
 
-    val res = try {
+    val res: ohnosequences.tabula.GetItemResult[action.Item] = try {
 
       val getItemRequest = new GetItemRequest()
         .withTableName(action.table.name)
@@ -53,7 +61,7 @@ case class GetItemCompositeKeyExecutor[A <: AnyGetItemCompositeKeyAction with SD
 
       GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
     } catch {
-      case t: Exception => GetItemFailure[action.Item](t.toString)
+      case t: Exception => GetItemFailure(t.toString)
     }
 
     ExecutorResult(res, action.table, action.inputState)

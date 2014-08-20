@@ -2,18 +2,49 @@
 ```scala
 package ohnosequences.tabula
 
-trait AnyCreateTable extends AnyTableAction {
-  type InputState = InitialState[Table]
-  type OutputState = Creating[Table]
+import ohnosequences.typesets._
+import ohnosequences.scarph._
+import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
+import ohnosequences.tabula.Condition._
+import ohnosequences.tabula.impl.ImplicitConversions._
 
-  type Input  = None.type
-  val  input  = None
-  type Output = None.type
+sealed trait AnyQueryResult { type Item <: AnyItem }
+abstract class QueryResult[I <: AnyItem] extends AnyQueryResult { type Item = I }
+case class QueryFailure[I <: AnyItem](msg: String) extends QueryResult[I]
+case class QuerySuccess[I <: Singleton with AnyItem](item: List[I#Rep]) extends QueryResult[I]
+```
+
+### Common action trait
+
+```scala
+trait AnyQueryAction extends AnyTableItemAction { action =>
+  // quieries make sense only for the composite key tables
+  type Table <: Singleton with AnyCompositeKeyTable
+
+  val hasHashKey: table.HashKey ? item.record.Properties
+
+  //require updating or creating
+  type InputState  = AnyTableState.For[Table] with ReadyTable
+  type OutputState = InputState
+
+  // TODO: restrict this type better
+  type Input <: AnyPredicate.On[Item]
+  type Output = QueryResult[Item]
 }
 
-case class CreateTable[T <: Singleton with AnyTable]
-  (table: T, inputState: InitialState[T])
-    extends AnyCreateTable { type Table = T }
+trait AnySimpleQueryAction extends AnyQueryAction {
+
+  type Input = SimplePredicate[Item, EQ[table.HashKey]]
+}
+
+// the range key condition is optional
+trait AnyNormalQueryAction extends AnyQueryAction {
+  
+  type RangeCondition <: Condition.On[table.RangeKey] with KeyCondition
+  val  rangeCondition: RangeCondition
+
+  type Input = AND[SimplePredicate[Item, EQ[table.HashKey]], RangeCondition]
+}
 
 ```
 

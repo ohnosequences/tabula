@@ -1,13 +1,14 @@
 package ohnosequences.tabula
 
-import ohnosequences.typesets._
+import ohnosequences.typesets._, AnyTag._
 import ohnosequences.scarph._
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 import ohnosequences.tabula.impl.ImplicitConversions._
 
-sealed trait GetItemResult { type Item <: AnyItem }
-case class GetItemFailure[I <: AnyItem](msg: String) extends GetItemResult { type Item = I }
-case class GetItemSuccess[I <: Singleton with AnyItem](item: I#Raw) extends GetItemResult { type Item = I }
+sealed trait AnyGetItemResult { type Item <: AnyItem }
+abstract class GetItemResult[I <: AnyItem] extends AnyGetItemResult { type Item = I }
+case class GetItemFailure[I <: Singleton with AnyItem](msg: String) extends GetItemResult[I]
+case class GetItemSuccess[I <: Singleton with AnyItem](item: I#Rep) extends GetItemResult[I]
 
 /* ### Common action trait */
 trait AnyGetItemAction extends AnyTableItemAction {
@@ -15,18 +16,18 @@ trait AnyGetItemAction extends AnyTableItemAction {
   type InputState  = AnyTableState.For[Table] with ReadyTable
   type OutputState = InputState
 
-  type Output = GetItemResult
+  type Output = GetItemResult[Item]
 }
 
 
 /* ### Hash key table */
 trait AnyGetItemHashKeyAction extends AnyGetItemAction {
   type Table <: Singleton with AnyHashKeyTable
-  type Input = table.hashKey.Raw
+  type Input = Table#HashKey#Raw
 }
 
 /* ### Composite key table */
 trait AnyGetItemCompositeKeyAction extends AnyGetItemAction {
   type Table <: Singleton with AnyCompositeKeyTable
-  type Input = (table.hashKey.Raw, table.rangeKey.Raw)
+  type Input = (Table#HashKey#Raw, Table#RangeKey#Raw)
 }

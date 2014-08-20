@@ -38,16 +38,17 @@ object simpleModel {
 
   // you can create a property of any type
   case object boolProperty extends Property[Boolean]
+  case object recordWithBoolProperty extends Record(boolProperty :~: ∅)
   // but you cannot use it for creating an Item, because it's one of `ValidValues` type union
   illTyped("""
-  case object WrongItem extends Item(UsersTable, boolProperty :~: ∅)
+  case object WrongItem extends Item(UsersTable, recordWithBoolProperty)
   """)
 
-  case object UserItem extends Item(UsersTable, name :~: age :~: ∅)
+  case object UserItemRecord extends Record(name :~: age :~: ∅)
+  case object UserItem extends Item(UsersTable, UserItemRecord)
 
-  case object FunnyUserItem extends Item(UsersTable, 
-    name :~: email :~: serializedCrap :~: departments :~: ∅
-  )
+  case object FunnyUserItemRecord extends Record(name :~: email :~: serializedCrap :~: departments :~: ∅)
+  case object FunnyUserItem extends Item(UsersTable, FunnyUserItemRecord)
 
   // predicates
   import AnyPredicate._

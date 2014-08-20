@@ -7,7 +7,7 @@ trait AnyExecutor {
   val  action: Action
 
   type OutC[X]
-  type Out = OutC[ExecutorResult[action.Output, action.Resources, action.OutputState]]
+  type Out = OutC[ExecutorResult[Action#Output, action.Resources, action.OutputState]]
 
   def apply(): Out
 }
