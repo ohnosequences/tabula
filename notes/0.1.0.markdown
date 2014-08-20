@@ -1,0 +1,1 @@
+Tabula is a Scala library for AWS DynamoDB. This is a very early initial release, which is needed for another project. The real relese notes with features description will be in the next release.
