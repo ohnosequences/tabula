@@ -1,7 +1,7 @@
 package ohnosequences.tabula.impl.actions
 
-import ohnosequences.typesets._
-import ohnosequences.scarph._
+import ohnosequences.pointless._
+
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 import ohnosequences.tabula._, impl._, ImplicitConversions._
 

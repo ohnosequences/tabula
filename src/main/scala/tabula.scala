@@ -1,6 +1,6 @@
 package ohnosequences
 
-import ohnosequences.typesets._
+import ohnosequences.pointless._
 
 // in package object only type-aliases
 package object tabula {

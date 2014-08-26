@@ -1,6 +1,6 @@
 package ohnosequences.tabula
 
-import ohnosequences.scarph._
+
 
 trait AnyUpdateTableAction extends AnyTableAction {
   //require updating or creating
@@ -18,14 +18,14 @@ trait AnyUpdateTableAction extends AnyTableAction {
   type Output = None.type
 }
 
-case class UpdateTable[T <: Singleton with AnyTable](
+case class UpdateTable[T <: AnyTable](
   t: T, inputSt: AnyTableState.For[T] with ReadyTable) {
     case class withReadWriteThroughput(
       newReadThroughput: Int, 
       newWriteThroughput: Int
     ) extends AnyUpdateTableAction {
       type Table = T 
-      val  table = t: t.type
+      val  table = t
 
       val inputState = inputSt
     }

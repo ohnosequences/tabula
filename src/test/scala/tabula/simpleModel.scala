@@ -1,8 +1,8 @@
 package ohnosequences.tabula.test
 
-import ohnosequences.typesets._
+import ohnosequences.pointless._
 import ohnosequences.tabula._
-import ohnosequences.scarph._
+
 import shapeless.test._
 
 object simpleModel {

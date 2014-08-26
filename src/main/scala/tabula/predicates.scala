@@ -1,7 +1,7 @@
 package ohnosequences.tabula
 
-import ohnosequences.scarph._
-import ohnosequences.typesets._
+
+import ohnosequences.pointless._, AnyTypeSet._
 
 /*
   ## Predicates
@@ -11,13 +11,14 @@ import ohnosequences.typesets._
   Predicate constructors check that the item has the property used in the applied condition.
 */
 trait AnyPredicate {
+
   type Body <: AnyPredicate
   val  body: Body
 
   type Head <: Condition
   val  head: Head
 
-  type Item <: Singleton with AnyItem
+  type Item <: AnyItem
   val  item: Item
 }
 
@@ -29,7 +30,7 @@ trait AnyOrPredicate extends AnyPredicate {
   type Body <: AnyOrPredicate
 
   def or[Head <: Condition](other: Head)(implicit 
-    ev: other.Property ∈ body.item.record.Properties
+    ev: Head#Property ∈ Body#Item#Record#Properties
   ): OR[Body, Head] = 
      OR(body, other)
 }
@@ -38,7 +39,7 @@ case class OR[B <: AnyOrPredicate, H <: Condition]
   (val body : B,  val head : H) extends AnyOrPredicate {
   type Body = B; type Head = H
 
-  type Item = body.Item
+  type Item = Body#Item
   val  item = body.item
 } 
 
@@ -51,16 +52,17 @@ trait AnyAndPredicate extends AnyPredicate {
   type Body <: AnyAndPredicate
 
   def and[Head <: Condition](other: Head)(implicit 
-    ev: other.Property ∈ body.item.record.Properties
+    ev: Head#Property ∈ Body#Item#Record#Properties
   ): AND[Body, Head] = 
      AND(body, other)
 }
 
 case class AND[B <: AnyAndPredicate, H <: Condition]
   (val body : B,  val head : H) extends AnyAndPredicate {
+  
   type Body = B; type Head = H
 
-  type Item = body.Item
+  type Item = Body#Item
   val  item = body.item 
 }
 
@@ -71,11 +73,13 @@ case class AND[B <: AnyAndPredicate, H <: Condition]
   It contains only one condition and can be extended either to `OR` or `AND` predicate
 */
 trait AnySimplePredicate extends AnyOrPredicate with AnyAndPredicate {
-  type Body = this.type
-  val  body = this: this.type
+
+  type Me = this.type
+  type Body = Me
+  val  body = this
 }
 
-case class SimplePredicate[I <: Singleton with AnyItem, C <: Condition]
+case class SimplePredicate[I <: AnyItem, C <: Condition]
   (val item : I,  val head : C) extends AnySimplePredicate {
   type Item = I; type Head = C
 }
@@ -90,10 +94,10 @@ object AnyPredicate {
   /* 
     With this you can write `item ? condition` which means `SimplePredicate(item, condition)`
   */
-  implicit def itemPredicateOps[I <: Singleton with AnyItem](item: I): ItemPredicateOps[I] = ItemPredicateOps(item)
-  case class   ItemPredicateOps[I <: Singleton with AnyItem](item: I) {
+  implicit def itemPredicateOps[I <: AnyItem](item: I): ItemPredicateOps[I] = ItemPredicateOps(item)
+  case class   ItemPredicateOps[I <: AnyItem](val item: I) {
     def ?[C <: Condition](c: C)(implicit 
-        ev: c.Property ∈ item.record.Properties
+        ev: C#Property ∈ I#Record#Properties
       ): SimplePredicate[I, C] = SimplePredicate(item, c)
   }
 }

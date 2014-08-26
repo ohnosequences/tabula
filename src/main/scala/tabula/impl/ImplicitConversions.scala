@@ -1,8 +1,9 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.typesets._, AnyTag._
-import ohnosequences.scarph._
+import ohnosequences.pointless._, AnyTaggedType._
+
 import ohnosequences.tabula._
+
 import com.amazonaws.services.dynamodbv2.model.{AttributeValue, ScalarAttributeType, AttributeDefinition, ConditionalOperator}
 import com.amazonaws.services.dynamodbv2.model.{Condition => SDKCondition}
 import scala.reflect._
@@ -26,12 +27,12 @@ object ImplicitConversions {
 
   case object toSDKRep extends Poly1 {
 
-    implicit def defaultString[A <: Singleton with AnyProperty, R <: RawOf[A] with String] = at[(A, R)] {
+    implicit def defaultString[A <: AnyProperty, R <: RawOf[A] with String] = at[(A, R)] {
 
         x => ( x._1.label, new AttributeValue().withS(x._2) ): (String, AttributeValue) 
       }
 
-    implicit def defaultNum[A <: Singleton with AnyProperty, R <: Num with RawOf[A]] = at[(A, R)] {
+    implicit def defaultNum[A <: AnyProperty, R <: Num with RawOf[A]] = at[(A, R)] {
         
       x => {
 
@@ -58,7 +59,7 @@ object ImplicitConversions {
       }
     }
 
-    implicit def defaultGeneric[A <: Singleton with AnyProperty, R <: RawOf[A]] = at[(A,R)] { 
+    implicit def defaultGeneric[A <:AnyProperty, R <: RawOf[A]] = at[(A,R)] { 
 
       x => {
 
@@ -68,15 +69,24 @@ object ImplicitConversions {
   }
 
   case object fromSDKRep extends Poly1 {
-    implicit def caseN[A <: Singleton with AnyProperty.ofValue[Num]] = 
-      at[(SDKRep, A)]{ case (m, a) => ((a:A) ->> m(a.label).getN.toInt): TaggedWith[A] }
-    implicit def caseS[A <: Singleton with AnyProperty.ofValue[String]] = 
-      at[(SDKRep, A)]{ case (m, a) => ((a:A) ->> m(a.label).getS.toString): TaggedWith[A] }
+
+    implicit def caseN[A <: AnyProperty.withRaw[Num]] = at[(SDKRep, A)] { x => {
+
+        val a: A = x._2
+        val m: SDKRep = x._1
+        val v: RawOf[A] = m(a.label).getN.toInt
+
+        a =>> v
+      }
+    }
+
+    implicit def caseS[A <: AnyProperty.withRaw[String]] = 
+      at[(SDKRep, A)]{ case (m, a) => ((a:A) =>> m(a.label).getS.toString): Tagged[A] }
     // TODO: a case for Bytes
   }
 
   trait SDKRepParser extends AnyTableItemAction {
-    val parseSDKRep: SDKRep => item.Rep
+    val parseSDKRep: SDKRep => Tagged[Item]
   }
 
   trait SDKRepGetter extends AnyTableItemAction {
@@ -85,11 +95,11 @@ object ImplicitConversions {
 
 
   /* Properties-related conversions */
-  implicit def getAttrDef[A <: Singleton with AnyProperty](attr: A): AttributeDefinition = {
+  implicit def getAttrDef[A <: AnyProperty](attr: A): AttributeDefinition = {
 
     val attrDef = new AttributeDefinition().withAttributeName(attr.label)
 
-    attr.classTag.runtimeClass.asInstanceOf[Class[A#Raw]] match {
+    attr.classTag.runtimeClass.asInstanceOf[Class[RawOf[A]]] match {
       case c if c == classOf[Num]    => attrDef.withAttributeType(ScalarAttributeType.N)
       case c if c == classOf[String] => attrDef.withAttributeType(ScalarAttributeType.S)
       case c if c == classOf[Bytes]  => attrDef.withAttributeType(ScalarAttributeType.B)

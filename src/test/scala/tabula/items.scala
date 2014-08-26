@@ -2,14 +2,13 @@ package ohnosequences.tabula
 
 import org.scalatest.FunSuite
 
-import ohnosequences.typesets._, Property._, AnyTag._, TagsOf._
-import ohnosequences.scarph._
+import ohnosequences.pointless._, AnyTaggedType._
 import ohnosequences.tabula._
 import ohnosequences.tabula.impl._, ImplicitConversions._
 
 import shapeless._, poly._
 import shapeless.test.typed
-import AnyTag._
+import AnyTaggedType._
 
 object TestSetting {
   case object id extends Property[Num]
@@ -29,8 +28,8 @@ object TestSetting {
 
   // creating item is easy and neat:
   val user1 = simpleUser fields (
-    (id ->> 123) :~: 
-    (name ->> "foo") :~: 
+    (id is 123) :~: 
+    (name is "foo") :~: 
     ∅
   )
 

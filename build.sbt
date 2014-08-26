@@ -1,6 +1,6 @@
 Nice.scalaProject
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.2"
 
 organization := "ohnosequences"
 
@@ -13,18 +13,17 @@ bucketSuffix := "era7.com"
 skip in update := true
 
 libraryDependencies ++= Seq(
-  "ohnosequences" %% "scarph" % "0.2.0-SNAPSHOT",
-  "ohnosequences" %% "type-sets" % "0.5.0-SNAPSHOT",
-  "org.scalatest" %% "scalatest" % "2.2.0" % "test",
-  "com.amazonaws" % "aws-java-sdk" % "1.8.0"
+  // "ohnosequences" %% "scarph" % "0.2.0-SNAPSHOT",
+  "ohnosequences" %% "pointless"    % "0.6.0-SNAPSHOT",
+  "org.scalatest" %% "scalatest"    % "2.2.0" % "test",
+  "com.amazonaws" %  "aws-java-sdk" % "1.8.0"
 )
 
 dependencyOverrides ++= Set(
-  "ohnosequences" %% "type-sets" % "0.5.0-SNAPSHOT",
-  "org.apache.httpcomponents" % "httpclient" % "4.2",
-  "commons-codec" % "commons-codec" % "1.7",
-  "com.fasterxml.jackson.core" % "jackson-core" % "2.1.2",
-  "com.fasterxml.jackson.core" % "jackson-databind" % "2.1.2",
-  "com.fasterxml.jackson.core" % "jackson-annotations" % "2.1.2",
-  "joda-time" % "joda-time" % "2.3"
+  "org.apache.httpcomponents"     % "httpclient"          % "4.2",
+  "commons-codec"                 % "commons-codec"       % "1.7",
+  "com.fasterxml.jackson.core"    % "jackson-core"        % "2.1.2",
+  "com.fasterxml.jackson.core"    % "jackson-databind"    % "2.1.2",
+  "com.fasterxml.jackson.core"    % "jackson-annotations" % "2.1.2",
+  "joda-time"                     % "joda-time"           % "2.3"
 )

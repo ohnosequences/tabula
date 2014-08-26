@@ -1,7 +1,6 @@
 package ohnosequences.tabula
 
-import ohnosequences.typesets._
-import ohnosequences.scarph._
+import ohnosequences.pointless._, AnyTaggedType._, AnyTypeUnion._
 
 /*
   ## Tables
@@ -9,9 +8,10 @@ import ohnosequences.scarph._
   A table contains only the static part of a table, things hat cannot be changed once the the table is created. Dynamic data lives in `AnyTableState`. The only exception to this is the `Account`; this is so because normally it is something that is retrieved dynamically from the environment.
 */
 trait AnyTable extends AnyDynamoDBResource {
+  
   val name: String
 
-  type HashKey <: Singleton with AnyProperty
+  type HashKey <: AnyProperty
   val  hashKey: HashKey
 
   type ResourceType = Table.type
@@ -28,29 +28,29 @@ sealed trait AnyHashKeyTable extends AnyTable
 
 object AnyHashKeyTable {
 
-  type withKey[P <: Singleton with AnyProperty] = AnyHashKeyTable { type HashKey = P }
+  type withKey[P <:AnyProperty] = AnyHashKeyTable { type HashKey = P }
 }
 
 sealed trait AnyCompositeKeyTable extends AnyTable { 
 
-  type RangeKey <: Singleton with AnyProperty
+  type RangeKey <: AnyProperty
   val rangeKey: RangeKey
 }
 
 object AnyCompositeKeyTable {
 
-  type withHashKey[P <: Singleton with AnyProperty] = AnyCompositeKeyTable { type HashKey = P }
-  type withRangeKey[P <: Singleton with AnyProperty] = AnyCompositeKeyTable { type RangeKey = P }
+  type withHashKey[P <: AnyProperty] = AnyCompositeKeyTable { type HashKey = P }
+  type withRangeKey[P <: AnyProperty] = AnyCompositeKeyTable { type RangeKey = P }
 }
 
 class HashKeyTable [
-  HK <: Singleton with AnyProperty,
+  HK <: AnyProperty,
   R <: AnyRegion
 ](val name: String,
   val hashKey: HK,
   val region: R
 )(implicit
-  val ev_k: HK#Raw :<: PrimaryKeyValues
+  val ev_k: RawOf[HK] isOneOf PrimaryKeyValues
 ) extends AnyHashKeyTable {
 
   type Region = R
@@ -58,16 +58,16 @@ class HashKeyTable [
 }
 
 class CompositeKeyTable [
-  HK <: Singleton with AnyProperty,
-  RK <: Singleton with AnyProperty,
+  HK <: AnyProperty,
+  RK <: AnyProperty,
   R <: AnyRegion
 ](val name: String,
   val hashKey: HK,
   val rangeKey: RK,
   val region: R
 )(implicit
-  val ev_h: HK#Raw :<: PrimaryKeyValues,
-  val ev_r: RK#Raw :<: PrimaryKeyValues
+  val ev_h: RawOf[HK] isOneOf PrimaryKeyValues,
+  val ev_r: RawOf[RK] isOneOf PrimaryKeyValues
 ) extends AnyCompositeKeyTable {
 
   type Region = R

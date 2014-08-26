@@ -2,7 +2,7 @@ package ohnosequences.tabula.impl
 
 import ohnosequences.tabula._, ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
-import ohnosequences.typesets.AnyTag._
+import ohnosequences.pointless.AnyTaggedType._
 
 case class GetItemHashKeyExecutor [
   A <: AnyGetItemHashKeyAction with SDKRepParser

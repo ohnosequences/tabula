@@ -6,14 +6,14 @@ import com.amazonaws.regions._
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue} //, PropertyAction}
 
-import ohnosequences.typesets._
-import ohnosequences.scarph._
+import ohnosequences.pointless._
+
 import ohnosequences.tabula._
 import ohnosequences.tabula.impl._, actions._, ImplicitConversions._
 
 import shapeless._, poly._
 import shapeless.test.typed
-import AnyTag._
+import AnyTaggedType._
 
 object TestSetting {
   

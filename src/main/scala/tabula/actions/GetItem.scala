@@ -1,14 +1,13 @@
 package ohnosequences.tabula
 
-import ohnosequences.typesets._, AnyTag._
-import ohnosequences.scarph._
+import ohnosequences.pointless._, AnyTaggedType._
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 import ohnosequences.tabula.impl.ImplicitConversions._
 
 sealed trait AnyGetItemResult { type Item <: AnyItem }
 abstract class GetItemResult[I <: AnyItem] extends AnyGetItemResult { type Item = I }
-case class GetItemFailure[I <: Singleton with AnyItem](msg: String) extends GetItemResult[I]
-case class GetItemSuccess[I <: Singleton with AnyItem](item: I#Rep) extends GetItemResult[I]
+case class GetItemFailure[I <: AnyItem](msg: String) extends GetItemResult[I]
+case class GetItemSuccess[I <: AnyItem](item: Tagged[I]) extends GetItemResult[I]
 
 /* ### Common action trait */
 trait AnyGetItemAction extends AnyTableItemAction {
@@ -22,12 +21,14 @@ trait AnyGetItemAction extends AnyTableItemAction {
 
 /* ### Hash key table */
 trait AnyGetItemHashKeyAction extends AnyGetItemAction {
-  type Table <: Singleton with AnyHashKeyTable
-  type Input = Table#HashKey#Raw
+
+  type Table <: AnyHashKeyTable
+  type Input = RawOf[Table#HashKey]
 }
 
 /* ### Composite key table */
 trait AnyGetItemCompositeKeyAction extends AnyGetItemAction {
-  type Table <: Singleton with AnyCompositeKeyTable
-  type Input = (Table#HashKey#Raw, Table#RangeKey#Raw)
+
+  type Table <: AnyCompositeKeyTable
+  type Input = ( RawOf[Table#HashKey], RawOf[Table#RangeKey] )
 }

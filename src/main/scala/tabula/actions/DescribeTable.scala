@@ -4,11 +4,11 @@ trait AnyDescribeTable extends AnyTableAction {
   type InputState  = AnyTableState.For[Table]
   type OutputState = AnyTableState.For[Table]
 
-  type Input  = None.type
+  type Input  = Option[Nothing]
   val  input  = None
-  type Output = None.type
+  type Output = Option[Nothing]
 }
 
-case class DescribeTable[T <: Singleton with AnyTable]
-  (table: T, inputState: AnyTableState.For[T]) 
+case class DescribeTable[T <: AnyTable]
+  (val table: T, val inputState: AnyTableState.For[T]) 
     extends AnyDescribeTable { type Table = T }

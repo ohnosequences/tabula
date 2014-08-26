@@ -1,7 +1,5 @@
 package ohnosequences.tabula
 
-import ohnosequences.scarph._
-
 trait AnyDynamoDBResourceType {
 
   val name: String
@@ -24,13 +22,14 @@ trait AnyDynamoDBResource {
 }
 
 object AnyDynamoDBResource {
+
   type inRegion[R <: AnyRegion] = AnyDynamoDBResource { type Region = R }
 }
 
 /*
   see http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/UsingIAMWithDDB.html#ARN_ToPropertiesat
 */
-case class DynamoDBARN[R <: AnyDynamoDBResource](resource: R, account: Account) {
+case class DynamoDBARN[R <: AnyDynamoDBResource](val resource: R, val account: Account) {
 
   type Resource = R
 
@@ -54,6 +53,7 @@ sealed trait ResourceList {
   val tail: Tail
 }
 
+// TODO rename this, this clashes with coproduct in shapeless
 case class :+:[+H <: AnyDynamoDBResource, +T <: ResourceList](
   val h: H,
   val t: T
@@ -67,7 +67,7 @@ case class :+:[+H <: AnyDynamoDBResource, +T <: ResourceList](
 
 sealed trait RNil extends ResourceList {
 
-  def :+:[H <: Singleton with AnyDynamoDBResource](h: H): (H :+: RNil) = ohnosequences.tabula.:+:(h, this) 
+  def :+:[H <: AnyDynamoDBResource](h: H): (H :+: RNil) = ohnosequences.tabula.:+:(h, this) 
 }
 object RNil extends RNil with AnyDynamoDBResource {
 
@@ -88,7 +88,7 @@ object ResourceList {
 
 case class ResourceListOps[RL <: ResourceList](val rl: RL) {
 
-  def :+:[H <: Singleton with AnyDynamoDBResource](h: H) : H :+: RL = ohnosequences.tabula.:+:(h, rl)
+  def :+:[H <: AnyDynamoDBResource](h: H) : H :+: RL = ohnosequences.tabula.:+:(h, rl)
 }
 
 

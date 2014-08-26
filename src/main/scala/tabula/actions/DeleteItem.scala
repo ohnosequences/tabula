@@ -1,7 +1,7 @@
 package ohnosequences.tabula
 
-import ohnosequences.scarph._
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
+import ohnosequences.pointless.AnyTaggedType._
 
 sealed trait DeleteItemResult
 case object DeleteItemFail extends DeleteItemResult
@@ -19,18 +19,22 @@ trait AnyDeleteItemAction extends AnyTableAction {
 
 /* ### Hash key table */
 trait AnyDeleteItemHashKeyAction extends AnyDeleteItemAction {
-  type Table <: Singleton with AnyHashKeyTable
-  type Input = table.hashKey.Raw
+
+  type Table <: AnyHashKeyTable
+  type Input = RawOf[Table#HashKey]
 }
 
-case class DeleteItemFromHashKeyTable[T <: Singleton with AnyHashKeyTable]
-  (t: T, inputSt: AnyTableState.For[T] with ReadyTable) {
+case class DeleteItemFromHashKeyTable[T <: AnyHashKeyTable]
+(
+  val t: T,
+  val inputSt: AnyTableState.For[T] with ReadyTable
+) 
+{
 
-  case class withKey(hashKeyValue: t.hashKey.Raw)
-   extends AnyDeleteItemHashKeyAction {
+  case class withKey(hashKeyValue: RawOf[T#HashKey]) extends AnyDeleteItemHashKeyAction {
 
     type Table = T
-    val  table = t: t.type
+    val  table = t
 
     val input = hashKeyValue
 
@@ -44,19 +48,22 @@ case class DeleteItemFromHashKeyTable[T <: Singleton with AnyHashKeyTable]
 
 /* ### Composite key table */
 trait AnyDeleteItemCompositeKeyAction extends AnyDeleteItemAction {
-  type Table <: Singleton with AnyCompositeKeyTable
-  type Input = (table.hashKey.Raw, table.rangeKey.Raw)
+  
+  type Table <: AnyCompositeKeyTable
+  type Input = ( RawOf[Table#HashKey], RawOf[Table#RangeKey] )
 }
 
-case class DeleteItemFromCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
-  (t: T, inputSt: AnyTableState.For[T] with ReadyTable) {
+case class DeleteItemFromCompositeKeyTable[T <: AnyCompositeKeyTable]
+  (val t: T, val inputSt: AnyTableState.For[T] with ReadyTable) {
 
   case class withKeys(
-    hashKeyValue: t.hashKey.Raw,
-    rangeKeyValue: t.rangeKey.Raw
-  ) extends AnyDeleteItemCompositeKeyAction {
+    val hashKeyValue: RawOf[T#HashKey],
+    val rangeKeyValue: RawOf[T#RangeKey]
+  ) 
+  extends AnyDeleteItemCompositeKeyAction {
+
     type Table = T
-    val  table = t: t.type
+    val  table = t
 
     val input = (hashKeyValue, rangeKeyValue)
 
