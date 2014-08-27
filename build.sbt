@@ -1,14 +1,14 @@
 Nice.scalaProject
 
-scalaVersion := "2.11.2"
+name := "tabula"
 
 organization := "ohnosequences"
-
-name := "tabula"
 
 description := "tabula project"
 
 bucketSuffix := "era7.com"
+
+scalaVersion := "2.11.2"
 
 skip in update := true
 

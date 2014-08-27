@@ -70,7 +70,7 @@ object ImplicitConversions {
 
   case object fromSDKRep extends Poly1 {
 
-    implicit def caseN[A <: AnyProperty.withRaw[Num]] = at[(SDKRep, A)] { x => {
+    implicit def caseN[A <: AnyProperty.Of[Num]] = at[(SDKRep, A)] { x => {
 
         val a: A = x._2
         val m: SDKRep = x._1
@@ -80,7 +80,7 @@ object ImplicitConversions {
       }
     }
 
-    implicit def caseS[A <: AnyProperty.withRaw[String]] = 
+    implicit def caseS[A <: AnyProperty.Of[String]] = 
       at[(SDKRep, A)]{ case (m, a) => ((a:A) =>> m(a.label).getS.toString): Tagged[A] }
     // TODO: a case for Bytes
   }
