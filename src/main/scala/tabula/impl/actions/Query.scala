@@ -13,7 +13,7 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
     case class withHashKey(hashKeyValue: T#HashKey#Raw)
     (implicit 
       val parser: ToItem[SDKRep, I], 
-      val hasHashKey: T#HashKey ∈ I#Properties
+      val hasHashKey: T#HashKey ∈ I#Record#Properties
     ) 
     extends AnySimpleQueryAction with SDKRepParser { self =>
 
@@ -28,7 +28,7 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
       val inputState = inputSt
       val parseSDKRep = (m: SDKRep) => parser(m, i)
 
-      override def toString = s"QueryTable ${t.name} forItem ${i.label} withHashKey ${hashKeyValue}"
+      override def toString = s"QueryTable ${t.name} forItem ${i.toString} withHashKey ${hashKeyValue}"
 
       case class andRangeCondition[C <: Condition.On[T#RangeKey] with KeyCondition](c: C)
           extends AnyNormalQueryAction
@@ -49,7 +49,7 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
           val parseSDKRep = (m: SDKRep) => parser(m, i)
           val hasHashKey = self.hasHashKey
 
-          override def toString = s"QueryTable ${t.name} forItem ${i.label} withHashKey ${hashKeyValue} andRangeCondition ${rangeCondition}"
+          override def toString = s"QueryTable ${t.name} forItem ${i.toString} withHashKey ${hashKeyValue} andRangeCondition ${rangeCondition}"
       }
     }
   }

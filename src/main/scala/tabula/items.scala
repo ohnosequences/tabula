@@ -9,28 +9,67 @@ import shapeless._, poly._
   This is the type of items of a given table. A table can hold different kinds of records, as you could want to restrict access to some items for example; there's even functionality in IAM for this. By separating the item type from the table we can easily model this scenario as different item types for the same table.
 */
 
-trait AnyItem extends AnyRecord {
+trait AnyItem extends AnyTaggedType {
 
   type Table <: AnyTable
   val  table: Table
 
-  type Raw <: AnyTypeSet.BoundedByUnion[ValidValues]
+  type Record <: AnyRecord
+  val record: Record
+
+  // type Raw <: AnyTypeSet.BoundedByUnion[ValidValues]
+  type Raw = Record#Raw
 }
 
 abstract class Item[
-  T <: AnyTable, 
-  Props <: AnyTypeSet.Of[AnyProperty], 
-  Vals <: AnyTypeSet.BoundedByUnion[ValidValues]
-](val table: T, props: Props)(implicit 
-  representedProps: Props isRepresentedBy Vals
-) extends Record[Props, Vals](props)(representedProps) with AnyItem {
+  T <: AnyTable,
+  R <: AnyRecord
+](val table: T, val record: R) extends AnyItem {
 
   type Table = T
+  type Record = R
 }
 
 object AnyItem {
 
+  implicit def recordOpsFromItem[I <: AnyItem](i: I): RecordOps[I#Record] = new RecordOps(i.record)
+
+  implicit def propertyOps[I <: AnyItem](rep: Tagged[I])(implicit getI: Tagged[I] => I): RecordRepOps[I#Record]= {
+
+    val item: I = getI(rep)
+
+    new RecordRepOps[I#Record] (
+      // the specific type ascription is key
+      (item.record:I#Record) =>> rep
+    )
+    
+  }
+
+  
+
+  implicit def itemTaggingOps[I <: AnyItem](i: I): ItemTaggingOps[I] = ItemTaggingOps(i)
+
   type ofTable[T <: AnyTable] = AnyItem { type Table = T }
+
+  type TableOf[I <: AnyItem] = I#Table
+  type withTable[T <: AnyTable] = AnyItem { type Table = T }
+
+  type RecordOf[I <: AnyItem] = I#Record
+  type withRecord[R <: AnyRecord] = AnyItem { type Record = R }
+
+  case class ItemTaggingOps[I <: AnyItem](val i: I) {
+
+    def plin(raw: RawOf[I]): Tagged[I] with Tagged[I#Record] = {
+
+      val oh: Tagged[I#Record] = TagWith(i.record: I#Record)[RawOf[I]](raw)
+
+      val ops = new TaggedTypeOps(i)
+
+      val uh: Tagged[I] with Tagged[I#Record] = ops.tagAs[Tagged[I#Record]](oh)
+
+      uh
+    }
+  }
 }
 
 trait ListLike[L] {
@@ -54,18 +93,18 @@ trait FromProperties[
   ] {
 
   type Reps <: AnyTypeSet         // representation of properties
-  type Fun <: Singleton with Poly1 // transformation function
+  type Fun <: Poly1 // transformation function
 
   def apply(r: Reps): Out
 }
 
 object FromProperties {
   
-  def apply[A <: AnyTypeSet, Reps <: AnyTypeSet, F <: Singleton with Poly1, Out](implicit tr: FromProperties.Aux[A, Reps, F, Out]):
+  def apply[A <: AnyTypeSet, Reps <: AnyTypeSet, F <: Poly1, Out](implicit tr: FromProperties.Aux[A, Reps, F, Out]):
     FromProperties.Aux[A, Reps, F, Out] = tr
 
-  type Aux[A <: AnyTypeSet, R <: AnyTypeSet, F <: Singleton with Poly1, Out] =
-    FromProperties[A, Out] { 
+  type Aux[A <: AnyTypeSet, R <: AnyTypeSet, F <: Poly1, Out] = FromProperties[A, Out] { 
+
       type Reps = R
       type Fun = F
     }
@@ -75,7 +114,7 @@ object FromProperties {
       type Reps = R
     }
 
-  implicit def empty[Out, F <: Singleton with Poly1]
+  implicit def empty[Out, F <: Poly1]
     (implicit m: ListLike[Out]): FromProperties.Aux[∅, ∅, F, Out] = new FromProperties[∅, Out] {
       type Reps = ∅
       type Fun = F
@@ -83,8 +122,8 @@ object FromProperties {
     }
 
   implicit def cons[
-    F <: Singleton with Poly1,
-    AH <: Singleton with AnyProperty, AT <: AnyTypeSet,
+    F <: Poly1,
+    AH <: AnyProperty, AT <: AnyTypeSet,
     RT <: AnyTypeSet,
     E, Out
   ](implicit
@@ -114,18 +153,19 @@ trait ToProperties[
   ] {
 
   type Out <: AnyTypeSet             // representation of properties
-  type Fun <: Singleton with Poly1 // transformation function
+  type Fun <: Poly1 // transformation function
 
   def apply(in: In, a: A): Out
 }
 
 object ToProperties {
-  type Aux[In, A <: AnyTypeSet, O <: AnyTypeSet, F <: Singleton with Poly1] = ToProperties[In, A] { type Out = O; type Fun = F } 
 
-  def apply[In, A <: AnyTypeSet, O <: AnyTypeSet, F <: Singleton with Poly1]
+  type Aux[In, A <: AnyTypeSet, O <: AnyTypeSet, F <: Poly1] = ToProperties[In, A] { type Out = O; type Fun = F } 
+
+  def apply[In, A <: AnyTypeSet, O <: AnyTypeSet, F <: Poly1]
     (implicit form: ToProperties.Aux[In, A, O, F]): ToProperties.Aux[In, A, O, F] = form
 
-  implicit def empty[In, F <: Singleton with Poly1]: ToProperties.Aux[In, ∅, ∅, F] = new ToProperties[In, ∅] {
+  implicit def empty[In, F <: Poly1]: ToProperties.Aux[In, ∅, ∅, F] = new ToProperties[In, ∅] {
       type Out = ∅
       type Fun = F
       def apply(in: In, a: ∅): Out = ∅
@@ -133,9 +173,9 @@ object ToProperties {
 
   implicit def cons[
     In,
-    AH <: Singleton with AnyProperty, AT <: AnyTypeSet,
+    AH <: AnyProperty, AT <: AnyTypeSet,
     RH <: Tagged[AH], RT <: AnyTypeSet,
-    F <: Singleton with Poly1
+    F <: Poly1
   ](implicit
     f: Case1.Aux[F, (In, AH), RH], 
     t: ToProperties.Aux[In, AT, RT, F]
@@ -150,29 +190,30 @@ object ToProperties {
 
 //////////////////////////////////////////////
 
+
 trait ToItem[In, I <: AnyItem] {
 
+  type Fun <: Poly1
   type Out = Tagged[I]
-  type Fun <: Singleton with Poly1
   def apply(in: In, i: I): Out
 }
 
 object ToItem {
 
-  type Aux[In, I <: AnyItem, F <: Singleton with Poly1] = ToItem[In, I] { type Fun = F }
+  type Aux[In, I <: AnyItem, F <: Poly1] = ToItem[In, I] { type Fun = F }
 
-  implicit def buah[In, I <: AnyItem, F <: Singleton with Poly1, Out](implicit 
-    fr: ToProperties.Aux[In, I#Properties, Tagged[I], F]
+  implicit def buah[In, I <: AnyItem, F <: Poly1, Out](implicit 
+    fr: ToProperties.Aux[In, I#Record#Properties, I#Raw, F]
   ): ToItem.Aux[In, I, F] =
 
       new ToItem[In, I] {
 
         type Fun = F
 
-        def apply(in: In, i: I): Tagged[I] = {
+        def apply(in: In, i: I): Out = {
 
           val rec = i
-          val props = rec.properties
+          val props = rec.record.properties
           val itemV = fr(in, props)
 
           ((i:I) =>> itemV)
@@ -182,13 +223,13 @@ object ToItem {
 
 object From {
 
-  type Item[I <: AnyItem, Out] = FromProperties[I#Properties, Out] { type Reps = I#Raw }
+  type Item[I <: AnyItem, Out] = FromProperties[I#Record#Properties, Out] { type Reps = RawOf[I#Record] }
 
   type ItemAux[I <: AnyItem, F <: Poly1, Out] = 
   
-    FromProperties[I#Properties, Out] { 
+    FromProperties[I#Record#Properties, Out] { 
 
-      type Reps = I#Raw
+      type Reps = I#Record#Raw
       type Fun = F
     }
 }

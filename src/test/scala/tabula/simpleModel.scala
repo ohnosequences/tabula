@@ -1,6 +1,6 @@
 package ohnosequences.tabula.test
 
-import ohnosequences.pointless._
+import ohnosequences.pointless._, AnyTypeSet._, AnyTaggedType._
 import ohnosequences.tabula._
 
 import shapeless.test._

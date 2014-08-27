@@ -14,7 +14,7 @@ case class InHashKeyTable[T <: AnyHashKeyTable]
       val itemRep: Tagged[I]
     )(implicit
       val transf: From.Item[I, SDKRep],
-      val hasHashKey:  T#HashKey ∈ I#Properties
+      val hasHashKey:  T#HashKey ∈ I#Record#Properties
     ) 
     extends AnyPutItemAction with SDKRepGetter {
 
@@ -29,7 +29,7 @@ case class InHashKeyTable[T <: AnyHashKeyTable]
 
       val inputState = inputSt
 
-      override def toString = s"InTable ${t.name} putItem ${i.label} withValue ${itemRep}"
+      override def toString = s"InTable ${t.name} putItem ${i.toString} withValue ${itemRep}"
     }
 
   }
@@ -44,8 +44,8 @@ case class InCompositeKeyTable[T <: AnyCompositeKeyTable]
 
     case class withValue(itemRep: Tagged[I])(implicit
       val transf: From.Item[I, SDKRep],
-      val hasHashKey:  T#HashKey  ∈ I#Properties,
-      val hasRangeKey: T#RangeKey ∈ I#Properties 
+      val hasHashKey:  T#HashKey  ∈ I#Record#Properties,
+      val hasRangeKey: T#RangeKey ∈ I#Record#Properties 
     ) 
     extends AnyPutItemAction with SDKRepGetter {
       type Table = T
@@ -59,7 +59,7 @@ case class InCompositeKeyTable[T <: AnyCompositeKeyTable]
 
       val inputState = inputSt
 
-      override def toString = s"InTable ${t.name} putItem ${i.label} withValue ${itemRep}"
+      override def toString = s"InTable ${t.name} putItem ${i.toString} withValue ${itemRep}"
     }
 
   }
