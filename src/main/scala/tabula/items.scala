@@ -9,67 +9,28 @@ import shapeless._, poly._
   This is the type of items of a given table. A table can hold different kinds of records, as you could want to restrict access to some items for example; there's even functionality in IAM for this. By separating the item type from the table we can easily model this scenario as different item types for the same table.
 */
 
-trait AnyItem extends AnyTaggedType { item =>
+trait AnyItem extends AnyRecord {
 
-  val label: String
-
-  /* The table is accessible through the item type */
   type Table <: AnyTable
   val  table: Table
 
-  type Record <: AnyRecord
-  val record: Record
-
-  type Raw = RawOf[Record]
-
-  implicit val propertiesHaveValidTypes: Raw isBoundedByUnion ValidValues
-
-  // double tagging FTW!
-  final def fields[R <: AnyTypeSet](r: R)(implicit 
-    p: R As Raw
-  ): Tagged[Me] = (item:Me) =>> (record =>> p(r))
-
-  // implicit def propertyOps(rep: Tagged[Record]): RecordOps[Record] = 
-  //   new RecordOps[Record] (
-  //     (record: Record) fields rep
-  //   )
+  type Raw <: AnyTypeSet.BoundedByUnion[ValidValues]
 }
 
-abstract class Item[T <: AnyTable, R <: AnyRecord](val table: T, val rc: R)
-(implicit 
-  val propertiesHaveValidTypes: RawOf[R] isBoundedByUnion ValidValues
-) 
-  extends AnyItem 
-{
-
-  val label = this.toString
+abstract class Item[
+  T <: AnyTable, 
+  Props <: AnyTypeSet.Of[AnyProperty], 
+  Vals <: AnyTypeSet.BoundedByUnion[ValidValues]
+](val table: T, props: Props)(implicit 
+  representedProps: Props isRepresentedBy Vals
+) extends Record[Props, Vals](props)(representedProps) with AnyItem {
 
   type Table = T
-  type Record = R
 }
 
 object AnyItem {
 
-  // type RawOf[R <: AnyRecord] = R#Raw
   type ofTable[T <: AnyTable] = AnyItem { type Table = T }
-  type withRecord[R <: AnyRecord] = AnyItem { type Record = R }
-
-  type RecordOf[I <: AnyItem] = I#Record
-  type PropertiesOf[I <: AnyItem] = RecordOf[I]#Properties
-
-  // implicit def propertyOps[R <: AnyItem](entry: Tagged[R])(implicit
-  //   getItem: Tagged[R] => R
-  // ): AnyRecord.OtherPropertyOps[R#Record] = {
-
-  //   val uh = getItem(entry)
-
-  //   AnyRecord.OtherPropertyOps(
-
-  //       (uh.record:R#Record) ->> entry
-  //     )
-
-  // }
-      
 }
 
 trait ListLike[L] {
@@ -198,12 +159,10 @@ trait ToItem[In, I <: AnyItem] {
 
 object ToItem {
 
-  import AnyItem.PropertiesOf
-
   type Aux[In, I <: AnyItem, F <: Singleton with Poly1] = ToItem[In, I] { type Fun = F }
 
   implicit def buah[In, I <: AnyItem, F <: Singleton with Poly1, Out](implicit 
-    fr: ToProperties.Aux[In, I#Record#Properties, RawOf[I], F]
+    fr: ToProperties.Aux[In, I#Properties, Tagged[I], F]
   ): ToItem.Aux[In, I, F] =
 
       new ToItem[In, I] {
@@ -212,7 +171,7 @@ object ToItem {
 
         def apply(in: In, i: I): Tagged[I] = {
 
-          val rec = i.record
+          val rec = i
           val props = rec.properties
           val itemV = fr(in, props)
 
@@ -223,13 +182,13 @@ object ToItem {
 
 object From {
 
-  type Item[I <: AnyItem, Out] = FromProperties[I#Record#Properties, Out] { type Reps = I#Record#Raw }
+  type Item[I <: AnyItem, Out] = FromProperties[I#Properties, Out] { type Reps = I#Raw }
 
   type ItemAux[I <: AnyItem, F <: Poly1, Out] = 
   
-    FromProperties[I#Record#Properties, Out] { 
+    FromProperties[I#Properties, Out] { 
 
-      type Reps = I#Record#Raw
+      type Reps = I#Raw
       type Fun = F
     }
 }

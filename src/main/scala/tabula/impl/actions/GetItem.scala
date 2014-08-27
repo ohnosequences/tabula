@@ -15,7 +15,7 @@ case class FromHashKeyTable[T <: AnyHashKeyTable]
     )
     (implicit
       val form: ToItem[SDKRep, I],
-      val hasHashKey: T#HashKey ∈ I#Record#Properties
+      val hasHashKey: T#HashKey ∈ I#Properties
     ) 
     extends AnyGetItemHashKeyAction with SDKRepParser {
 
@@ -50,8 +50,8 @@ case class FromCompositeKeyTable[T <: AnyCompositeKeyTable]
       rangeKeyValue: RawOf[T#RangeKey]
     )(implicit
       val form: ToItem[SDKRep, I],
-      val hasHashKey:  T#HashKey  ∈ I#Record#Properties,
-      val hasRangeKey: T#RangeKey ∈ I#Record#Properties
+      val hasHashKey:  T#HashKey  ∈ I#Properties,
+      val hasRangeKey: T#RangeKey ∈ I#Properties
     ) 
     extends AnyGetItemCompositeKeyAction with SDKRepParser {
       

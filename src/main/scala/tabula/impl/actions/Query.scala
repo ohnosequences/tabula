@@ -10,10 +10,10 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
 
   case class forItem[I <: Singleton with AnyItem with AnyItem.ofTable[T]](val i: I) {
 
-    case class withHashKey(hashKeyValue: t.hashKey.Raw)
+    case class withHashKey(hashKeyValue: T#HashKey#Raw)
     (implicit 
-      val parser: ToItem[SDKRep, i.type], 
-      val hasHashKey: t.HashKey ∈ i.record.Properties
+      val parser: ToItem[SDKRep, I], 
+      val hasHashKey: T#HashKey ∈ I#Properties
     ) 
     extends AnySimpleQueryAction with SDKRepParser { self =>
 
@@ -30,7 +30,7 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
 
       override def toString = s"QueryTable ${t.name} forItem ${i.label} withHashKey ${hashKeyValue}"
 
-      case class andRangeCondition[C <: Condition.On[t.RangeKey] with KeyCondition](c: C)
+      case class andRangeCondition[C <: Condition.On[T#RangeKey] with KeyCondition](c: C)
           extends AnyNormalQueryAction
              with SDKRepParser {
 

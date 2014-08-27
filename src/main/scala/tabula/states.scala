@@ -50,7 +50,7 @@ extends AnyThroughputStatus {}
 */
 sealed trait AnyTableState extends AnyDynamoDBState {
 
-  type Resource <: Singleton with AnyTable
+  type Resource <: AnyTable
   
   val throughputStatus: AnyThroughputStatus
 
@@ -63,7 +63,7 @@ object AnyTableState {
   type For[T] = AnyTableState {type Resource = T}
 }
 
-case class InitialState[T <: Singleton with AnyTable](
+case class InitialState[T <: AnyTable](
   resource: T,
   account: Account,
   throughputStatus: InitialThroughput
@@ -75,25 +75,25 @@ case class InitialState[T <: Singleton with AnyTable](
 
 trait ReadyTable
 
-case class Updating[T <: Singleton with AnyTable](
+case class Updating[T <: AnyTable](
   resource: T,
   account: Account,
   throughputStatus: AnyThroughputStatus
 ) extends AnyTableState with ReadyTable { type Resource = T }
 
-case class Creating[T <: Singleton with AnyTable](
+case class Creating[T <: AnyTable](
   resource: T,
   account: Account,
   throughputStatus: AnyThroughputStatus
 ) extends AnyTableState { type Resource = T }
 
-case class Active[T <: Singleton with AnyTable](
+case class Active[T <: AnyTable](
   resource: T,
   account: Account,
   throughputStatus: AnyThroughputStatus
 ) extends AnyTableState with ReadyTable { type Resource = T }
 
-case class Deleting[T <: Singleton with AnyTable](
+case class Deleting[T <: AnyTable](
   resource: T,
   account: Account,
   throughputStatus: AnyThroughputStatus
