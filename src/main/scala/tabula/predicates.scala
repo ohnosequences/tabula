@@ -30,7 +30,7 @@ trait AnyOrPredicate extends AnyPredicate {
   type Body <: AnyOrPredicate
 
   def or[Head <: Condition](other: Head)(implicit 
-    ev: Head#Property ∈ Body#Item#Record#Properties
+    ev: Head#Property ∈ Body#Item#Properties
   ): OR[Body, Head] = 
      OR(body, other)
 }
@@ -52,7 +52,7 @@ trait AnyAndPredicate extends AnyPredicate {
   type Body <: AnyAndPredicate
 
   def and[Head <: Condition](other: Head)(implicit 
-    ev: Head#Property ∈ Body#Item#Record#Properties
+    ev: Head#Property ∈ Body#Item#Properties
   ): AND[Body, Head] = 
      AND(body, other)
 }
@@ -97,7 +97,7 @@ object AnyPredicate {
   implicit def itemPredicateOps[I <: AnyItem](item: I): ItemPredicateOps[I] = ItemPredicateOps(item)
   case class   ItemPredicateOps[I <: AnyItem](val item: I) {
     def ?[C <: Condition](c: C)(implicit 
-        ev: C#Property ∈ I#Record#Properties
+        ev: C#Property ∈ I#Properties
       ): SimplePredicate[I, C] = SimplePredicate(item, c)
   }
 }
