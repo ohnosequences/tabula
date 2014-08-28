@@ -29,7 +29,7 @@ case class InHashKeyTable[T <: AnyHashKeyTable]
 
       val inputState = inputSt
 
-      override def toString = s"InTable ${t.name} putItem ${i.label} withValue ${itemRep}"
+      override def toString = s"InTable ${t.name} putItem ${i.toString} withValue ${itemRep}"
     }
 
   }
@@ -59,7 +59,7 @@ case class InCompositeKeyTable[T <: AnyCompositeKeyTable]
 
       val inputState = inputSt
 
-      override def toString = s"InTable ${t.name} putItem ${i.label} withValue ${itemRep}"
+      override def toString = s"InTable ${t.name} putItem ${i.toString} withValue ${itemRep}"
     }
 
   }

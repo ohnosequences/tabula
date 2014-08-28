@@ -28,7 +28,7 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
       val inputState = inputSt
       val parseSDKRep = (m: SDKRep) => parser(m, i)
 
-      override def toString = s"QueryTable ${t.name} forItem ${i.label} withHashKey ${hashKeyValue}"
+      override def toString = s"QueryTable ${t.name} forItem ${i.toString} withHashKey ${hashKeyValue}"
 
       case class andRangeCondition[C <: Condition.On[T#RangeKey] with KeyCondition](c: C)
           extends AnyNormalQueryAction
@@ -49,7 +49,7 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
           val parseSDKRep = (m: SDKRep) => parser(m, i)
           val hasHashKey = self.hasHashKey
 
-          override def toString = s"QueryTable ${t.name} forItem ${i.label} withHashKey ${hashKeyValue} andRangeCondition ${rangeCondition}"
+          override def toString = s"QueryTable ${t.name} forItem ${i.toString} withHashKey ${hashKeyValue} andRangeCondition ${rangeCondition}"
       }
     }
   }

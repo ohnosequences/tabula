@@ -1,14 +1,14 @@
 package ohnosequences.tabula.test
 
-import ohnosequences.pointless._
+import ohnosequences.pointless._, AnyTypeSet._
 import ohnosequences.tabula._
 
 import shapeless.test._
 
 object simpleModel {
 
-  case object id extends Property[Num]
-  case object name extends Property[String]
+  object id extends Property[Num]
+  object name extends Property[String]
   object age extends Property[Num]
   object email extends Property[String]
   object serializedCrap extends Property[Bytes]
@@ -41,25 +41,25 @@ object simpleModel {
   case object recordWithBoolProperty extends Record(boolProperty :~: ∅)
   // but you cannot use it for creating an Item, because it's one of `ValidValues` type union
   illTyped("""
-  case object WrongItem extends Item(UsersTable, recordWithBoolProperty)
+  case object WrongItem extends Item(UsersTable, recordWithBoolProperty.properties)
   """)
 
   case object UserItemRecord extends Record(name :~: age :~: ∅)
-  case object UserItem extends Item(UsersTable, UserItemRecord)
+  case object UserItem extends Item(UsersTable, UserItemRecord.properties)
 
   case object FunnyUserItemRecord extends Record(name :~: email :~: serializedCrap :~: departments :~: ∅)
-  case object FunnyUserItem extends Item(UsersTable, FunnyUserItemRecord)
+  case object FunnyUserItem extends Item(UsersTable, FunnyUserItemRecord.properties)
 
   // predicates
   import AnyPredicate._
   import Condition._
 
-  val namePred = SimplePredicate(UserItem, EQ[name.type](name, "piticli"))
+  val namePred = UserItem ? (name === "piticli")
   val ageAndPred = AND(namePred, age < 18)
   val  ageOrPred =  OR(namePred, age > 18)
   val agePred = namePred and (age < 18)
 
-  val emailPred = SimplePredicate(FunnyUserItem, EQ[email.type](email, "oh@uh.com"))
+  val emailPred = FunnyUserItem ? (email === "oh@uh.com")
 
   val longOrPred  = UserItem ? (name === "piticli") or (name === "clipiti") or (age < 10) or (age > 34)
   val longAndPred = UserItem ? (name === "piticli") and (name === "clipiti") and (age < 10) and (age > 34)

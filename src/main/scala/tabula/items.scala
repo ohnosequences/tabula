@@ -14,23 +14,32 @@ trait AnyItem extends AnyRecord {
   type Table <: AnyTable
   val  table: Table
 
-  type Raw <: AnyTypeSet.BoundedByUnion[ValidValues]
+  val propValuesAreOk: Raw isBoundedByUnion ValidValues
 }
 
-abstract class Item[
-  T <: AnyTable, 
+class Item [
+  T  <: AnyTable,
   Props <: AnyTypeSet.Of[AnyProperty], 
-  Vals <: AnyTypeSet.BoundedByUnion[ValidValues]
-](val table: T, props: Props)(implicit 
-  representedProps: Props isRepresentedBy Vals
-) extends Record[Props, Vals](props)(representedProps) with AnyItem {
+  Vals <: AnyTypeSet
+]
+(
+  val table: T,
+  val properties: Props
+)(implicit
+  val representedProperties: Props isRepresentedBy Vals,
+  val propValuesAreOk: Vals isBoundedByUnion ValidValues 
+) 
+extends AnyRecord with AnyItem {
 
+  type Properties = Props
+  type Raw = Vals
   type Table = T
 }
 
 object AnyItem {
 
   type ofTable[T <: AnyTable] = AnyItem { type Table = T }
+  type withProperties[P <: AnyTypeSet with AnyTypeSet.Of[AnyProperty]] = AnyItem { type Props = P }
 }
 
 trait ListLike[L] {

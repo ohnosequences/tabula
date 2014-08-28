@@ -71,13 +71,13 @@ case class NOT_NULL[A <: AnyProperty](val property: A) extends NullaryCondition[
 trait SimpleCondition[A <: AnyProperty] extends Condition {
 
   type Property = A
-  val value: RawOf[A]
+  val value: A#Raw
 }
 
 /* - `EQ` - true if an property is equal to a value */
 case class EQ[A <: AnyProperty](
   val property: A,
-  val value: RawOf[A]
+  val value: A#Raw
 ) extends SimpleCondition[A] with KeyCondition
 
 /* - `NE` - true if an property is not equal to a value */

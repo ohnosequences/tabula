@@ -6,7 +6,7 @@ import com.amazonaws.regions._
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue} //, PropertyAction}
 
-import ohnosequences.pointless._
+import ohnosequences.pointless._, AnyTaggedType._, AnyTypeSet._
 
 import ohnosequences.tabula._
 import ohnosequences.tabula.impl._, actions._, ImplicitConversions._
@@ -42,14 +42,14 @@ object TestSetting {
 
   case object table extends CompositeKeyTable("tabula_test_1", id, name, service.region)
 
-  case object simpleUser extends Item(table, simpleUserRecord)
+  case object simpleUser extends Item(table, simpleUserRecord.properties)
 
 
   // more properties:
   case object email extends Property[String]
   case object color extends Property[String]
 
-  case object normalUser extends Item(table, normalUserRecord)
+  case object normalUser extends Item(table, normalUserRecord.properties)
 }
 
 class irishService extends FunSuite {
@@ -92,26 +92,26 @@ class irishService extends FunSuite {
 
     // PUT ITEM
     val user1 = normalUser fields (
-      (id ->> 1) :~: 
-      (name ->> "Edu") :~: 
-      (email ->> "eparejatobes@ohnosequences.com") :~:
-      (color ->> "verde") :~:
+      (id =>> 1) :~: 
+      (name =>> "Edu") :~: 
+      (email =>> "eparejatobes@ohnosequences.com") :~:
+      (color =>> "verde") :~:
       ∅
     )
 
     val user2 = normalUser fields (
-      (id ->> 1) :~: 
-      (name ->> "Evdokim") :~: 
-      (email ->> "evdokim@ohnosequences.com") :~:
-      (color ->> "negro") :~:
+      (id =>> 1) :~: 
+      (name =>> "Evdokim") :~: 
+      (email =>> "evdokim@ohnosequences.com") :~:
+      (color =>> "negro") :~:
       ∅
     )
 
     val user3 = normalUser fields (
-      (id ->> 3) :~: 
-      (name ->> "Lyosha") :~: 
-      (email ->> "aalekhin@ohnosequences.com") :~:
-      (color ->> "albero") :~:
+      (id =>> 3) :~: 
+      (name =>> "Lyosha") :~: 
+      (email =>> "aalekhin@ohnosequences.com") :~:
+      (color =>> "albero") :~:
       ∅
     )
 
@@ -127,7 +127,10 @@ class irishService extends FunSuite {
 
       InCompositeKeyTable(table, afterPut2) putItem simpleUser withValue (
 
-        simpleUser fields ((user3 as simpleUser.record):simpleUser.record.Raw)
+        // TODO as clashes with as in typeset
+        // simpleUser fields (user3 as simpleUser)
+        simpleUser fields ((user3: Tagged[normalUser.type]) as simpleUser)
+
       )
     )
     assert(putResult3.output === PutItemSuccess)

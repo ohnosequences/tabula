@@ -31,7 +31,7 @@ case class FromHashKeyTable[T <: AnyHashKeyTable]
 
       val parseSDKRep = (m: SDKRep) => form(m, item)
 
-      override def toString = s"FromTable ${table.name} getItem ${item.label} withKey ${hashKeyValue}"
+      override def toString = s"FromTable ${table.name} getItem ${item.toString} withKey ${hashKeyValue}"
     }
 
   }
@@ -67,7 +67,7 @@ case class FromCompositeKeyTable[T <: AnyCompositeKeyTable]
 
       val parseSDKRep = (m: SDKRep) => form(m, i)
 
-      override def toString = s"FromTable ${t.name} getItem ${i.label} withKeys ${(hashKeyValue, rangeKeyValue)}"
+      override def toString = s"FromTable ${t.name} getItem ${i.toString} withKeys ${(hashKeyValue, rangeKeyValue)}"
     }
 
   }

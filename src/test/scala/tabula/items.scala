@@ -2,13 +2,13 @@ package ohnosequences.tabula
 
 import org.scalatest.FunSuite
 
-import ohnosequences.pointless._, AnyTaggedType._
+import ohnosequences.pointless._, AnyTaggedType.Tagged, AnyProperty._, AnyTypeSet._, AnyRecord._, AnyTypeUnion._
+
 import ohnosequences.tabula._
 import ohnosequences.tabula.impl._, ImplicitConversions._
 
 import shapeless._, poly._
 import shapeless.test.typed
-import AnyTaggedType._
 
 object TestSetting {
   case object id extends Property[Num]
@@ -18,13 +18,14 @@ object TestSetting {
 
   object table extends CompositeKeyTable("foo_table", id, name, EU)
 
-  case object simpleUser extends Item(table, simpleUserRecord)
+  object simpleUser extends Item(table, id :~: name :~: ∅)
+  object simpleUser2 extends Item(table, simpleUserRecord.properties)
 
   // more properties:
   case object email extends Property[String]
   case object color extends Property[String]
 
-  case object normalUser extends Item(table, normalUserRecord)
+  case object normalUser extends Item(table, normalUserRecord.properties)
 
   // creating item is easy and neat:
   val user1 = simpleUser fields (
@@ -59,38 +60,38 @@ class itemsSuite extends FunSuite {
   test("tags/keys of a representation") {
     // won't work; need the alias :-|
     // val keys = implicitly[Keys.Aux[id.Rep :~: name.Rep :~: ∅, id.type :~: name.type :~: ∅]]
-    val tags = TagsOf[TaggedWith[id.type] :~: TaggedWith[name.type] :~: ∅]
-    assert(tags(user1) === simpleUser.record.properties)
-    assert(tags(user1) === (id :~: name :~: ∅))
+    // val tags = TagsOf[Tagged[id.type] :~: Tagged[name.type] :~: ∅]
+    // assert(tags(user1) === simpleUser.properties)
+    // assert(tags(user1) === (id :~: name :~: ∅))
   }
 
   test("items serialization") {
     // transforming simpleUser to Map
     val tr = FromProperties[
       id.type :~: name.type :~: ∅, 
-      TaggedWith[id.type]  :~: TaggedWith[name.type]  :~: ∅,
+      Tagged[id.type]  :~: Tagged[name.type]  :~: ∅,
       toSDKRep.type,
       SDKRep
     ]
     val map1 = tr(user1)
     println(map1)
 
-    val t = implicitly[FromProperties.Aux[simpleUser.record.Properties, simpleUser.Raw, toSDKRep.type, SDKRep]]
+    val t = implicitly[FromProperties.Aux[simpleUser.Properties, simpleUser.Raw, toSDKRep.type, SDKRep]]
     val ti = implicitly[From.ItemAux[simpleUser.type, toSDKRep.type, SDKRep]]
     val map2 = ti(user1)
     println(map2)
     assert(map1 == map2)
 
     // forming simpleUser from Map
-    val form = ToProperties[SDKRep, simpleUser.record.Properties, simpleUser.Raw, fromSDKRep.type](ToProperties.cons)
-    val i2 = form(map2, simpleUser.record.properties)
+    val form = ToProperties[SDKRep, simpleUser.Properties, simpleUser.Raw, fromSDKRep.type](ToProperties.cons)
+    val i2 = form(map2, simpleUser.properties)
     println(i2)
     assert(i2 == user1)
   }
 
   test("item projection") {
     assertResult(user1) {
-      user2 as simpleUser.record
+      user2 as simpleUser
     }
 
     assertTypeError("""
@@ -100,12 +101,12 @@ class itemsSuite extends FunSuite {
 
   test("item extension") {
 
-    case object more extends Record(simpleUser.record.properties ∪ (email :~: color :~: ∅))
+    case object more extends Record(simpleUser.properties ∪ (email :~: color :~: ∅))
 
-    case object extendedUser extends Item(table, more)
+    case object extendedUser extends Item(table, more.properties)
 
     assertResult(user2) {
-      user1 as (normalUser.record,
+      user1 as (normalUser,
         (color is "orange") :~:
         (email is "foo@bar.qux") :~:
         ∅
@@ -132,6 +133,7 @@ class itemsSuite extends FunSuite {
   }
 
   test("item update") {
+    
     val martin = normalUser fields (
       (name is "Martin") :~:
       (id is 1) :~:
