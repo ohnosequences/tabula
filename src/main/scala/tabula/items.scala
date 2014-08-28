@@ -14,24 +14,24 @@ trait AnyItem extends AnyRecord {
   type Table <: AnyTable
   val  table: Table
 
-  val propValuesAreOk: Raw isBoundedByUnion ValidValues
+  type Raw <: AnyTypeSet.BoundedByUnion[ValidValues]
+
+  // type Raw <: AnyTypeSet.Of[ValidValues]
 }
 
 class Item [
   T  <: AnyTable,
-  Props <: AnyTypeSet.Of[AnyProperty], 
-  Vals <: AnyTypeSet
+  Props <: AnyTypeSet.Of[AnyProperty],
+  Vals <: AnyTypeSet.BoundedByUnion[ValidValues]
 ]
 (
+  val label: String,
   val table: T,
   val properties: Props
 )(implicit
-  val representedProperties: Props isRepresentedBy Vals,
-  val propValuesAreOk: Vals isBoundedByUnion ValidValues 
+  val representedProperties: Props isRepresentedBy Vals
 ) 
 extends AnyItem {
-
-  val label = this.toString
 
   type Properties = Props
   type Raw = Vals

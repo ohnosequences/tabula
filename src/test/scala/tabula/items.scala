@@ -18,14 +18,14 @@ object TestSetting {
 
   object table extends CompositeKeyTable("foo_table", id, name, EU)
 
-  object simpleUser extends Item(table, id :~: name :~: ∅)
-  object simpleUser2 extends Item(table, simpleUserRecord.properties)
+  object simpleUser extends Item("simpleUser", table, id :~: name :~: ∅)
+  object simpleUser2 extends Item("simpleUser2", table, simpleUserRecord.properties)
 
   // more properties:
   case object email extends Property[String]
   case object color extends Property[String]
 
-  case object normalUser extends Item(table, normalUserRecord.properties)
+  case object normalUser extends Item("normalUser", table, normalUserRecord.properties)
 
   // creating item is easy and neat:
   val user1 = simpleUser fields (
@@ -103,7 +103,7 @@ class itemsSuite extends FunSuite {
 
     case object more extends Record(simpleUser.properties ∪ (email :~: color :~: ∅))
 
-    case object extendedUser extends Item(table, more.properties)
+    case object extendedUser extends Item("extendedUser", table, more.properties)
 
     assertResult(user2) {
       user1 as (normalUser,
@@ -142,14 +142,21 @@ class itemsSuite extends FunSuite {
       ∅
     )
 
-    assert((user2 update (name is "qux")) === 
-      (normalUser fields (
+    assert(
+
+      (
+        
+        user2 update (name is "qux")
+      ) === (
+
+        normalUser fields (
           (id is user2.get(id)) :~: 
           (name is "qux") :~: 
           (color is user2.get(color)) :~:
           (email is user2.get(email)) :~:
           ∅
-        ))
+        )
+      )
     )
 
     assert((user2 update ((name is "qux") :~: (id is 42) :~: ∅)) === 

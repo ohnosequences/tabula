@@ -42,14 +42,14 @@ object TestSetting {
 
   case object table extends CompositeKeyTable("tabula_test_1", id, name, service.region)
 
-  case object simpleUser extends Item(table, simpleUserRecord.properties)
+  case object simpleUser extends Item("simpleUser", table, simpleUserRecord.properties)
 
 
   // more properties:
   case object email extends Property[String]
   case object color extends Property[String]
 
-  case object normalUser extends Item(table, normalUserRecord.properties)
+  case object normalUser extends Item("normalUser", table, normalUserRecord.properties)
 }
 
 class irishService extends FunSuite {
@@ -125,7 +125,12 @@ class irishService extends FunSuite {
 
     val putResult3 = service please (
 
-      InCompositeKeyTable(table, afterPut2) putItem simpleUser withValue (user3 as simpleUser)
+      InCompositeKeyTable(table, afterPut2) putItem simpleUser withValue (
+
+        // TODO as clashes with as in typeset
+        (user3: Tagged[normalUser.type]) as simpleUser
+
+      )
     )
     assert(putResult3.output === PutItemSuccess)
     val afterPut3 = waitFor(table, putResult3.state)
