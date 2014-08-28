@@ -77,7 +77,7 @@ trait SimpleCondition[A <: AnyProperty] extends Condition {
 /* - `EQ` - true if an property is equal to a value */
 case class EQ[A <: AnyProperty](
   val property: A,
-  val value: A#Raw
+  val value: RawOf[A]
 ) extends SimpleCondition[A] with KeyCondition
 
 /* - `NE` - true if an property is not equal to a value */

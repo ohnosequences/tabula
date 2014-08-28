@@ -9,8 +9,6 @@ import ohnosequences.pointless._, AnyTaggedType._, AnyTypeUnion._
 */
 trait AnyTable extends AnyDynamoDBResource {
   
-  val name: String
-
   type HashKey <: AnyProperty
   val  hashKey: HashKey
 
