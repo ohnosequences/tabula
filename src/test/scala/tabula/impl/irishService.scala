@@ -74,7 +74,7 @@ class irishService extends FunSuite {
     }
   }
 
-  test("complex example") {
+  ignore("complex example") {
     import toSDKRep._
     import fromSDKRep._
     import Condition._
@@ -125,13 +125,7 @@ class irishService extends FunSuite {
 
     val putResult3 = service please (
 
-      InCompositeKeyTable(table, afterPut2) putItem simpleUser withValue (
-
-        // TODO as clashes with as in typeset
-        // simpleUser fields (user3 as simpleUser)
-        simpleUser fields ((user3: Tagged[normalUser.type]) as simpleUser)
-
-      )
+      InCompositeKeyTable(table, afterPut2) putItem simpleUser withValue (user3 as simpleUser)
     )
     assert(putResult3.output === PutItemSuccess)
     val afterPut3 = waitFor(table, putResult3.state)

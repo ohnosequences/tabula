@@ -29,7 +29,9 @@ class Item [
   val representedProperties: Props isRepresentedBy Vals,
   val propValuesAreOk: Vals isBoundedByUnion ValidValues 
 ) 
-extends AnyRecord with AnyItem {
+extends AnyItem {
+
+  val label = this.toString
 
   type Properties = Props
   type Raw = Vals
