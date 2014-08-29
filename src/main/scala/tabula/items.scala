@@ -1,6 +1,6 @@
 package ohnosequences.tabula
 
-import ohnosequences.pointless._, AnyTaggedType._, AnyTypeSet._
+import ohnosequences.pointless._, AnyTaggedType._, AnyTypeSet._, AnyFn._
 import shapeless._, poly._
 
 /*
@@ -65,17 +65,17 @@ trait FromProperties[
   ] {
 
   type Reps <: AnyTypeSet         // representation of properties
-  type Fun <: Singleton with Poly1 // transformation function
+  type Fun <: Poly1 // transformation function
 
   def apply(r: Reps): Out
 }
 
 object FromProperties {
   
-  def apply[A <: AnyTypeSet, Reps <: AnyTypeSet, F <: Singleton with Poly1, Out](implicit tr: FromProperties.Aux[A, Reps, F, Out]):
+  def apply[A <: AnyTypeSet, Reps <: AnyTypeSet, F <: Poly1, Out](implicit tr: FromProperties.Aux[A, Reps, F, Out]):
     FromProperties.Aux[A, Reps, F, Out] = tr
 
-  type Aux[A <: AnyTypeSet, R <: AnyTypeSet, F <: Singleton with Poly1, Out] =
+  type Aux[A <: AnyTypeSet, R <: AnyTypeSet, F <: Poly1, Out] =
     FromProperties[A, Out] { 
       type Reps = R
       type Fun = F
@@ -86,7 +86,7 @@ object FromProperties {
       type Reps = R
     }
 
-  implicit def empty[Out, F <: Singleton with Poly1]
+  implicit def empty[Out, F <: Poly1]
     (implicit m: ListLike[Out]): FromProperties.Aux[∅, ∅, F, Out] = new FromProperties[∅, Out] {
       type Reps = ∅
       type Fun = F
@@ -94,8 +94,8 @@ object FromProperties {
     }
 
   implicit def cons[
-    F <: Singleton with Poly1,
-    AH <: Singleton with AnyProperty, AT <: AnyTypeSet,
+    F <: Poly1,
+    AH <: AnyProperty, AT <: AnyTypeSet,
     RT <: AnyTypeSet,
     E, Out
   ](implicit
@@ -118,25 +118,33 @@ object FromProperties {
 
 // ///////////////////////////////////////////////////////////////
 
-/* Transforms properties set representation from something else */
-trait ToProperties[
-    In,          // some other representation
-    A <: AnyTypeSet // set of corresponding properties
-  ] {
-
-  type Out <: AnyTypeSet             // representation of properties
-  type Fun <: Singleton with Poly1 // transformation function
-
-  def apply(in: In, a: A): Out
+trait AnyTrasformation extends AnyFn {
+  type Fun <: Poly1 // transformation function
 }
 
+object AnyTrasformation {
+  type fun[F <: Poly1] = AnyTrasformation { type Fun = F }
+}
+
+/* Transforms properties set representation from something else */
+trait ToProperties[
+    In,             // some other representation
+    A <: AnyTypeSet // set of corresponding properties
+] extends Fn2[In, A] 
+  with WithCodomain[AnyTypeSet] 
+  with AnyTrasformation
+
 object ToProperties {
-  type Aux[In, A <: AnyTypeSet, O <: AnyTypeSet, F <: Singleton with Poly1] = ToProperties[In, A] { type Out = O; type Fun = F } 
+  import AnyTrasformation._
 
-  def apply[In, A <: AnyTypeSet, O <: AnyTypeSet, F <: Singleton with Poly1]
-    (implicit form: ToProperties.Aux[In, A, O, F]): ToProperties.Aux[In, A, O, F] = form
+  def apply[In, A <: AnyTypeSet, O <: AnyTypeSet, F <: Poly1]
+    (implicit form: ToProperties[In, A] with out[O] with fun[F]): 
+                    ToProperties[In, A] with out[O] with fun[F] = form
 
-  implicit def empty[In, F <: Singleton with Poly1]: ToProperties.Aux[In, ∅, ∅, F] = new ToProperties[In, ∅] {
+  implicit def empty[In, F <: Poly1]: 
+        ToProperties[In, ∅] with out[∅] with fun[F] = 
+    new ToProperties[In, ∅] {
+
       type Out = ∅
       type Fun = F
       def apply(in: In, a: ∅): Out = ∅
@@ -144,14 +152,14 @@ object ToProperties {
 
   implicit def cons[
     In,
-    AH <: Singleton with AnyProperty, AT <: AnyTypeSet,
+    AH <: AnyProperty, AT <: AnyTypeSet,
     RH <: Tagged[AH], RT <: AnyTypeSet,
-    F <: Singleton with Poly1
+    F <: Poly1
   ](implicit
     f: Case1.Aux[F, (In, AH), RH], 
-    t: ToProperties.Aux[In, AT, RT, F]
-  ): ToProperties.Aux[In, AH :~: AT, RH :~: RT, F] =
-    new  ToProperties[In, AH :~: AT] {
+    t: ToProperties[In, AT] with out[RT] with fun[F]
+  ):    ToProperties[In, AH :~: AT] with out[RH :~: RT] with fun[F] =
+    new ToProperties[In, AH :~: AT] {
       
       type Out = RH :~: RT
       type Fun = F
@@ -161,34 +169,26 @@ object ToProperties {
 
 //////////////////////////////////////////////
 
-trait ToItem[In, I <: AnyItem] {
-
-  type Out = Tagged[I]
-  type Fun <: Singleton with Poly1
-  def apply(in: In, i: I): Out
-}
+trait ToItem[In, I <: AnyItem] extends Fn2[In, I] with AnyTrasformation { type Out = Tagged[I] }
 
 object ToItem {
+  import AnyTrasformation._
 
-  type Aux[In, I <: AnyItem, F <: Singleton with Poly1] = ToItem[In, I] { type Fun = F }
+  implicit def buah[In, I <: AnyItem, F <: Poly1, Out](implicit 
+    fr: ToProperties[In, I#Properties] with out[Tagged[I]] with fun[F]
+  ):  ToItem[In, I] with fun[F] =
+  new ToItem[In, I] {
 
-  implicit def buah[In, I <: AnyItem, F <: Singleton with Poly1, Out](implicit 
-    fr: ToProperties.Aux[In, I#Properties, Tagged[I], F]
-  ): ToItem.Aux[In, I, F] =
+    type Fun = F
 
-      new ToItem[In, I] {
+    def apply(in: In, i: I): Out = {
 
-        type Fun = F
+      val props = i.properties
+      val itemV = fr(in, props)
 
-        def apply(in: In, i: I): Tagged[I] = {
-
-          val rec = i
-          val props = rec.properties
-          val itemV = fr(in, props)
-
-          ((i:I) =>> itemV)
-        }
-      }
+      (i:I) =>> itemV
+    }
+  }
 }
 
 object From {
