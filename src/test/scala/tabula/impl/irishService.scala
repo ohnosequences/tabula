@@ -75,10 +75,10 @@ class irishService extends FunSuite {
   }
 
   ignore("complex example") {
-    import toSDKRep._
-    import fromSDKRep._
     import Condition._
     import AnyPredicate._
+    import SDKRepParsers._
+    import SDKRepSerializers._
 
     // CREATE TABLE
     val createResult = service please CreateTable(table, InitialState(table, service.account, InitialThroughput(1, 1)))
@@ -92,26 +92,26 @@ class irishService extends FunSuite {
 
     // PUT ITEM
     val user1 = normalUser fields (
-      (id =>> 1) :~: 
-      (name =>> "Edu") :~: 
-      (email =>> "eparejatobes@ohnosequences.com") :~:
-      (color =>> "verde") :~:
+      (id is 1) :~: 
+      (name is "Edu") :~: 
+      (email is "eparejatobes@ohnosequences.com") :~:
+      (color is "verde") :~:
       ∅
     )
 
     val user2 = normalUser fields (
-      (id =>> 1) :~: 
-      (name =>> "Evdokim") :~: 
-      (email =>> "evdokim@ohnosequences.com") :~:
-      (color =>> "negro") :~:
+      (id is 1) :~: 
+      (name is "Evdokim") :~: 
+      (email is "evdokim@ohnosequences.com") :~:
+      (color is "negro") :~:
       ∅
     )
 
     val user3 = normalUser fields (
-      (id =>> 3) :~: 
-      (name =>> "Lyosha") :~: 
-      (email =>> "aalekhin@ohnosequences.com") :~:
-      (color =>> "albero") :~:
+      (id is 3) :~: 
+      (name is "Lyosha") :~: 
+      (email is "aalekhin@ohnosequences.com") :~:
+      (color is "albero") :~:
       ∅
     )
 

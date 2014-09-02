@@ -65,30 +65,6 @@ class itemsSuite extends FunSuite {
     // assert(tags(user1) === (id :~: name :~: ∅))
   }
 
-  test("items serialization") {
-    // transforming simpleUser to Map
-    val tr = FromProperties[
-      id.type :~: name.type :~: ∅, 
-      Tagged[id.type]  :~: Tagged[name.type]  :~: ∅,
-      toSDKRep.type,
-      SDKRep
-    ]
-    val map1 = tr(user1)
-    println(map1)
-
-    val t = implicitly[FromProperties.Aux[simpleUser.Properties, simpleUser.Raw, toSDKRep.type, SDKRep]]
-    val ti = implicitly[From.ItemAux[simpleUser.type, toSDKRep.type, SDKRep]]
-    val map2 = ti(user1)
-    println(map2)
-    assert(map1 == map2)
-
-    // forming simpleUser from Map
-    val form = ToProperties[SDKRep, simpleUser.Properties, simpleUser.Raw, fromSDKRep.type](ToProperties.cons)
-    val i2 = form(map2, simpleUser.properties)
-    println(i2)
-    assert(i2 == user1)
-  }
-
   test("item projection") {
     assertResult(user1) {
       user2 as simpleUser

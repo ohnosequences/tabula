@@ -1,6 +1,7 @@
 package ohnosequences.tabula.impl.actions
 
 import ohnosequences.pointless._, AnyTaggedType._, AnyTypeSet._
+import ohnosequences.pointless.ops.record._
 
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 import ohnosequences.tabula._, impl._, ImplicitConversions._
@@ -13,7 +14,7 @@ case class InHashKeyTable[T <: AnyHashKeyTable]
     case class withValue(
       val itemRep: Tagged[I]
     )(implicit
-      val transf: From.Item[I, SDKRep],
+      val serializer: I SerializeTo SDKRep,
       val hasHashKey:  T#HashKey ∈ I#Properties
     ) 
     extends AnyPutItemAction with SDKRepGetter {
@@ -25,7 +26,7 @@ case class InHashKeyTable[T <: AnyHashKeyTable]
       val  item = i
 
       val  input = itemRep
-      val  getSDKRep = (r:Tagged[I]) => transf(r)
+      val  getSDKRep = (r:Tagged[I]) => serializer(r)
 
       val inputState = inputSt
 
@@ -43,7 +44,7 @@ case class InCompositeKeyTable[T <: AnyCompositeKeyTable]
   case class putItem[I <:AnyItem.ofTable[T]](i: I) {
 
     case class withValue(itemRep: Tagged[I])(implicit
-      val transf: From.Item[I, SDKRep],
+      val serializer: I SerializeTo SDKRep,
       val hasHashKey:  T#HashKey  ∈ I#Properties,
       val hasRangeKey: T#RangeKey ∈ I#Properties 
     ) 
@@ -55,7 +56,7 @@ case class InCompositeKeyTable[T <: AnyCompositeKeyTable]
       val  item = i
 
       val  input = itemRep
-      val  getSDKRep = (r: Tagged[I]) => transf(r)
+      val  getSDKRep = (r: Tagged[I]) => serializer(r)
 
       val inputState = inputSt
 

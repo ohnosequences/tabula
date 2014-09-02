@@ -15,74 +15,78 @@ object ImplicitConversions {
   type SDKRep = Map[String, AttributeValue]
   type SDKElem = (String, AttributeValue)
 
-  implicit val ListLikeSDKRep = new ListLike[SDKRep] {
-    type E = SDKElem
+  import ohnosequences.pointless.ops.typeSet._
 
-    val nil: SDKRep = Map()
-    def cons(h: E, t: SDKRep): SDKRep = Map(h) ++ t
-
-    def head(m: SDKRep): E = m.head
-    def tail(m: SDKRep): SDKRep = m.tail
+  implicit val SDKRepMonoid: Monoid[SDKRep] = new Monoid[SDKRep] {
+    def zero: M = Map[String, AttributeValue]()
+    def append(a: M, b: M): M = a ++ b
   }
 
-  case object toSDKRep extends Poly1 {
+  object SDKRepParsers {
+    // implicit def caseN[A <: AnyProperty.ofType[Num]] = at[(SDKRep, A)] { x => {
 
-    implicit def defaultString[A <: AnyProperty, R <: RawOf[A] with String] = at[(A, R)] {
+    //     val a: A = x._2
+    //     val m: SDKRep = x._1
+    //     val v: RawOf[A] = m(a.label).getN.toInt
 
-        x => ( x._1.label, new AttributeValue().withS(x._2) ): (String, AttributeValue) 
-      }
+    //     a =>> v
+    //   }
+    // }
 
-    implicit def defaultNum[A <: AnyProperty, R <: Num with RawOf[A]] = at[(A, R)] {
-        
-      x => {
+    // implicit def caseS[A <: AnyProperty.ofType[String]] = 
+    //   at[(SDKRep, A)]{ case (m, a) => ((a:A) =>> m(a.label).getS.toString): Tagged[A] }
+  
+    implicit def caseNum[P <: AnyProperty.ofType[Num]](p: P, m: SDKRep):
+      (Tagged[P], SDKRep) = (p is m(p.label).getN.toInt, m)
 
-        val key = x._1.label
-        val numV: Num = x._2
-        val attrV = new AttributeValue().withN(numV.toString)
+    implicit def caseString[P <: AnyProperty.ofType[String]](p: P, m: SDKRep):
+      (Tagged[P], SDKRep) = (p is m(p.label).getS.toString, m)
 
-        (key, attrV): (String, AttributeValue)
-      }  
-    }
-
-    implicit def defaultBytes[A <: Singleton with AnyProperty, R <: Bytes with RawOf[A]] = at[(A,R)] { 
-      x => {
-
-        val key = x._1.label
-        val bytes: Bytes = x._2
-
-        import java.nio._
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(bytes.length)
-        byteBuffer.put(bytes)
-        val attrV = new AttributeValue().withB(byteBuffer)
-
-        (key, attrV): (String, AttributeValue)        
-      }
-    }
-
-    implicit def defaultGeneric[A <:AnyProperty, R <: RawOf[A]] = at[(A,R)] { 
-
-      x => {
-
-        (x._1.label, getAttrVal[R](x._2))
-      }
-    }
-  }
-
-  case object fromSDKRep extends Poly1 {
-
-    implicit def caseN[A <: AnyProperty.Of[Num]] = at[(SDKRep, A)] { x => {
-
-        val a: A = x._2
-        val m: SDKRep = x._1
-        val v: RawOf[A] = m(a.label).getN.toInt
-
-        a =>> v
-      }
-    }
-
-    implicit def caseS[A <: AnyProperty.Of[String]] = 
-      at[(SDKRep, A)]{ case (m, a) => ((a:A) =>> m(a.label).getS.toString): Tagged[A] }
     // TODO: a case for Bytes
+  }
+
+  object SDKRepSerializers {
+
+    // implicit def defaultString[A <: AnyProperty, R <: RawOf[A] with String] = at[(A, R)] {
+
+    //     x => ( x._1.label, new AttributeValue().withS(x._2) ): (String, AttributeValue) 
+    //   }
+
+    // implicit def defaultNum[A <: AnyProperty, R <: Num with RawOf[A]] = at[(A, R)] {
+        
+    //   x => {
+
+    //     val key = x._1.label
+    //     val numV: Num = x._2
+    //     val attrV = new AttributeValue().withN(numV.toString)
+
+    //     (key, attrV): (String, AttributeValue)
+    //   }  
+    // }
+
+    // implicit def defaultBytes[A <: Singleton with AnyProperty, R <: Bytes with RawOf[A]] = at[(A,R)] { 
+    //   x => {
+
+    //     val key = x._1.label
+    //     val bytes: Bytes = x._2
+
+    //     import java.nio._
+    //     val byteBuffer: ByteBuffer = ByteBuffer.allocate(bytes.length)
+    //     byteBuffer.put(bytes)
+    //     val attrV = new AttributeValue().withB(byteBuffer)
+
+    //     (key, attrV): (String, AttributeValue)        
+    //   }
+    // }
+
+    implicit def dafault[P <: AnyProperty](t: Tagged[P])
+      (implicit getP: Tagged[P] => P): SDKRep = Map(getP(t).label -> getAttrVal[RawOf[P]](t))
+
+    // implicit def defaultGeneric[A <: AnyProperty, R <: RawOf[A]] = at[(A,R)] { 
+    //   x => {
+    //     (x._1.label, getAttrVal[R](x._2))
+    //   }
+    // }
   }
 
   trait SDKRepParser extends AnyTableItemAction {

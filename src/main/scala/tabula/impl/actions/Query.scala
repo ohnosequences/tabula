@@ -1,6 +1,7 @@
 package ohnosequences.tabula.impl.actions
 
 import ohnosequences.pointless._, AnyTypeSet._
+import ohnosequences.pointless.ops.record._
 
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 import ohnosequences.tabula._, impl._, ImplicitConversions._
@@ -12,7 +13,7 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
 
     case class withHashKey(hashKeyValue: T#HashKey#Raw)
     (implicit 
-      val parser: ToItem[SDKRep, I], 
+      val parser: I ParseFrom SDKRep,
       val hasHashKey: T#HashKey ∈ I#Properties
     ) 
     extends AnySimpleQueryAction with SDKRepParser { self =>
@@ -26,7 +27,7 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
       val input = SimplePredicate(item, EQ(table.hashKey, hashKeyValue))
 
       val inputState = inputSt
-      val parseSDKRep = (m: SDKRep) => parser(m, i)
+      val parseSDKRep = (m: SDKRep) => parser(item, m)
 
       override def toString = s"QueryTable ${t.name} forItem ${i.toString} withHashKey ${hashKeyValue}"
 
@@ -46,7 +47,7 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
           val input = AND(SimplePredicate(item, EQ(table.hashKey, hashKeyValue)), c)
 
           val inputState = inputSt
-          val parseSDKRep = (m: SDKRep) => parser(m, i)
+          val parseSDKRep = (m: SDKRep) => parser(item, m)
           val hasHashKey = self.hasHashKey
 
           override def toString = s"QueryTable ${t.name} forItem ${i.toString} withHashKey ${hashKeyValue} andRangeCondition ${rangeCondition}"

@@ -1,6 +1,7 @@
 package ohnosequences.tabula.impl.actions
 
 import ohnosequences.pointless._, AnyTaggedType._, AnyTypeSet._
+import ohnosequences.pointless.ops.record._
 
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 import ohnosequences.tabula._, impl._, ImplicitConversions._
@@ -14,7 +15,7 @@ case class FromHashKeyTable[T <: AnyHashKeyTable]
       hashKeyValue: RawOf[T#HashKey]
     )
     (implicit
-      val form: ToItem[SDKRep, I],
+      val parser: I ParseFrom SDKRep,
       val hasHashKey: T#HashKey ∈ I#Properties
     ) 
     extends AnyGetItemHashKeyAction with SDKRepParser {
@@ -29,7 +30,7 @@ case class FromHashKeyTable[T <: AnyHashKeyTable]
 
       val inputState = inputSt
 
-      val parseSDKRep = (m: SDKRep) => form(m, item)
+      val parseSDKRep = (m: SDKRep) => parser(item, m)
 
       override def toString = s"FromTable ${table.name} getItem ${item.toString} withKey ${hashKeyValue}"
     }
@@ -49,7 +50,7 @@ case class FromCompositeKeyTable[T <: AnyCompositeKeyTable]
       hashKeyValue: RawOf[T#HashKey],
       rangeKeyValue: RawOf[T#RangeKey]
     )(implicit
-      val form: ToItem[SDKRep, I],
+      val parser: I ParseFrom SDKRep,
       val hasHashKey:  T#HashKey  ∈ I#Properties,
       val hasRangeKey: T#RangeKey ∈ I#Properties
     ) 
@@ -65,7 +66,7 @@ case class FromCompositeKeyTable[T <: AnyCompositeKeyTable]
 
       val inputState = inputSt
 
-      val parseSDKRep = (m: SDKRep) => form(m, i)
+      val parseSDKRep = (m: SDKRep) => parser(item, m)
 
       override def toString = s"FromTable ${t.name} getItem ${i.toString} withKeys ${(hashKeyValue, rangeKeyValue)}"
     }

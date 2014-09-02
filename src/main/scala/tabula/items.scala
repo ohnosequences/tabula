@@ -44,6 +44,7 @@ object AnyItem {
   type withProperties[P <: AnyTypeSet with AnyTypeSet.Of[AnyProperty]] = AnyItem { type Props = P }
 }
 
+/*
 trait ListLike[L] {
   type E // elements type
 
@@ -116,8 +117,9 @@ object FromProperties {
     }
 }
 
-// ///////////////////////////////////////////////////////////////
+*/// ///////////////////////////////////////////////////////////////
 
+/*
 trait AnyTrasformation extends AnyFn {
   type Fun <: Poly1 // transformation function
 }
@@ -203,3 +205,4 @@ object From {
       type Fun = F
     }
 }
+*/
