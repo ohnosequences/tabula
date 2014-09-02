@@ -9,12 +9,12 @@ import ohnosequences.tabula._, impl._, ImplicitConversions._
 case class InHashKeyTable[T <: AnyHashKeyTable]
   (val t: T, val inputSt: AnyTableState.For[T] with ReadyTable) {
 
-  case class putItem[I <: AnyItem with AnyItem.ofTable[T]](val i: I) {
+  case class putItem[I <: AnyItem.ofTable[T]](val i: I) {
 
     case class withValue(
       val itemRep: Tagged[I]
     )(implicit
-      val serializer: I SerializeTo SDKRep,
+      val serializer: ohnosequences.pointless.ops.typeSet.SerializeTo[I#Raw, SDKRep],
       val hasHashKey:  T#HashKey ∈ I#Properties
     ) 
     extends AnyPutItemAction with SDKRepGetter {
@@ -26,7 +26,8 @@ case class InHashKeyTable[T <: AnyHashKeyTable]
       val  item = i
 
       val  input = itemRep
-      val  getSDKRep = (r:Tagged[I]) => serializer(r)
+
+      val  getSDKRep = (r:Tagged[I]) => serializer(r: I#Raw)
 
       val inputState = inputSt
 
@@ -44,7 +45,7 @@ case class InCompositeKeyTable[T <: AnyCompositeKeyTable]
   case class putItem[I <:AnyItem.ofTable[T]](i: I) {
 
     case class withValue(itemRep: Tagged[I])(implicit
-      val serializer: I SerializeTo SDKRep,
+      val serializer: ohnosequences.pointless.ops.typeSet.SerializeTo[I#Raw, SDKRep],
       val hasHashKey:  T#HashKey  ∈ I#Properties,
       val hasRangeKey: T#RangeKey ∈ I#Properties 
     ) 
@@ -56,8 +57,8 @@ case class InCompositeKeyTable[T <: AnyCompositeKeyTable]
       val  item = i
 
       val  input = itemRep
-      val  getSDKRep = (r: Tagged[I]) => serializer(r)
-
+      val  getSDKRep = (r:Tagged[I]) => serializer(r: I#Raw)
+      
       val inputState = inputSt
 
       override def toString = s"InTable ${t.name} putItem ${i.toString} withValue ${itemRep}"

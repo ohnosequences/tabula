@@ -22,8 +22,8 @@ object ResourceLists {
   }
 
   case class JoinTables[
-    T0 <: Singleton with AnyTable,
-    T1 <: Singleton with AnyTable
+    T0 <: AnyTable,
+    T1 <: AnyTable
   ]
   (
     val t0: T0,

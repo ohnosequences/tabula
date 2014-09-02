@@ -58,7 +58,7 @@ class irishService extends FunSuite {
 
   // waits until the table becomes active
   def waitFor[
-    T <: Singleton with AnyTable.inRegion[service.Region], 
+    T <: AnyTable.inRegion[service.Region], 
     S <: AnyTableState.For[T]
   ](table: T, state: S): Active[T] = {
 
@@ -128,7 +128,7 @@ class irishService extends FunSuite {
       InCompositeKeyTable(table, afterPut2) putItem simpleUser withValue (
 
         // TODO as clashes with as in typeset
-        (user3: Tagged[normalUser.type]) as simpleUser
+        user3 as simpleUser
 
       )
     )

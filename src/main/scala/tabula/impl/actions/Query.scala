@@ -6,10 +6,10 @@ import ohnosequences.pointless.ops.record._
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 import ohnosequences.tabula._, impl._, ImplicitConversions._
 
-case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
+case class QueryTable[T <: AnyCompositeKeyTable]
   (val t: T, val inputSt: AnyTableState.For[T] with ReadyTable) {
 
-  case class forItem[I <: Singleton with AnyItem with AnyItem.ofTable[T]](val i: I) {
+  case class forItem[I <: AnyItem with AnyItem.ofTable[T]](val i: I) {
 
     case class withHashKey(hashKeyValue: T#HashKey#Raw)
     (implicit 
@@ -19,10 +19,10 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
     extends AnySimpleQueryAction with SDKRepParser { self =>
 
       type Table = T
-      val  table = t: t.type
+      val  table = t
 
       type Item = I
-      val  item = i: i.type
+      val  item = i
 
       val input = SimplePredicate(item, EQ(table.hashKey, hashKeyValue))
 
@@ -36,10 +36,10 @@ case class QueryTable[T <: Singleton with AnyCompositeKeyTable]
              with SDKRepParser {
 
           type Table = T
-          val  table = t: t.type
+          val  table = t
 
           type Item = I
-          val  item = i: i.type
+          val  item = i
 
           type RangeCondition = C
           val  rangeCondition = c
