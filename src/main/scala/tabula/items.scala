@@ -42,6 +42,8 @@ object AnyItem {
 
   type ofTable[T <: AnyTable] = AnyItem { type Table = T }
   type withProperties[P <: AnyTypeSet with AnyTypeSet.Of[AnyProperty]] = AnyItem { type Props = P }
+
+  type TableOf[I <: AnyItem] = I#Table
 }
 
 /*

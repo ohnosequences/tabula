@@ -94,7 +94,7 @@ object ImplicitConversions {
   }
 
   trait SDKRepGetter extends AnyTableItemAction {
-    val getSDKRep: Input => SDKRep
+    val getSDKRep: RawOf[Item] => SDKRep
   }
 
 

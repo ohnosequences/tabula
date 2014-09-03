@@ -38,7 +38,7 @@ abstract class TableAction[T <: AnyTable](val table: T)
 
 
 trait AnyTableItemAction extends AnyTableAction {
-  type Item <: AnyItem.ofTable[Table]
+  type Item <: AnyItem //.ofTable[Table]
   val  item: Item
 }
 
