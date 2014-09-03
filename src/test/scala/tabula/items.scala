@@ -16,7 +16,7 @@ object TestSetting {
   case object simpleUserRecord extends Record(id :~: name :~: ∅)
   case object normalUserRecord extends Record(id :~: name :~: email :~: color :~: ∅)
 
-  object table extends CompositeKeyTable("foo_table", id, name, EU)
+  object table extends Table("foo_table", CompositeKey(id, name), EU)
 
   object simpleUser extends Item("simpleUser", table, id :~: name :~: ∅)
   object simpleUser2 extends Item("simpleUser2", table, simpleUserRecord.properties)

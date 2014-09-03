@@ -6,8 +6,6 @@ trait AnyAction { action =>
   val  resources: Resources
 
   type InputState
-  val  inputState: InputState
-
   type OutputState
 
   // these are input and output that are not resources
@@ -38,21 +36,17 @@ abstract class TableAction[T <: AnyTable](val table: T)
 
 
 trait AnyTableItemAction extends AnyTableAction {
-  type Item <: AnyItem //.ofTable[Table]
+  type Item <: AnyItem
   val  item: Item
+
+  type Table = item.Table
+  val  table = item.table
 }
 
-abstract class TableItemAction[
-  T <: AnyTable, 
-  I <: AnyItem.ofTable[T]
-](val table: T, val item: I)
-extends AnyTableItemAction { 
-  type Table = T
-  type Item = I 
-}
-
+abstract class TableItemAction[I <: AnyItem](val item: I)
+  extends AnyTableItemAction { type Item = I }
 
 object AnyTableAction {
-  type withHashKeyTable      = AnyTableAction { type Table <: AnyHashKeyTable }
-  type withCompositeKeyTable = AnyTableAction { type Table <: AnyCompositeKeyTable }
+  type withHashKeyTable      = AnyTableAction { type Table <: AnyTable.withHashKey }
+  type withCompositeKeyTable = AnyTableAction { type Table <: AnyTable.withCompositeKey }
 }

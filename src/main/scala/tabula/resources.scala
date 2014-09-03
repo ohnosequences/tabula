@@ -5,7 +5,7 @@ trait AnyDynamoDBResourceType {
   val name: String
 }
 
-object Table extends AnyDynamoDBResourceType {
+object TableResourceType extends AnyDynamoDBResourceType {
 
   val name = "table"
 }

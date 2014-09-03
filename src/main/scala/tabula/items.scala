@@ -89,7 +89,19 @@ object FromProperties {
       type Reps = R
     }
 
+<<<<<<< HEAD
   implicit def empty[Out, F <: Poly1]
+=======
+  type Action[A <: AnyTableItemAction, Out] = FromProperties[A#Item#Properties, Out] { type Reps = A#Item#Raw }
+  type Item[I <: AnyItem, Out] = FromProperties[I#Properties, Out] { type Reps = I#Raw }
+  type ItemAux[I <: AnyItem, F <: Singleton with Poly, Out] = 
+    FromProperties[I#Properties, Out] { 
+      type Reps = I#Raw
+      type Fun = F
+    }
+
+  implicit def empty[Out, F <: Singleton with Poly]
+>>>>>>> feature/table/ops
     (implicit m: ListLike[Out]): FromProperties.Aux[∅, ∅, F, Out] = new FromProperties[∅, Out] {
       type Reps = ∅
       type Fun = F

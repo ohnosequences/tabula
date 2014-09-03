@@ -3,12 +3,12 @@ package ohnosequences.tabula.impl
 import ohnosequences.tabula._
 import com.amazonaws.services.dynamodbv2.model._
 
-case class DescribeTableExecutor[A <: AnyDescribeTable](a: A)
-  (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
+case class DescribeTableExecutor[Action <: AnyDescribeTable](a: Action)
+  (dynamoClient: AnyDynamoDBClient) extends Executor[Action](a) {
 
   type OutC[X] = X
 
-  def apply(): Out = {
+  def apply(inputState: Action#InputState): Out = {
     println("executing: " + action)
     //CREATING, UPDATING, DELETING, ACTIVE
 
@@ -24,12 +24,12 @@ case class DescribeTableExecutor[A <: AnyDescribeTable](a: A)
     )
 
     val newState: action.OutputState = dynamoClient.client.describeTable(action.table.name).getTable.getTableStatus match {
-      case "ACTIVE" =>     Active(action.table, action.inputState.account, throughput)
-      case "CREATING" => Creating(action.table, action.inputState.account, throughput)
-      case "DELETING" => Deleting(action.table, action.inputState.account, throughput)
-      case "UPDATING" => Updating(action.table, action.inputState.account, throughput)
+      case "ACTIVE" =>     Active(action.table, inputState.account, throughput)
+      case "CREATING" => Creating(action.table, inputState.account, throughput)
+      case "DELETING" => Deleting(action.table, inputState.account, throughput)
+      case "UPDATING" => Updating(action.table, inputState.account, throughput)
     }
 
-    ExecutorResult(None, action.table, newState)
+    ExecutorResult[Action](None, newState)
   }
 }

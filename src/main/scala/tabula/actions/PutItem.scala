@@ -6,7 +6,7 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import ohnosequences.tabula.impl.ImplicitConversions._
 
 sealed trait PutItemResult
-case object PutItemFail extends PutItemResult
+case class  PutItemFail(msg: String) extends PutItemResult
 case object PutItemSuccess extends PutItemResult
 
 trait AnyPutItemAction extends AnyTableItemAction {
@@ -19,3 +19,12 @@ trait AnyPutItemAction extends AnyTableItemAction {
 
   type Output = PutItemResult
 }
+
+case class PutItem[I <: AnyItem](val itemRep: Tagged[I])
+  (implicit val getI: Tagged[I] => I) extends AnyPutItemAction {
+
+    type Item = I
+    val  item = getI(itemRep)
+
+    val  input = itemRep
+  }
