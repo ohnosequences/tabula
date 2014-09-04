@@ -1,6 +1,6 @@
 package ohnosequences.tabula
 
-import ohnosequences.pointless._, AnyTaggedType._
+import ohnosequences.pointless._, AnyTaggedType._, AnyTableItemAction._
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import ohnosequences.tabula.impl.ImplicitConversions._
@@ -24,6 +24,8 @@ case class PutItem[I <: AnyItem](val itemRep: Tagged[I])
   (implicit val getI: Tagged[I] => I) extends AnyPutItemAction {
 
     type Item = I
+
+    type Table = AnyItem.TableOf[I]
     val  item = getI(itemRep)
 
     val  input = itemRep

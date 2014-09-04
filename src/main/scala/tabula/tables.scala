@@ -46,16 +46,15 @@ object AnyTable {
 */
 sealed trait AnyPrimaryKey
 
-
 sealed trait AnyHashKey extends AnyPrimaryKey {
-  type Hash <: Singleton with AnyProperty
+  type Hash <: AnyProperty
   val  hash: Hash
 
   // should be provided implicitly:
   val hashHasValidType: RawOf[Hash] isOneOf PrimaryKeyValues
 }
 
-case class HashKey[H <: Singleton with AnyProperty]
+case class HashKey[H <: AnyProperty]
   (val hash: H)(implicit 
     val hashHasValidType: RawOf[H] isOneOf PrimaryKeyValues
   ) 
@@ -63,12 +62,11 @@ case class HashKey[H <: Singleton with AnyProperty]
     type Hash = H 
   }
 
-
 sealed trait AnyCompositeKey extends AnyPrimaryKey {
-  type Hash <: Singleton with AnyProperty
+  type Hash <: AnyProperty
   val  hash: Hash
 
-  type Range <: Singleton with AnyProperty
+  type Range <: AnyProperty
   val  range: Range
 
   // should be provided implicitly:
@@ -76,7 +74,7 @@ sealed trait AnyCompositeKey extends AnyPrimaryKey {
   val rangeHasValidType: RawOf[Range] isOneOf PrimaryKeyValues
 }
 
-case class CompositeKey[H <: Singleton with AnyProperty, R <: Singleton with AnyProperty]
+case class CompositeKey[H <: AnyProperty, R <: AnyProperty]
   (val hash: H, val range: R)(implicit
     val  hashHasValidType: RawOf[H] isOneOf PrimaryKeyValues,
     val rangeHasValidType: RawOf[R] isOneOf PrimaryKeyValues
@@ -85,3 +83,7 @@ case class CompositeKey[H <: Singleton with AnyProperty, R <: Singleton with Any
     type Hash = H 
     type Range = R 
   }
+
+sealed trait PrimaryKeyValue[PK <: AnyPrimaryKey]
+case class HashKeyValue[K <: AnyHashKey](hash: RawOf[K#Hash]) extends PrimaryKeyValue[K]
+case class CompositeKeyValue[K <: AnyCompositeKey](hash: RawOf[K#Hash], range: RawOf[K#Range]) extends PrimaryKeyValue[K]

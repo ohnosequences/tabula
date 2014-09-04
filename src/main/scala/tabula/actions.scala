@@ -18,6 +18,11 @@ trait AnyAction { action =>
 object AnyAction {
   // TODO: this won't work with ResourcesList
   type inRegion[R <: AnyRegion] = AnyAction { type Resources <: AnyDynamoDBResource.inRegion[R] }
+
+  type InputOf[A <: AnyAction] = A#Input
+  type OutputOf[A <: AnyAction] = A#Output
+  type OutputStateOf[A <: AnyAction] = A#OutputState
+  type InputStateOf[A <: AnyAction] = A#InputState
 }
 
 
@@ -39,8 +44,12 @@ trait AnyTableItemAction extends AnyTableAction {
   type Item <: AnyItem
   val  item: Item
 
-  type Table = item.Table
-  val  table = item.table
+  type Table <: AnyItem.TableOf[Item]
+  // val  table = item.table
+}
+
+object AnyTableItemAction {
+  type ItemOf[A <: AnyTableItemAction] = A#Item
 }
 
 abstract class TableItemAction[I <: AnyItem](val item: I)
