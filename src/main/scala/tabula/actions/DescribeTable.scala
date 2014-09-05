@@ -1,14 +1,15 @@
 package ohnosequences.tabula
 
 trait AnyDescribeTable extends AnyTableAction {
-  type InputState  = AnyTableState.For[Table]
-  type OutputState = AnyTableState.For[Table]
+  type InputState  <: AnyTableState.For[Table]
+  type OutputState <: AnyTableState.For[Table]
 
-  type Input  = Option[Nothing]
-  val  input  = None
-  type Output = Option[Nothing]
+  type Output = None.type
 }
 
-case class DescribeTable[T <: AnyTable]
-  (val table: T, val inputState: AnyTableState.For[T]) 
-    extends AnyDescribeTable { type Table = T }
+case class DescribeTable[T <: AnyTable](t: T) extends TableAction[T](t) with AnyDescribeTable {
+  // type Table = T
+
+  type InputState  = AnyTableState.For[T]
+  type OutputState = AnyTableState.For[T]
+}

@@ -28,8 +28,11 @@ trait AnyDynamoDBService { thisService =>
   //     exec()
   //   }
 
-  import Executor._
+  import Executor._, AnyAction._
 
-  def please[A <: AnyAction, E <: Executor.For[A]](action: A)
-    (implicit exec: A => E): A#InputState => OutOf[E] = { s => exec(action)(s) }
+  def plz[A <: AnyTableAction, E <: ExecutorFor[A]](action: A)
+    (implicit exec: (A#Table, A) => E): InputStateOf[A] => OutOf[E] = { s => exec(action.table, action)(action)(s) }
+
+  def please[A <: AnyAction, E <: ExecutorFor[A]](action: A)
+    (implicit exec: E): InputStateOf[A] => OutOf[E] = { s => exec(action)(s) }
 }

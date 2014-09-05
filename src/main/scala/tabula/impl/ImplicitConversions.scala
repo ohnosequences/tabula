@@ -89,18 +89,18 @@ object ImplicitConversions {
     // }
   }
 
-  // trait SDKRepParser extends AnyTableItemAction {
+  // trait SDKRepParser extends AnyItemAction {
   //   val parseSDKRep: SDKRep => Tagged[Item]
   // }
 
-  // trait SDKRepGetter extends AnyTableItemAction {
+  // trait SDKRepGetter extends AnyItemAction {
   //   val getSDKRep: RawOf[Item] => SDKRep
   // }
-  // trait SDKRepGetter[A <: AnyTableItemAction] {
+  // trait SDKRepGetter[A <: AnyItemAction] {
   //   def getSDKRep(rep: Tagged[A#Item]): SDKRep
   // }
 
-  // implicit def autoSDKGetter[A <: AnyTableItemAction](a: A)(implicit transf: FromProperties.Item[a.Item, SDKRep]):
+  // implicit def autoSDKGetter[A <: AnyItemAction](a: A)(implicit transf: FromProperties.Item[a.Item, SDKRep]):
   //   SDKRepGetter[A] = new SDKRepGetter[A] {
   //     val action = a
   //     def getSDKRep(rep: a.item.Rep): SDKRep = transf(rep)

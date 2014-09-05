@@ -2,27 +2,28 @@ package ohnosequences.tabula.impl
 
 import ohnosequences.pointless._, AnyRecord._
 import ohnosequences.pointless.ops.typeSet._
-import ohnosequences.tabula._, ImplicitConversions._
+import ohnosequences.tabula._, ImplicitConversions._, AnyAction._
 import com.amazonaws.services.dynamodbv2.model._
 
-case class PutItemExecutor[Action <: AnyPutItemAction](a: Action)(
+case class PutItemExecutor[I <: AnyItem, A <: PutItem[I]](
   dynamoClient: AnyDynamoDBClient, 
-  serializer: RawOf[Action#Item] SerializeTo SDKRep
-) extends Executor[Action](a) {
+  serializer: RawOf[A#Item] SerializeTo SDKRep
+) extends ExecutorFor[A] {
 
   type OutC[X] = X
 
   import scala.collection.JavaConversions._
 
-  def apply(inputState: Action#InputState): Out = {
+  def apply(action: A)(inputState: InputStateOf[A]): Out = {
     println("executing: " + action)
 
-    val res: ohnosequences.tabula.PutItemResult = try {
-      dynamoClient.client.putItem(action.table.name, serializer(action.input)); PutItemSuccess
+    try {
+      dynamoClient.client.putItem(action.item.table.name, serializer(action.itemValue))
     } catch {
-      case t: Exception => PutItemFail(t.toString)
+      // FIXME: error handling
+      case t: Exception => None
     }
 
-    ExecutorResult[Action](res, inputState)
+    ExecutorResult[A](None, inputState)
   }
 }

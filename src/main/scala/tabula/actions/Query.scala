@@ -3,7 +3,7 @@ package ohnosequences.tabula
 import ohnosequences.pointless._, AnyTaggedType._, AnyTypeSet._
 
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
-import ohnosequences.tabula.Condition._
+import ohnosequences.tabula._, Condition._, AnyItem._
 import ohnosequences.tabula.impl.ImplicitConversions._
 
 // sealed trait AnyQueryResult { type Item <: AnyItem }
@@ -12,36 +12,50 @@ import ohnosequences.tabula.impl.ImplicitConversions._
 // case class QuerySuccess[I <: AnyItem](item: List[Tagged[I]]) extends QueryResult[I]
 
 /* ### Common action trait */
-trait AnyQueryAction extends AnyTableItemAction {
+sealed trait AnyQueryAction extends AnyItemAction {
   // quieries make sense only for the composite key tables
-  // type Table <: AnyTable.withCompositeKey
-  type Item <: AnyItem //{ type Table <: AnyTable.withCompositeKey }
-  type Table <: AnyItem.TableOf[Item]
-
-  // val hasHashKey: Table#HashKey ∈ Item#Properties
-  // val hasHashKey: table.primaryKey.hash ∈ item.Properties
-  // val hasRangeKey: table.primaryKey.range ∈ item.Properties
+  type Item <: AnyItem.OfCompositeTable
 
   //require updating or creating
-  type InputState  <: AnyTableState //.For[Table] with ReadyTable
-  type OutputState = InputState
+  type InputState  <: AnyTableState.For[TableOf[Item]] with ReadyTable
+  type OutputState <: InputState
 
   // TODO: restrict this type better
-  type Input <: AnyPredicate.On[Item]
-  type Output <: List[Tagged[Item]] //QueryResult[Item]
+  type Predicate <: AnyPredicate.On[Item]
+  val  predicate: Predicate
+
+  type Output <: List[Tagged[Item]]
 }
 
-// trait AnySimpleQueryAction extends AnyQueryAction {
-//   type Input = SimplePredicate[Item, EQ[table.primaryKey.Hash]]
+sealed trait QueryActionFor[I <: AnyItem.OfCompositeTable] extends AnyQueryAction {
+  type InputState  = AnyTableState.For[TableOf[Item]] with ReadyTable
+  type OutputState = InputState
+  type Item = I
+  type Output = List[Tagged[I]]
+}
+
+// object AnyQueryAction {
+//   type Q[A <: AnyQueryAction] = QueryActionFor[A#Item]
 // }
 
-// // the range key condition is optional
-// trait AnyNormalQueryAction extends AnyQueryAction {
+case class SimpleQueryAction[
+  I <: AnyItem.OfCompositeTable, 
+  P <: SimplePredicate[I, EQ[TableOf[I]#PrimaryKey#Hash]]
+](p: P) extends QueryActionFor[I] {
+  type Predicate = P 
+  val  predicate = p
+  val  item = p.item
+  // val predicate = SimplePredicate(item, EQ(table.hashKey, hashKeyValue))
+}
+
+// the range key condition is optional
+case class NormalQueryAction[
+  I <: AnyItem.OfCompositeTable, 
+  P <: SimplePredicate[I, EQ[TableOf[I]#PrimaryKey#Hash]],
+  R <: Condition.On[TableOf[I]#PrimaryKey#Range] with KeyCondition
+](p: P, r: R) extends QueryActionFor[I] {
   
-//   type RangeCondition <: Condition.On[Table#PrimaryKey#Range] with KeyCondition
-//   // type RangeCondition <: Condition.On[table.primaryKey.Range] with KeyCondition
-//   val  rangeCondition: RangeCondition
-
-//   type Input = AND[SimplePredicate[Item, EQ[Table#PrimaryKey#Hash]], RangeCondition]
-//   // type Input = AND[SimplePredicate[Item, EQ[table.primaryKey.Hash]], RangeCondition]
-// }
+  type Predicate = AND[P, R]
+  val  predicate = AND[P, R](p, r)
+  val  item = p.item
+}

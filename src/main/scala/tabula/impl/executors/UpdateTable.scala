@@ -1,15 +1,15 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._, ImplicitConversions._
+import ohnosequences.tabula._, ImplicitConversions._, AnyAction._
 import com.amazonaws.services.dynamodbv2.model._
 import java.util.Date
 
-case class UpdateTableExecutor[Action <: AnyUpdateTableAction](a: Action)
-  (dynamoClient: AnyDynamoDBClient) extends Executor[Action](a) {
+case class UpdateTableExecutor[T <: AnyTable, A <: UpdateTable[T]]
+  (dynamoClient: AnyDynamoDBClient) extends ExecutorFor[A] {
 
   type OutC[X] = X
 
-  def apply(inputState: Action#InputState): Out = {
+  def apply(action: A)(inputState: InputStateOf[A]): Out = {
     println("executing: " + action)
 
     //CREATING, UPDATING, DELETING, ACTIVE
@@ -63,7 +63,7 @@ case class UpdateTableExecutor[Action <: AnyUpdateTableAction](a: Action)
 
     val newState = Updating(action.table, inputState.account, throughputStatus)
 
-    ExecutorResult[Action](None, newState)
+    ExecutorResult[A](None, newState)
   }
 
 }

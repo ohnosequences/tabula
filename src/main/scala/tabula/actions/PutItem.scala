@@ -1,32 +1,30 @@
 package ohnosequences.tabula
 
-import ohnosequences.pointless._, AnyTaggedType._, AnyTableItemAction._
+import ohnosequences.pointless._, AnyTaggedType._, AnyItemAction._
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import ohnosequences.tabula.impl.ImplicitConversions._
+import ohnosequences.tabula._, AnyItem._
 
-sealed trait PutItemResult
-case class  PutItemFail(msg: String) extends PutItemResult
-case object PutItemSuccess extends PutItemResult
-
-trait AnyPutItemAction extends AnyTableItemAction {
+trait AnyPutItemAction extends AnyItemAction {
   //require updating or creating
-  type InputState  = AnyTableState.For[Table] with ReadyTable
-  type OutputState = InputState
+  type InputState  <: AnyTableState.For[TableOf[Item]] with ReadyTable
+  type OutputState <: InputState
 
-  type Input = Tagged[Item]
-  val  input: Input
+  type ItemValue <: Tagged[Item]
+  val  itemValue: ItemValue
 
-  type Output = PutItemResult
+  type Output = None.type
 }
 
-case class PutItem[I <: AnyItem](val itemRep: Tagged[I])
+case class PutItem[I <: AnyItem](val itemValue: Tagged[I])
   (implicit val getI: Tagged[I] => I) extends AnyPutItemAction {
 
-    type Item = I
+  type Item = I
+  val  item = getI(itemValue)
 
-    type Table = AnyItem.TableOf[I]
-    val  item = getI(itemRep)
+  type ItemValue = Tagged[I]
 
-    val  input = itemRep
-  }
+  type InputState  = AnyTableState.For[TableOf[I]] with ReadyTable
+  type OutputState = InputState
+}

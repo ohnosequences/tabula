@@ -1,13 +1,15 @@
 package ohnosequences.tabula
 
 trait AnyDeleteTable extends AnyTableAction {
-  type InputState = Active[Table]
-  type OutputState = Deleting[Table]
+  type InputState  <: Active[Table]
+  type OutputState <: Deleting[Table]
 
-  type Input  = Option[Nothing]
-  val  input  = None
-  type Output = Option[Nothing]
+  type Output = None.type
 }
 
-case class DeleteTable[T <: Singleton with AnyTable](table: T)
-  extends AnyDeleteTable { type Table = T }
+case class DeleteTable[T <: AnyTable](table: T) extends AnyDeleteTable {
+  type Table = T
+
+  type InputState  = Active[T]
+  type OutputState = Deleting[T]
+}

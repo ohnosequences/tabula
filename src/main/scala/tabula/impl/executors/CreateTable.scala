@@ -1,14 +1,14 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._, ImplicitConversions._
+import ohnosequences.tabula._, ImplicitConversions._, AnyAction._
 import com.amazonaws.services.dynamodbv2.model._
 
-case class CreateTableExecutor[Action <: AnyCreateTable](a: Action)
-  (dynamoClient: AnyDynamoDBClient) extends Executor[Action](a) {
+case class CreateTableExecutor[T <: AnyTable, A <: CreateTable[T]]
+  (dynamoClient: AnyDynamoDBClient) extends ExecutorFor[A] {
 
   type OutC[X] = X
 
-  def apply(inputState: Action#InputState): Out = {
+  def apply(action: A)(inputState: InputStateOf[A]): Out = {
     println("executing: " + action)
 
     val throughput = new ProvisionedThroughput(
@@ -34,7 +34,6 @@ case class CreateTableExecutor[Action <: AnyCreateTable](a: Action)
                                     getAttrDef(range))
       }
     }
-    
 
     try {
       dynamoClient.client.createTable(request)
@@ -42,7 +41,7 @@ case class CreateTableExecutor[Action <: AnyCreateTable](a: Action)
       case e: ResourceInUseException => println("warning: table " + action.table.name + " is in use")
     }
 
-    ExecutorResult[Action](None, inputState.creating)
+    ExecutorResult[A](None, inputState.creating)
   }
 }
 

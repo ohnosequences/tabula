@@ -1,14 +1,14 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._
+import ohnosequences.tabula._, AnyAction._
 import com.amazonaws.services.dynamodbv2.model._
 
-case class DeleteTableExecutor[Action <: AnyDeleteTable](a: Action)
-  (dynamoClient: AnyDynamoDBClient) extends Executor[Action](a) {
+case class DeleteTableExecutor[T <: AnyTable, A <: DeleteTable[T]]
+  (dynamoClient: AnyDynamoDBClient) extends ExecutorFor[A] {
 
   type OutC[X] = X
 
-  def apply(inputState: Action#InputState): Out = {
+  def apply(action: A)(inputState: InputStateOf[A]): Out = {
     println("executing: " + action)
 
     try { 
@@ -17,6 +17,6 @@ case class DeleteTableExecutor[Action <: AnyDeleteTable](a: Action)
       case r: ResourceNotFoundException => println("warning: table " + action.table.name + " doesn't exist")
     }
 
-    ExecutorResult[Action](None, inputState.deleting)
+    ExecutorResult[A](None, inputState.deleting)
   }
 }

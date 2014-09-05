@@ -44,6 +44,8 @@ object AnyItem {
   type withProperties[P <: AnyTypeSet with AnyTypeSet.Of[AnyProperty]] = AnyItem { type Props = P }
 
   type TableOf[I <: AnyItem] = I#Table
+
+  type OfCompositeTable = AnyItem { type Table <: AnyTable.withCompositeKey }
 }
 
 /*
@@ -92,7 +94,7 @@ object FromProperties {
 <<<<<<< HEAD
   implicit def empty[Out, F <: Poly1]
 =======
-  type Action[A <: AnyTableItemAction, Out] = FromProperties[A#Item#Properties, Out] { type Reps = A#Item#Raw }
+  type Action[A <: AnyItemAction, Out] = FromProperties[A#Item#Properties, Out] { type Reps = A#Item#Raw }
   type Item[I <: AnyItem, Out] = FromProperties[I#Properties, Out] { type Reps = I#Raw }
   type ItemAux[I <: AnyItem, F <: Singleton with Poly, Out] = 
     FromProperties[I#Properties, Out] { 
