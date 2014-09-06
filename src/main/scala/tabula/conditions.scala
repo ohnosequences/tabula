@@ -1,6 +1,6 @@
 package ohnosequences.tabula
 
-import ohnosequences.pointless._, AnyTaggedType.{RawOf, Tagged}, AnyTypeUnion._
+import ohnosequences.pointless._, AnyTypeUnion._, AnyType._
 
 /*
   ## Conditions

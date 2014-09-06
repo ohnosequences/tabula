@@ -30,9 +30,15 @@ trait AnyDynamoDBService { thisService =>
 
   import Executor._, AnyAction._
 
-  def plz[A <: AnyTableAction, E <: ExecutorFor[A]](action: A)
-    (implicit exec: (A#Table, A) => E): InputStateOf[A] => OutOf[E] = { s => exec(action.table, action)(action)(s) }
+  // def plz[A <: AnyTableAction, E <: ExecutorFor[A]](action: A)
+  //   (implicit exec: (A#Table, A) => E): InputStateOf[A] => OutOf[E] = { s => exec(action.table, action)(action)(s) }
 
   def please[A <: AnyAction, E <: ExecutorFor[A]](action: A)
-    (implicit exec: E): InputStateOf[A] => OutOf[E] = { s => exec(action)(s) }
+    (implicit mkExec: A => E): InputStateOf[A] => OutOf[E] = { 
+      val exec = mkExec(action)
+      s => exec(action)(s) 
+    }
+
+  // def please[A <: AnyAction, E <: ExecutorFor[A]](action: A)
+  //   (implicit exec: E): InputStateOf[A] => OutOf[E] = { s => exec(action)(s) }
 }

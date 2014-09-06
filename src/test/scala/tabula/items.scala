@@ -60,7 +60,7 @@ class itemsSuite extends FunSuite {
   test("tags/keys of a representation") {
     // won't work; need the alias :-|
     // val keys = implicitly[Keys.Aux[id.Rep :~: name.Rep :~: ∅, id.type :~: name.type :~: ∅]]
-    // val tags = TagsOf[Tagged[id.type] :~: Tagged[name.type] :~: ∅]
+    // val tags = TagsOf[ValueOf[id.type] :~: ValueOf[name.type] :~: ∅]
     // assert(tags(user1) === simpleUser.properties)
     // assert(tags(user1) === (id :~: name :~: ∅))
   }

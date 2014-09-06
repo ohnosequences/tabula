@@ -4,7 +4,7 @@ import ohnosequences.tabula._, ImplicitConversions._, AnyAction._
 import com.amazonaws.services.dynamodbv2.model._
 import java.util.Date
 
-case class UpdateTableExecutor[T <: AnyTable, A <: UpdateTable[T]]
+case class UpdateTableExecutor[A <: AnyUpdateTable]
   (dynamoClient: AnyDynamoDBClient) extends ExecutorFor[A] {
 
   type OutC[X] = X

@@ -1,6 +1,6 @@
 // package ohnosequences.tabula
 
-// import ohnosequences.pointless._, AnyTaggedType._
+// import ohnosequences.pointless._, AnyType._
 // import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 // import ohnosequences.tabula.impl.ImplicitConversions._
 
@@ -10,5 +10,5 @@
 //   type OutputState = InputState
 
 //   type Input = PrimaryKeyValue[TableOf[Item]#PrimaryKey]
-//   type Output = Tagged[Item]
+//   type Output = ValueOf[Item]
 // }

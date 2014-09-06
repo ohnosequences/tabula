@@ -87,9 +87,9 @@
 
 // case class putputput[I <: AnyItem](
 //   inputSt: AnyTableState.For[TableOf[I]] with ReadyTable,
-//   itemRaw: Tagged[I]
+//   itemRaw: ValueOf[I]
 // )(implicit
-//   val getI: Tagged[I] => I,
+//   val getI: ValueOf[I] => I,
 //   val serializer: RawOf[I] SerializeTo SDKRep,
 //   val hasHashKey:  TableOf[I]#HashKey  ∈ PropertiesOf[I] //,
 //   // val hasRangeKey: TableOf[I]#RangeKey ∈ PropertiesOf[I] 

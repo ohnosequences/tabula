@@ -2,7 +2,7 @@
 
 // import ohnosequences.tabula._, ImplicitConversions._
 // import com.amazonaws.services.dynamodbv2.model._
-// import ohnosequences.pointless.AnyTaggedType._
+// import ohnosequences.pointless.AnyType._
 
 // case class GetItemHashKeyExecutor [A <: AnyGetItemHashKeyAction](
 //   val a: A

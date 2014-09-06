@@ -3,7 +3,8 @@ package ohnosequences.tabula.impl
 import ohnosequences.tabula._, AnyAction._
 import com.amazonaws.services.dynamodbv2.model._
 
-case class DescribeTableExecutor[T <: AnyTable, A <: DescribeTable[T]]
+// case class DescribeTableExecutor[T <: AnyTable, A <: DescribeTable[T]]
+case class DescribeTableExecutor[A <: AnyDescribeTable]
   (dynamoClient: AnyDynamoDBClient) extends ExecutorFor[A] {
 
   type OutC[X] = X

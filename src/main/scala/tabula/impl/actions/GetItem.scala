@@ -1,7 +1,7 @@
 // // package ohnosequences.tabula.impl.actions
 
 // <<<<<<< HEAD
-// import ohnosequences.pointless._, AnyTaggedType._, AnyTypeSet._, AnyFn._
+// import ohnosequences.pointless._, AnyType._, AnyTypeSet._, AnyFn._
 // import ohnosequences.pointless.ops.record._
 // import ohnosequences.pointless.ops.typeSet._
 

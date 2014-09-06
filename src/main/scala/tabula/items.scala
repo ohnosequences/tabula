@@ -1,6 +1,6 @@
 package ohnosequences.tabula
 
-import ohnosequences.pointless._, AnyTaggedType._, AnyTypeSet._, AnyFn._
+import ohnosequences.pointless._, AnyType._, AnyTypeSet._, AnyFn._
 import shapeless._, poly._
 
 /*
@@ -116,15 +116,15 @@ object FromProperties {
     RT <: AnyTypeSet,
     E, Out
   ](implicit
-    tagOf: Tagged[AH] => AH,
+    tagOf: ValueOf[AH] => AH,
     listLike: ListLike.Of[Out, E], 
-    transform: Case1.Aux[F, (AH, Tagged[AH]), E], 
+    transform: Case1.Aux[F, (AH, ValueOf[AH]), E], 
     recOnTail: FromProperties.Aux[AT, RT, F, Out]
-  ): FromProperties.Aux[AH :~: AT, Tagged[AH] :~: RT, F, Out] =
+  ): FromProperties.Aux[AH :~: AT, ValueOf[AH] :~: RT, F, Out] =
     new FromProperties[AH :~: AT, Out] {
-      type Reps = Tagged[AH] :~: RT
+      type Reps = ValueOf[AH] :~: RT
       type Fun = F
-      def apply(r: Tagged[AH] :~: RT): Out = {
+      def apply(r: ValueOf[AH] :~: RT): Out = {
         listLike.cons(
           transform((tagOf(r.head), r.head)),
           recOnTail(r.tail)
@@ -171,7 +171,7 @@ object ToProperties {
   implicit def cons[
     In,
     AH <: AnyProperty, AT <: AnyTypeSet,
-    RH <: Tagged[AH], RT <: AnyTypeSet,
+    RH <: ValueOf[AH], RT <: AnyTypeSet,
     F <: Poly1
   ](implicit
     f: Case1.Aux[F, (In, AH), RH], 
@@ -187,13 +187,13 @@ object ToProperties {
 
 //////////////////////////////////////////////
 
-trait ToItem[In, I <: AnyItem] extends Fn2[In, I] with AnyTrasformation { type Out = Tagged[I] }
+trait ToItem[In, I <: AnyItem] extends Fn2[In, I] with AnyTrasformation { type Out = ValueOf[I] }
 
 object ToItem {
   import AnyTrasformation._
 
   implicit def buah[In, I <: AnyItem, F <: Poly1, Out](implicit 
-    fr: ToProperties[In, I#Properties] with out[Tagged[I]] with fun[F]
+    fr: ToProperties[In, I#Properties] with out[ValueOf[I]] with fun[F]
   ):  ToItem[In, I] with fun[F] =
   new ToItem[In, I] {
 
