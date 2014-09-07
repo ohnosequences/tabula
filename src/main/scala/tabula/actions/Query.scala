@@ -17,19 +17,20 @@ sealed trait AnyQuery extends AnyItemAction {
   type Item <: AnyItem.OfCompositeTable
 
   //require updating or creating
-  type InputState  = AnyTableState.For[TableOf[Item]] with ReadyTable
+  type InputState  <: AnyTableState.For[TableOf[Item]] with ReadyTable
   type OutputState = InputState
 
   // TODO: restrict this type better
   type Predicate <: AnyPredicate.On[Item]
   val  predicate: Predicate
 
-  type Output = List[ValueOf[Item]]
+  // type Output = List[ValueOf[Item]]
+  type Output = List[AnyValue { type T = Item }]
 }
 
 sealed trait QueryFor[I <: AnyItem.OfCompositeTable] extends AnyQuery {
+
   type Item = I
-  // type Output = List[ValueOf[I]]
 }
 
 // object AnyQuery {
@@ -40,6 +41,7 @@ case class SimpleQuery[
   I <: AnyItem.OfCompositeTable,
   H <: RawOf[TableOf[I]#PrimaryKey#Hash]
 ](i: I, h: H) extends QueryFor[I] {
+  
   val  item = i
 
   type Predicate = SimplePredicate[I, EQ[TableOf[I]#PrimaryKey#Hash]] 

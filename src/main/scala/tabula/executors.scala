@@ -20,6 +20,7 @@ trait AnyExecutor {
 // abstract class Executor[A <: AnyAction](val action: A) extends AnyExecutor { type Action = A }
 
 trait ExecutorFor[A <: AnyAction] extends AnyExecutor {
+  
   type Action = A
   type Out = OutC[ExecutorResult[A]]
 }

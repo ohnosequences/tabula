@@ -1,6 +1,7 @@
 package ohnosequences.tabula
 
 trait AnyAction {
+  
   type InputState
   type OutputState
 

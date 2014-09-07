@@ -5,19 +5,21 @@ import ohnosequences.pointless.ops.typeSet._
 import ohnosequences.tabula._, Condition._, AnyPredicate._, ImplicitConversions._, AnyAction._, AnyItemAction._
 import com.amazonaws.services.dynamodbv2.model._
 
-case class QueryExecutor[A <: AnyQuery](
+case class QueryExecutor[A <: AnyQuery](implicit
   dynamoClient: AnyDynamoDBClient,
-  parser: (A#Item#Properties ParseFrom SDKRep) with out[A#Item#Raw]
+  parser: (A#Item#Properties ParseFrom SDKRep) with out[RawOf[A#Item]]  
   // parser: (PropertiesOf[ItemOf[A]] ParseFrom SDKRep) with out[RawOf[ItemOf[A]]]
 ) extends ExecutorFor[A] {
 
   type OutC[X] = X
 
+
   import scala.collection.JavaConversions._
+
   def apply(action: A)(inputState: InputStateOf[A]): Out = {
     println("executing: " + action)
 
-    val res: List[ValueOf[ItemOf[A]]] = try {
+    val res: List[ValueOf[A#Item]] = try {
       // val predicate = SimplePredicate(action.item, EQ(action.table.hashKey, action.input))
       // val (_, keyConditions) = toSDKPredicate(predicate)
       val (_, keyConditions) = toSDKPredicate(action.predicate)
@@ -30,10 +32,10 @@ case class QueryExecutor[A <: AnyQuery](
         dynamoClient.client.query(queryRequest)
           .getItems.map(_.toMap).toList
 
-      SDKRepsList.map{ rep => valueOf[ItemOf[A]](parser(action.item.properties, rep)) }
+      SDKRepsList.map{ rep => valueOf[A#Item](parser(action.item.properties:A#Item#Properties, rep)) }
     } catch {
       // FIXME: error handling
-      case t: Exception => List()
+      case t: Exception => throw t
     }
 
     ExecutorResult[A](res, inputState)
