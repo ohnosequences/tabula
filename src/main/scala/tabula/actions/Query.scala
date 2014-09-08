@@ -25,7 +25,7 @@ sealed trait AnyQuery extends AnyItemAction {
   val  predicate: Predicate
 
   // type Output = List[ValueOf[Item]]
-  type Output = List[AnyValue { type T = Item }]
+  type Output = List[AnyValue.ofType[Item]]
 }
 
 sealed trait QueryFor[I <: AnyItem.OfCompositeTable] extends AnyQuery {

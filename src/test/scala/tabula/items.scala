@@ -2,7 +2,7 @@ package ohnosequences.tabula
 
 import org.scalatest.FunSuite
 
-import ohnosequences.pointless._, AnyTaggedType.Tagged, AnyProperty._, AnyTypeSet._, AnyRecord._, AnyTypeUnion._
+import ohnosequences.pointless._, AnyType._, AnyProperty._, AnyTypeSet._, AnyRecord._, AnyTypeUnion._
 
 import ohnosequences.tabula._
 import ohnosequences.tabula.impl._, ImplicitConversions._
@@ -29,17 +29,17 @@ object TestSetting {
 
   // creating item is easy and neat:
   val user1 = simpleUser fields (
-    (id is 123) :~: 
-    (name is "foo") :~: 
+    id(123) :~: 
+    name("foo") :~: 
     ∅
   )
 
   // this way the order of properties doesn't matter
   val user2 = normalUser fields (
-    (name is "foo") :~: 
-    (color is "orange") :~:
-    (id is 123) :~: 
-    (email is "foo@bar.qux") :~:
+    name("foo") :~: 
+    color("orange") :~:
+    id(123) :~: 
+    email("foo@bar.qux") :~:
     ∅
   )
 
@@ -50,19 +50,16 @@ class itemsSuite extends FunSuite {
 
   test("accessing item properties") {
 
-    assert (
-
-      user1.get(id) === 123
-    )
-    assert(user1.get(name) === "foo")
+    assert{ user1.get(id).raw == 123 }
+    assert{ user1.get(name).raw == "foo" }
   }
 
   test("tags/keys of a representation") {
     // won't work; need the alias :-|
     // val keys = implicitly[Keys.Aux[id.Rep :~: name.Rep :~: ∅, id.type :~: name.type :~: ∅]]
     // val tags = TagsOf[ValueOf[id.type] :~: ValueOf[name.type] :~: ∅]
-    // assert(tags(user1) === simpleUser.properties)
-    // assert(tags(user1) === (id :~: name :~: ∅))
+    // assert(tags(user1) == simpleUser.properties)
+    // assert(tags(user1) == (id :~: name :~: ∅))
   }
 
   test("item projection") {
@@ -83,8 +80,8 @@ class itemsSuite extends FunSuite {
 
     assertResult(user2) {
       user1 as (normalUser,
-        (color is "orange") :~:
-        (email is "foo@bar.qux") :~:
+        color("orange") :~:
+        email("foo@bar.qux") :~:
         ∅
       )
     }
@@ -92,7 +89,7 @@ class itemsSuite extends FunSuite {
     // you cannot provide less that it's missing
     assertTypeError("""
     val less = user1 as (normalUser,
-        (email is "foo@bar.qux") :~:
+        email("foo@bar.qux") :~:
         ∅
       )
     """)
@@ -100,9 +97,9 @@ class itemsSuite extends FunSuite {
     // neither you can provide more that was missing
     assertTypeError("""
     val more = user1 as (normalUser,
-        (color is "orange") :~:
-        (id is 4012) :~:
-        (email is "foo@bar.qux") :~:
+        color("orange") :~:
+        id(4012) :~:
+        email("foo@bar.qux") :~:
         ∅
       )
     """)
@@ -111,10 +108,10 @@ class itemsSuite extends FunSuite {
   test("item update") {
     
     val martin = normalUser fields (
-      (name is "Martin") :~:
-      (id is 1) :~:
-      (color is "dark-salmon") :~:
-      (email is "coolmartin@scala.org") :~:
+      name("Martin") :~:
+      id(1) :~:
+      color("dark-salmon") :~:
+      email("coolmartin@scala.org") :~:
       ∅
     )
 
@@ -122,30 +119,30 @@ class itemsSuite extends FunSuite {
 
       (
         
-        user2 update (name is "qux")
-      ) === (
+        user2 update name("qux")
+      ) == (
 
         normalUser fields (
-          (id is user2.get(id)) :~: 
-          (name is "qux") :~: 
-          (color is user2.get(color)) :~:
-          (email is user2.get(email)) :~:
+          id(user2.get(id).raw) :~: 
+          name("qux") :~: 
+          color(user2.get(color).raw) :~:
+          email(user2.get(email).raw) :~:
           ∅
         )
       )
     )
 
-    assert((user2 update ((name is "qux") :~: (id is 42) :~: ∅)) === 
+    assert((user2 update (name("qux") :~: id(42) :~: ∅)) == 
       (normalUser fields (
-          (id is 42) :~: 
-          (name is "qux") :~: 
-          (color is user2.get(color)) :~:
-          (email is user2.get(email)) :~:
+          id(42) :~: 
+          name("qux") :~: 
+          color(user2.get(color).raw) :~:
+          email(user2.get(email).raw) :~:
           ∅
         ))
     )
 
-    assert((user2 update (martin: normalUser.Raw)) === martin)
+    assert((user2 update martin.raw) == martin)
   }
 
 }

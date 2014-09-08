@@ -2,7 +2,7 @@ package ohnosequences.tabula.sample
 
 import ohnosequences.pointless._, AnyType._, AnyProperty._, AnyTypeSet._, AnyRecord._, AnyTypeUnion._, ops.typeSet._
 import ohnosequences.tabula._, AnyPredicate._
-
+import shapeless.test.illTyped
 
 object id extends Property[Num]
 object name extends Property[String]
@@ -32,14 +32,6 @@ case object RandomTable extends Table (
   region = EU
 )
 
-// you can create a property of any type
-object boolProperty extends Property[Boolean]
-object recordWithBoolProperty extends Record(boolProperty :~: ∅)
-// // but you cannot use it for creating an Item, because it's one of `ValidValues` type union
-// illTyped("""
-// case object WrongItem extends Item("wrongItem", UsersTable, recordWithBoolProperty.properties)
-// """)
-
 object UserItem extends Item (
   "user", 
   UsersTable, 
@@ -49,7 +41,7 @@ object UserItem extends Item (
 object FunnyUserItem extends Item(
   "funnyUser",
   UsersTable,
-  name :~: ∅
+  name :~: email :~: departments :~: ∅
 )
 
 // predicates

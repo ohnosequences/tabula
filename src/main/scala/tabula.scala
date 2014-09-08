@@ -1,6 +1,7 @@
 package ohnosequences
 
-import ohnosequences.pointless._
+import ohnosequences.pointless._, AnyType._, AnyTypeUnion._
+import ohnosequences.pointless.ops.typeSet.TypePredicate
 
 // in package object only type-aliases
 package object tabula {

@@ -37,10 +37,9 @@ object simpleModel {
 
   // you can create a property of any type
   case object boolProperty extends Property[Boolean]
-  case object recordWithBoolProperty extends Record(boolProperty :~: ∅)
   // but you cannot use it for creating an Item, because it's one of `ValidValues` type union
   illTyped("""
-  case object WrongItem extends Item("wrongItem", UsersTable, recordWithBoolProperty.properties)
+  case object WrongItem extends Item("wrongItem", UsersTable, id :~: boolProperty :~: ∅)
   """)
 
   case object UserItemRecord extends Record(name :~: age :~: ∅)
