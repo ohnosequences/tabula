@@ -1,13 +1,13 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.pointless._, AnyRecord._, AnyFn._, AnyType._
-import ohnosequences.pointless.ops.typeSet._
+import ohnosequences.cosas._, records._, fns._, types._
+import ohnosequences.cosas.ops.typeSets._
 import ohnosequences.tabula._, Condition._, AnyPredicate._, ImplicitConversions._, AnyAction._, AnyItemAction._
 import com.amazonaws.services.dynamodbv2.model._
 
 case class QueryExecutor[A <: AnyQuery](implicit
   dynamoClient: AnyDynamoDBClient,
-  parser: (A#Item#Properties ParseFrom SDKRep) with out[RawOf[A#Item]]  
+  parser: (A#Item#Properties ParseFrom SDKRep) { type Out = A#Item#Raw }
   // parser: (PropertiesOf[ItemOf[A]] ParseFrom SDKRep) with out[RawOf[ItemOf[A]]]
 ) extends ExecutorFor[A] {
 
@@ -28,16 +28,19 @@ case class QueryExecutor[A <: AnyQuery](implicit
         .withTableName(action.item.table.name)
         .withKeyConditions(keyConditions)
 
-      val SDKRepsList: List[Map[String, AttributeValue]] = 
+      val SDKRepsList: List[Map[String, AttributeValue]] =
         dynamoClient.client.query(queryRequest)
           .getItems.map(_.toMap).toList
 
-      SDKRepsList.map{ rep => valueOf[A#Item](parser(action.item.properties:A#Item#Properties, rep)) }
+      // TODO: Check this valueOf
+      SDKRepsList.map{ rep => valueOf[A#Item, A#Item#Raw](action.item)(parser(action.item.properties:A#Item#Properties, rep)) }
     } catch {
       // FIXME: error handling
       case t: Exception => throw t
     }
 
-    ExecutorResult[A](res, inputState)
+    // FIXME: ???
+    // ExecutorResult[A](res, inputState)
+    ???
   }
 }

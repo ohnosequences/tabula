@@ -1,13 +1,13 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.pointless._, AnyRecord._, AnyType._
-import ohnosequences.pointless.ops.typeSet._
+import ohnosequences.cosas._, records._, types._
+import ohnosequences.cosas.ops.typeSets._
 import ohnosequences.tabula._, ImplicitConversions._, AnyAction._, AnyItemAction._
 import com.amazonaws.services.dynamodbv2.model._
 
 case class PutItemExecutor[A <: AnyPutItem](
-  dynamoClient: AnyDynamoDBClient, 
-  serializer: RawOf[ItemOf[A]] SerializeTo SDKRep
+  dynamoClient: AnyDynamoDBClient,
+  serializer: ItemOf[A]#Raw SerializeTo SDKRep
 ) extends ExecutorFor[A] {
 
   type OutC[X] = X
@@ -18,7 +18,7 @@ case class PutItemExecutor[A <: AnyPutItem](
     println("executing: " + action)
 
     try {
-      dynamoClient.client.putItem(action.item.table.name, serializer(action.itemValue.raw))
+      dynamoClient.client.putItem(action.item.table.name, serializer(action.itemValue.value))
     } catch {
       // FIXME: error handling
       case t: Exception => None

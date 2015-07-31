@@ -2,7 +2,7 @@ package ohnosequences.tabula
 
 import org.scalatest.FunSuite
 
-import ohnosequences.pointless._, AnyType._, AnyProperty._, AnyTypeSet._, AnyRecord._, AnyTypeUnion._
+import ohnosequences.cosas._, types._, properties._, typeSets._, records._, typeUnions._
 
 import ohnosequences.tabula._
 import ohnosequences.tabula.impl._, ImplicitConversions._
@@ -11,8 +11,8 @@ import shapeless._, poly._
 import shapeless.test.typed
 
 object TestSetting {
-  case object id extends Property[Num]
-  case object name extends Property[String]
+  case object id extends Property[Num]("id")
+  case object name extends Property[String]("name")
   case object simpleUserRecord extends Record(id :~: name :~: ∅)
   case object normalUserRecord extends Record(id :~: name :~: email :~: color :~: ∅)
 
@@ -22,23 +22,23 @@ object TestSetting {
   object simpleUser2 extends Item("simpleUser2", table, simpleUserRecord.properties)
 
   // more properties:
-  case object email extends Property[String]
-  case object color extends Property[String]
+  case object email extends Property[String]("email")
+  case object color extends Property[String]("color")
 
   case object normalUser extends Item("normalUser", table, normalUserRecord.properties)
 
   // creating item is easy and neat:
-  val user1 = simpleUser fields (
-    id(123) :~: 
-    name("foo") :~: 
+  val user1 = simpleUser(
+    id(123) :~:
+    name("foo") :~:
     ∅
   )
 
   // this way the order of properties doesn't matter
-  val user2 = normalUser fields (
-    name("foo") :~: 
+  val user2 = normalUser(
+    name("foo") :~:
     color("orange") :~:
-    id(123) :~: 
+    id(123) :~:
     email("foo@bar.qux") :~:
     ∅
   )
@@ -50,8 +50,8 @@ class itemsSuite extends FunSuite {
 
   test("accessing item properties") {
 
-    assert{ user1.get(id).raw == 123 }
-    assert{ user1.get(name).raw == "foo" }
+    assert{ user1.get(id).value == 123 }
+    assert{ user1.get(name).value == "foo" }
   }
 
   test("tags/keys of a representation") {
@@ -106,8 +106,8 @@ class itemsSuite extends FunSuite {
   }
 
   test("item update") {
-    
-    val martin = normalUser fields (
+
+    val martin = normalUser(
       name("Martin") :~:
       id(1) :~:
       color("dark-salmon") :~:
@@ -118,31 +118,31 @@ class itemsSuite extends FunSuite {
     assert(
 
       (
-        
+
         user2 update name("qux")
       ) == (
 
-        normalUser fields (
-          id(user2.get(id).raw) :~: 
-          name("qux") :~: 
-          color(user2.get(color).raw) :~:
-          email(user2.get(email).raw) :~:
+        normalUser(
+          id(user2.get(id).value) :~:
+          name("qux") :~:
+          color(user2.get(color).value) :~:
+          email(user2.get(email).value) :~:
           ∅
         )
       )
     )
 
-    assert((user2 update (name("qux") :~: id(42) :~: ∅)) == 
-      (normalUser fields (
-          id(42) :~: 
-          name("qux") :~: 
-          color(user2.get(color).raw) :~:
-          email(user2.get(email).raw) :~:
+    assert((user2 update (name("qux") :~: id(42) :~: ∅)) ==
+      (normalUser(
+          id(42) :~:
+          name("qux") :~:
+          color(user2.get(color).value) :~:
+          email(user2.get(email).value) :~:
           ∅
         ))
     )
 
-    assert((user2 update martin.raw) == martin)
+    assert((user2 update martin.value) == martin)
   }
 
 }

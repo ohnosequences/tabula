@@ -1,9 +1,9 @@
 // // package ohnosequences.tabula.impl.actions
 
 // <<<<<<< HEAD
-// import ohnosequences.pointless._, AnyTypeSet._, AnyRecord._, AnyFn._
-// import ohnosequences.pointless.ops.record._
-// import ohnosequences.pointless.ops.typeSet._
+// import ohnosequences.cosas._, typeSets._, records._, fns._
+// import ohnosequences.cosas.ops.record._
+// import ohnosequences.cosas.ops.typeSets._
 
 // import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 // import ohnosequences.tabula._, impl._, ImplicitConversions._

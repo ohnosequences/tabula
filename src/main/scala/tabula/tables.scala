@@ -1,6 +1,7 @@
 package ohnosequences.tabula
 
-import ohnosequences.pointless._, AnyType._, AnyTypeUnion._
+import attributes._
+import ohnosequences.cosas._, types._, typeUnions._, properties._
 
 /*
   ## Tables
@@ -47,43 +48,43 @@ object AnyTable {
 sealed trait AnyPrimaryKey
 
 sealed trait AnyHashKey extends AnyPrimaryKey {
-  type Hash <: AnyProperty
+  type Hash <: AnyAttribute
   val  hash: Hash
 
   // should be provided implicitly:
-  val hashHasValidType: RawOf[Hash] isOneOf PrimaryKeyValues
+  val hashHasValidType: Hash#Raw isOneOf PrimaryKeyValues
 }
 
-case class HashKey[H <: AnyProperty]
-  (val hash: H)(implicit 
-    val hashHasValidType: RawOf[H] isOneOf PrimaryKeyValues
-  ) 
-  extends AnyHashKey{ 
-    type Hash = H 
+case class HashKey[H <: AnyAttribute]
+  (val hash: H)(implicit
+    val hashHasValidType: H#Raw isOneOf PrimaryKeyValues
+  )
+  extends AnyHashKey{
+    type Hash = H
   }
 
 sealed trait AnyCompositeKey extends AnyPrimaryKey {
-  type Hash <: AnyProperty
+  type Hash <: AnyAttribute
   val  hash: Hash
 
-  type Range <: AnyProperty
+  type Range <: AnyAttribute
   val  range: Range
 
   // should be provided implicitly:
-  val  hashHasValidType:  RawOf[Hash] isOneOf PrimaryKeyValues
-  val rangeHasValidType: RawOf[Range] isOneOf PrimaryKeyValues
+  val  hashHasValidType:  Hash#Raw isOneOf PrimaryKeyValues
+  val rangeHasValidType: Range#Raw isOneOf PrimaryKeyValues
 }
 
-case class CompositeKey[H <: AnyProperty, R <: AnyProperty]
+case class CompositeKey[H <: AnyAttribute, R <: AnyAttribute]
   (val hash: H, val range: R)(implicit
-    val  hashHasValidType: RawOf[H] isOneOf PrimaryKeyValues,
-    val rangeHasValidType: RawOf[R] isOneOf PrimaryKeyValues
+    val  hashHasValidType: H#Raw isOneOf PrimaryKeyValues,
+    val rangeHasValidType: R#Raw isOneOf PrimaryKeyValues
   )
-  extends AnyCompositeKey { 
-    type Hash = H 
-    type Range = R 
+  extends AnyCompositeKey {
+    type Hash = H
+    type Range = R
   }
 
 sealed trait PrimaryKeyValue[PK <: AnyPrimaryKey]
-case class HashKeyValue[K <: AnyHashKey](hash: RawOf[K#Hash]) extends PrimaryKeyValue[K]
-case class CompositeKeyValue[K <: AnyCompositeKey](hash: RawOf[K#Hash], range: RawOf[K#Range]) extends PrimaryKeyValue[K]
+case class HashKeyValue[K <: AnyHashKey](hash: K#Hash#Raw) extends PrimaryKeyValue[K]
+case class CompositeKeyValue[K <: AnyCompositeKey](hash: K#Hash#Raw, range: K#Range#Raw) extends PrimaryKeyValue[K]

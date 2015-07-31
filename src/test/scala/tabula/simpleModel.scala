@@ -1,18 +1,18 @@
 package ohnosequences.tabula.test
 
-import ohnosequences.pointless._, AnyTypeSet._
+import ohnosequences.cosas._, typeSets._, properties._, records._
 import ohnosequences.tabula._
 
 import shapeless.test._
 
 object simpleModel {
 
-  object id extends Property[Num]
-  object name extends Property[String]
-  object age extends Property[Num]
-  object email extends Property[String]
-  object serializedCrap extends Property[Bytes]
-  object departments extends Property[Set[String]]
+  object id extends Property[Num]("id")
+  object name extends Property[String]("name")
+  object age extends Property[Num]("age")
+  object email extends Property[String]("email")
+  object serializedCrap extends Property[Bytes]("serializedCrap")
+  object departments extends Property[Set[String]]("departments")
 
   // departments property cannot be a primary key:
   illTyped("""
@@ -36,7 +36,7 @@ object simpleModel {
   )
 
   // you can create a property of any type
-  case object boolProperty extends Property[Boolean]
+  case object boolProperty extends Property[Boolean]("boolProperty")
   // but you cannot use it for creating an Item, because it's one of `ValidValues` type union
   illTyped("""
   case object WrongItem extends Item("wrongItem", UsersTable, id :~: boolProperty :~: ∅)

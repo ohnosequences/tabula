@@ -6,17 +6,16 @@ import com.amazonaws.regions._
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue} //, PropertyAction}
 
-import ohnosequences.pointless._, AnyType._, AnyTypeSet._, AnyRecord._
+import ohnosequences.cosas._, types._, typeSets._, records._, properties._
 
 import ohnosequences.tabula._
 import ohnosequences.tabula.impl._, ImplicitConversions._ //, actions._
 
 import shapeless._, poly._
 import shapeless.test.typed
-import AnyType._
 
 object TestSetting {
-  
+
     case object service extends AnyDynamoDBService {
 
       type Region = EU.type
@@ -35,8 +34,8 @@ object TestSetting {
       }
     )
 
-  case object id extends Property[Num]
-  case object name extends Property[String]
+  case object id extends Property[Num]("id")
+  case object name extends Property[String]("name")
   case object simpleUserRecord extends Record(id :~: name :~: ∅)
   case object normalUserRecord extends Record(id :~: name :~: email :~: color :~: ∅)
 
@@ -46,8 +45,8 @@ object TestSetting {
 
 
   // more properties:
-  case object email extends Property[String]
-  case object color extends Property[String]
+  case object email extends Property[String]("email")
+  case object color extends Property[String]("color")
 
   case object normalUser extends Item("normalUser", table, normalUserRecord.properties)
 }
@@ -58,7 +57,7 @@ class irishService extends FunSuite {
 
   // waits until the table becomes active
   def waitFor[
-    T <: AnyTable.inRegion[service.Region], 
+    T <: AnyTable.inRegion[service.Region],
     S <: AnyTableState.For[T]
   ](table: T, state: S): Active[T] = {
 
@@ -94,25 +93,25 @@ class irishService extends FunSuite {
     // val afterUpdate2 = waitFor(table, updateResult2.state)
 
     // PUT ITEM
-    val user1 = normalUser fields (
-      id(1) :~: 
-      name("Edu") :~: 
+    val user1 = normalUser(
+      id(1) :~:
+      name("Edu") :~:
       email("eparejatobes@ohnosequences.com") :~:
       color("verde") :~:
       ∅
     )
 
-    val user2 = normalUser fields (
-      id(1) :~: 
-      name("Evdokim") :~: 
+    val user2 = normalUser(
+      id(1) :~:
+      name("Evdokim") :~:
       email("evdokim@ohnosequences.com") :~:
       color("negro") :~:
       ∅
     )
 
-    val user3 = normalUser fields (
-      id(3) :~: 
-      name("Lyosha") :~: 
+    val user3 = normalUser(
+      id(3) :~:
+      name("Lyosha") :~:
       email("aalekhin@ohnosequences.com") :~:
       color("albero") :~:
       ∅
@@ -125,7 +124,7 @@ class irishService extends FunSuite {
 
 //     // val putResul1 = service please ((InCompositeKeyTable(table, afterCreate) putItem normalUser).withValue(user1: normalUser.Raw)
 //       // (
-//       //   ohnosequences.pointless.ops.typeSet.SerializeTo.cons,
+//       //   ohnosequences.cosas.ops.typeSets.SerializeTo.cons,
 //       //   // [SDKRep, ValueOf[id.type], ValueOf[name.type] :~: ValueOf[email.type] :~: ValueOf[color.type] :~: ∅],
 //       //   implicitly[table.HashKey ∈ normalUser.Properties],
 //       //   implicitly[table.RangeKey ∈ normalUser.Properties]
@@ -150,25 +149,25 @@ class irishService extends FunSuite {
 //                                             withHashKey(user1.get(id))
 //                                               // (
 //                                               //   ToItem.buah(ToProperties.cons[
-//                                               //     SDKRep, 
-//                                               //     normalUser.properties.Head, normalUser.properties.Tail, 
-//                                               //     normalUser.Raw, ???, 
+//                                               //     SDKRep,
+//                                               //     normalUser.properties.Head, normalUser.properties.Tail,
+//                                               //     normalUser.Raw, ???,
 //                                               //     fromSDKRep.type]
 //                                               //   ),
 //                                               //   implicitly[table.HashKey ∈ normalUser.Properties]
-//                                               // ) 
+//                                               // )
 //                                             )
 //     assert(simpleQueryResult.output === QuerySuccess(List(user1, user2)))
 
 //     // here we would get the same, but we add a range condition on the name
 //     val normalQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser
-//                                             withHashKey user1.get(id) 
+//                                             withHashKey user1.get(id)
 //                                             andRangeCondition (name beginsWith "Evd"))
 //     assert(normalQueryResult.output === QuerySuccess(List(user2)))
 
 //     // here we don't get anything
-//     val emptyQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser 
-//                                             withHashKey user1.get(id) 
+//     val emptyQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser
+//                                             withHashKey user1.get(id)
 //                                             andRangeCondition (name beginsWith "foo"))
 //     assert(emptyQueryResult.output === QuerySuccess(List()))
 
@@ -179,7 +178,7 @@ class irishService extends FunSuite {
 //     // NOTE: here we check that we can get a simpleUser instead of the normalUser and we will get only those properties
 //     val getResult = service please (FromCompositeKeyTable(table, afterPut3) getItem simpleUser withKeys (user1.get(id), user1.get(name)))
 //     assert(getResult.output === GetItemSuccess(
-//       simpleUser fields (id(1) :~: name("Edu") :~: ∅)
+//       simpleUser(id(1) :~: name("Edu") :~: ∅)
 //     ))
 
 //     // DELETE ITEM + get again
@@ -206,18 +205,18 @@ class irishService extends FunSuite {
     // here we get both users by the hash key
     // val a = SimpleQuery(normalUser, user1.get(name))
     // val simpleQueryResult = (service please a).apply(afterPut3)
-                                            
+
     // assert(simpleQueryResult.output === QuerySuccess(List(user1, user2)))
 
 //     // // here we would get the same, but we add a range condition on the name
 //     // val normalQueryResult = service please (QueryTable(afterPut3) forItem normalUser
-//     //                                         withHashKey user1.get(id) 
+//     //                                         withHashKey user1.get(id)
 //     //                                         andRangeCondition (name beginsWith "Evd"))
 //     // assert(normalQueryResult.output === QuerySuccess(List(user2)))
 
 //     // // here we don't get anything
-//     // val emptyQueryResult = service please (QueryTable(afterPut3) forItem normalUser 
-//     //                                         withHashKey user1.get(id) 
+//     // val emptyQueryResult = service please (QueryTable(afterPut3) forItem normalUser
+//     //                                         withHashKey user1.get(id)
 //     //                                         andRangeCondition (name beginsWith "foo"))
 //     // assert(emptyQueryResult.output === QuerySuccess(List()))
 

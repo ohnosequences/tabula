@@ -1,7 +1,7 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.pointless._, AnyRecord._, AnyFn._, AnyType._
-import ohnosequences.pointless.ops.typeSet._
+import ohnosequences.cosas._, records._, fns._, types._
+import ohnosequences.cosas.ops.typeSets._
 import ohnosequences.tabula._, ImplicitConversions._, AnyItemAction._
 import com.amazonaws.services.dynamodbv2.model._
 
@@ -33,8 +33,8 @@ case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
 
 
   /* PUT ITEM */
-  implicit def putItemExecutor[A <: AnyPutItem](a: A)(implicit 
-      serializer: RawOf[ItemOf[A]] SerializeTo SDKRep
+  implicit def putItemExecutor[A <: AnyPutItem](a: A)(implicit
+      serializer: ItemOf[A]#Raw SerializeTo SDKRep
     ): PutItemExecutor[A] =
        PutItemExecutor[A](dynamoClient, serializer)
 
@@ -50,12 +50,12 @@ case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
 
 
   /* QUERY */
-  // implicit def queryExecutor[A0 <: AnyQueryAction, A <: AnyQueryAction.Q[A0]](a: A)(implicit 
+  // implicit def queryExecutor[A0 <: AnyQueryAction, A <: AnyQueryAction.Q[A0]](a: A)(implicit
   //     parser: (PropertiesOf[A#Item] ParseFrom SDKRep) with out[RawOf[A#Item]]
   //   ): QueryExecutor[A0, A] =
   //      QueryExecutor[A0, A](a)(dynamoClient, parser)
 
-  // implicit def queryExecutor[A <: AnyQuery](a: A)(implicit 
+  // implicit def queryExecutor[A <: AnyQuery](a: A)(implicit
   //     parser: (A#Item#Properties ParseFrom SDKRep) with out[A#Item#Raw]
   //   ): QueryExecutor[A] =
   //      QueryExecutor[A](dynamoClient, parser)

@@ -1,6 +1,6 @@
 package ohnosequences.tabula
 
-import ohnosequences.pointless._, AnyType._, AnyTypeSet._
+import ohnosequences.cosas._, types._, typeSets._
 
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 import ohnosequences.tabula._, Condition._, AnyItem._
@@ -24,8 +24,8 @@ sealed trait AnyQuery extends AnyItemAction {
   type Predicate <: AnyPredicate.On[Item]
   val  predicate: Predicate
 
-  // type Output = List[ValueOf[Item]]
-  type Output = List[AnyValue.ofType[Item]]
+  type Output = List[ValueOf[Item]]
+  // type Output = List[AnyValue.ofType[Item]]
 }
 
 sealed trait QueryFor[I <: AnyItem.OfCompositeTable] extends AnyQuery {
@@ -39,23 +39,23 @@ sealed trait QueryFor[I <: AnyItem.OfCompositeTable] extends AnyQuery {
 
 case class SimpleQuery[
   I <: AnyItem.OfCompositeTable,
-  H <: RawOf[TableOf[I]#PrimaryKey#Hash]
+  H <: TableOf[I]#PrimaryKey#Hash#Raw
 ](i: I, h: H) extends QueryFor[I] {
-  
+
   val  item = i
 
-  type Predicate = SimplePredicate[I, EQ[TableOf[I]#PrimaryKey#Hash]] 
+  type Predicate = SimplePredicate[I, EQ[TableOf[I]#PrimaryKey#Hash]]
   val  predicate = SimplePredicate(item, EQ(item.table.primaryKey.hash, h))
   // val  predicate = p
 }
 
 // the range key condition is optional
 case class NormalQuery[
-  I <: AnyItem.OfCompositeTable, 
+  I <: AnyItem.OfCompositeTable,
   P <: SimplePredicate[I, EQ[TableOf[I]#PrimaryKey#Hash]],
   R <: Condition.On[TableOf[I]#PrimaryKey#Range] with KeyCondition
 ](p: P, r: R) extends QueryFor[I] {
-  
+
   type Predicate = AND[P, R]
   val  predicate = AND[P, R](p, r)
   val  item = p.item

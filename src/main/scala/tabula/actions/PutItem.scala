@@ -1,6 +1,6 @@
 package ohnosequences.tabula
 
-import ohnosequences.pointless._, AnyType._, AnyItemAction._
+import ohnosequences.cosas._, types._, AnyItemAction._
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import ohnosequences.tabula.impl.ImplicitConversions._

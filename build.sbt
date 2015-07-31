@@ -1,29 +1,22 @@
 Nice.scalaProject
 
 name := "tabula"
-
 organization := "ohnosequences"
-
-description := "tabula project"
-
+description := "Fancy API for the Amazon DynamoDB"
 bucketSuffix := "era7.com"
 
-scalaVersion := "2.11.2"
-
-skip in update := true
+scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
-  // "ohnosequences" %% "scarph" % "0.2.0-SNAPSHOT",
-  "ohnosequences" %% "pointless"    % "0.6.0-SNAPSHOT",
-  "org.scalatest" %% "scalatest"    % "2.2.0" % "test",
-  "com.amazonaws" %  "aws-java-sdk" % "1.8.0"
+  "ohnosequences" %% "cosas" % "0.6.0",
+  "com.amazonaws" %  "aws-java-sdk-dynamodb" % "1.10.8",
+  "org.scalatest" %% "scalatest" % "2.2.5" % Test
 )
 
 dependencyOverrides ++= Set(
-  "org.apache.httpcomponents"     % "httpclient"          % "4.2",
-  "commons-codec"                 % "commons-codec"       % "1.7",
-  "com.fasterxml.jackson.core"    % "jackson-core"        % "2.1.2",
-  "com.fasterxml.jackson.core"    % "jackson-databind"    % "2.1.2",
-  "com.fasterxml.jackson.core"    % "jackson-annotations" % "2.1.2",
-  "joda-time"                     % "joda-time"           % "2.3"
+  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+  "org.scala-lang.modules" %% "scala-xml" % "1.0.4"
 )
+
+// FIXME:
+wartremoverErrors in (Compile, compile) := Seq()

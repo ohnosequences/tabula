@@ -1,15 +1,15 @@
 package ohnosequences.tabula.sample
 
-import ohnosequences.pointless._, AnyType._, AnyProperty._, AnyTypeSet._, AnyRecord._, AnyTypeUnion._, ops.typeSet._
+import ohnosequences.cosas._, types._, properties._, typeSets._, records._, typeUnions._, ops.typeSets._
 import ohnosequences.tabula._, AnyPredicate._
 import shapeless.test.illTyped
 
-object id extends Property[Num]
-object name extends Property[String]
-object age extends Property[Num]
-object email extends Property[String]
-object serializedCrap extends Property[Bytes]
-object departments extends Property[Set[String]]
+object id extends Property[Num]("id")
+object name extends Property[String]("name")
+object age extends Property[Num]("age")
+object email extends Property[String]("email")
+object serializedCrap extends Property[Bytes]("serializedCrap")
+object departments extends Property[Set[String]]("departments")
 
 // departments property cannot be a primary key:
 // illTyped("""
@@ -32,9 +32,9 @@ case object RandomTable extends Table (
   region = EU
 )
 
-object UserItem extends Item (
-  "user", 
-  UsersTable, 
+object UserItem extends Item(
+  "user",
+  UsersTable,
   name :~: age :~: ∅
 )
 
@@ -75,5 +75,4 @@ object samplePredicates {
   implicitly[OnlyWitnKeyConditions[agePred.type]]
   illTyped("implicitly[OnlyWitnKeyConditions[userHasName.type]]")
   illTyped("implicitly[OnlyWitnKeyConditions[userInDpt.type]]")
-} 
-
+}

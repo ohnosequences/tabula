@@ -1,7 +1,8 @@
 package ohnosequences.tabula
 
-import ohnosequences.pointless._, AnyType._, AnyTypeSet._, AnyFn._, AnyTypeUnion._
-import ohnosequences.pointless.ops.typeSet._
+import attributes._
+import ohnosequences.cosas._, types._, typeSets._, fns._, typeUnions._, records._, properties._
+import ohnosequences.cosas.ops.typeSets._
 import shapeless._, poly._
 
 /*
@@ -10,33 +11,37 @@ import shapeless._, poly._
   This is the type of items of a given table. A table can hold different kinds of records, as you could want to restrict access to some items for example; there's even functionality in IAM for this. By separating the item type from the table we can easily model this scenario as different item types for the same table.
 */
 
-trait HasValidRaw extends TypePredicate[AnyType] {
-  type Condition[T <: AnyType] = RawOf[T] isOneOf ValidValues
-}
+// trait HasValidRaw extends TypePredicate[AnyType] {
+//   type Condition[T <: AnyType] = T#Raw isOneOf ValidValues
+// }
 
 trait AnyItem extends AnyRecord {
 
+  type Attributes <: AnyTypeSet.Of[AnyAttribute]
+  val  attributes: Attributes
+
+  // From AnyRecord:
+  type Properties = Attributes
+  lazy val properties = attributes
+
   type Table <: AnyTable
   val  table: Table
-
-  val validValues: Check[Properties, HasValidRaw]
 
   type Raw <: AnyTypeSet
 }
 
 class Item [
   T  <: AnyTable,
-  Props <: AnyTypeSet.Of[AnyProperty],
+  Attrs <: AnyTypeSet.Of[AnyAttribute],
   Vals <: AnyTypeSet
 ](val label: String,
   val table: T,
-  val properties: Props
+  val attributes: Attrs
 )(implicit
-  val valuesOfProperties: Vals areValuesOf Props,
-  val validValues: Check[Props, HasValidRaw]
+  val valuesOfProperties: Vals areValuesOf Attrs
 ) extends AnyItem {
 
-  type Properties = Props
+  type Attributes = Attrs
   type Raw = Vals
   type Table = T
 }

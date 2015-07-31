@@ -1,13 +1,14 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.pointless._, AnyType._
-
-import ohnosequences.tabula._
+import ohnosequences.cosas._, types._, properties._
+import ohnosequences.tabula._, attributes._
 
 import com.amazonaws.services.dynamodbv2.model.{AttributeValue, ScalarAttributeType, AttributeDefinition, ConditionalOperator}
 import com.amazonaws.services.dynamodbv2.model.{Condition => SDKCondition}
 import scala.reflect._
 import shapeless._, poly._
+import spire.algebra.Monoid
+
 
 object ImplicitConversions {
 
@@ -15,11 +16,12 @@ object ImplicitConversions {
   type SDKRep = Map[String, AttributeValue]
   type SDKElem = (String, AttributeValue)
 
-  import ohnosequences.pointless.ops.typeSet._
+  import ohnosequences.cosas.ops.typeSets._
 
   implicit val SDKRepMonoid: Monoid[SDKRep] = new Monoid[SDKRep] {
-    def zero: M = Map[String, AttributeValue]()
-    def append(a: M, b: M): M = a ++ b
+
+    def id: SDKRep = Map[String, AttributeValue]()
+    def op(x: SDKRep, y: SDKRep): SDKRep = x ++ y
   }
 
   object SDKRepParsers {
@@ -35,8 +37,8 @@ object ImplicitConversions {
 
   object SDKRepSerializers {
 
-    implicit def dafault[P <: AnyProperty](t: ValueOf[P])
-      (implicit getP: ValueOf[P] => P): SDKRep = Map(getP(t).label -> getAttrVal[RawOf[P]](t.raw))
+    implicit def default[P <: AnyProperty](t: ValueOf[P])
+      (implicit getP: ValueOf[P] => P): SDKRep = Map(getP(t).label -> getAttrVal[P#Raw](t.value))
   }
 
   // trait SDKRepParser extends AnyItemAction {
@@ -44,7 +46,7 @@ object ImplicitConversions {
   // }
 
   // trait SDKRepGetter extends AnyItemAction {
-  //   val getSDKRep: RawOf[Item] => SDKRep
+  //   val getSDKRep: Item#Raw => SDKRep
   // }
   // trait SDKRepGetter[A <: AnyItemAction] {
   //   def getSDKRep(rep: ValueOf[A#Item]): SDKRep
@@ -58,11 +60,11 @@ object ImplicitConversions {
 
 
   /* Properties-related conversions */
-  implicit def getAttrDef[A <: AnyProperty](attr: A): AttributeDefinition = {
+  implicit def getAttrDef[A <: AnyAttribute](attr: A): AttributeDefinition = {
 
     val attrDef = new AttributeDefinition().withAttributeName(attr.label)
 
-    attr.classTag.runtimeClass.asInstanceOf[Class[RawOf[A]]] match {
+    attr.rawTag.runtimeClass.asInstanceOf[Class[A#Raw]] match {
       case c if c == classOf[Num]    => attrDef.withAttributeType(ScalarAttributeType.N)
       case c if c == classOf[String] => attrDef.withAttributeType(ScalarAttributeType.S)
       case c if c == classOf[Bytes]  => attrDef.withAttributeType(ScalarAttributeType.B)
@@ -78,7 +80,7 @@ object ImplicitConversions {
       case _: Num    => new AttributeValue().withN(attr.toString)
       case _: String => new AttributeValue().withS(attr.toString)
       // TODO: test the Bytes case
-      case a: Bytes => { 
+      case a: Bytes => {
         import java.nio._
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(a.length)
         byteBuffer.put(Array[Byte](a: _*))
@@ -113,11 +115,11 @@ object ImplicitConversions {
 
     pred match {
       case p: AnySimplePredicate => (ConditionalOperator.AND, Map(p.head.property.label -> toSDKCondition(p.head)))
-      case p: AnyAndPredicate => (ConditionalOperator.AND, 
+      case p: AnyAndPredicate => (ConditionalOperator.AND,
                                   toSDKPredicate(p.body)._2 + (p.head.property.label -> toSDKCondition(p.head)))
       case p:  AnyOrPredicate => (ConditionalOperator.OR,
                                   toSDKPredicate(p.body)._2 + (p.head.property.label -> toSDKCondition(p.head)))
     }
   }
-    
+
 }

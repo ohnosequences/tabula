@@ -1,7 +1,7 @@
 // package ohnosequences.tabula
 
 // import com.amazonaws.services.dynamodbv2.model.AttributeValue
-// import ohnosequences.pointless.AnyType._
+// import ohnosequences.cosas.types._
 
 // sealed trait DeleteItemResult
 // case object DeleteItemFail extends DeleteItemResult

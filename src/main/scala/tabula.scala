@@ -1,11 +1,11 @@
 package ohnosequences
 
-import ohnosequences.pointless._, AnyType._, AnyTypeUnion._
-import ohnosequences.pointless.ops.typeSet.TypePredicate
+import ohnosequences.cosas._, types._, typeUnions._
+// import ohnosequences.cosas.ops.typeSets.TypePredicate
 
 // in package object only type-aliases
 package object tabula {
-  
+
   type Bytes = Array[Byte]
   type Num   = Integer
   // not documented; the API informs you about it if you try not to adhere to it
