@@ -114,11 +114,11 @@ object ImplicitConversions {
   implicit def toSDKPredicate[P <: AnyPredicate](pred: P): (ConditionalOperator, Map[String, SDKCondition]) = {
 
     pred match {
-      case p: AnySimplePredicate => (ConditionalOperator.AND, Map(p.head.property.label -> toSDKCondition(p.head)))
+      case p: AnySimplePredicate => (ConditionalOperator.AND, Map(p.head.attribute.label -> toSDKCondition(p.head)))
       case p: AnyAndPredicate => (ConditionalOperator.AND,
-                                  toSDKPredicate(p.body)._2 + (p.head.property.label -> toSDKCondition(p.head)))
+                                  toSDKPredicate(p.body)._2 + (p.head.attribute.label -> toSDKCondition(p.head)))
       case p:  AnyOrPredicate => (ConditionalOperator.OR,
-                                  toSDKPredicate(p.body)._2 + (p.head.property.label -> toSDKCondition(p.head)))
+                                  toSDKPredicate(p.body)._2 + (p.head.attribute.label -> toSDKCondition(p.head)))
     }
   }
 

@@ -1,18 +1,18 @@
 package ohnosequences.tabula.test
 
 import ohnosequences.cosas._, typeSets._, properties._, records._
-import ohnosequences.tabula._
+import ohnosequences.tabula._, attributes._
 
 import shapeless.test._
 
 object simpleModel {
 
-  object id extends Property[Num]("id")
-  object name extends Property[String]("name")
-  object age extends Property[Num]("age")
-  object email extends Property[String]("email")
-  object serializedCrap extends Property[Bytes]("serializedCrap")
-  object departments extends Property[Set[String]]("departments")
+  object id extends Attribute[Num]("id")
+  object name extends Attribute[String]("name")
+  object age extends Attribute[Num]("age")
+  object email extends Attribute[String]("email")
+  object serializedCrap extends Attribute[Bytes]("serializedCrap")
+  object departments extends Attribute[Set[String]]("departments")
 
   // departments property cannot be a primary key:
   illTyped("""
@@ -35,12 +35,15 @@ object simpleModel {
     region = EU
   )
 
-  // you can create a property of any type
-  case object boolProperty extends Property[Boolean]("boolProperty")
-  // but you cannot use it for creating an Item, because it's one of `ValidValues` type union
+  // you can't create a property of a non-valid type
   illTyped("""
-  case object WrongItem extends Item("wrongItem", UsersTable, id :~: boolProperty :~: ∅)
+  case object boolProperty extends Attribute[Boolean]("boolProperty")
   """)
+
+  // // but you cannot use it for creating an Item, because it's one of `ValidValues` type union
+  // illTyped("""
+  // case object WrongItem extends Item("wrongItem", UsersTable, id :~: boolProperty :~: ∅)
+  // """)
 
   case object UserItemRecord extends Record(name :~: age :~: ∅)
   case object UserItem extends Item("user", UsersTable, UserItemRecord.properties)

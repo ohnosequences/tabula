@@ -1,15 +1,15 @@
 package ohnosequences.tabula.sample
 
 import ohnosequences.cosas._, types._, properties._, typeSets._, records._, typeUnions._, ops.typeSets._
-import ohnosequences.tabula._, AnyPredicate._
+import ohnosequences.tabula._, attributes._, AnyPredicate._
 import shapeless.test.illTyped
 
-object id extends Property[Num]("id")
-object name extends Property[String]("name")
-object age extends Property[Num]("age")
-object email extends Property[String]("email")
-object serializedCrap extends Property[Bytes]("serializedCrap")
-object departments extends Property[Set[String]]("departments")
+object id extends Attribute[Num]("id")
+object name extends Attribute[String]("name")
+object age extends Attribute[Num]("age")
+object email extends Attribute[String]("email")
+object serializedCrap extends Attribute[Bytes]("serializedCrap")
+object departments extends Attribute[Set[String]]("departments")
 
 // departments property cannot be a primary key:
 // illTyped("""

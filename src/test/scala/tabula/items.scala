@@ -4,15 +4,15 @@ import org.scalatest.FunSuite
 
 import ohnosequences.cosas._, types._, properties._, typeSets._, records._, typeUnions._
 
-import ohnosequences.tabula._
+import ohnosequences.tabula._, attributes._
 import ohnosequences.tabula.impl._, ImplicitConversions._
 
 import shapeless._, poly._
 import shapeless.test.typed
 
 object TestSetting {
-  case object id extends Property[Num]("id")
-  case object name extends Property[String]("name")
+  case object id extends Attribute[Num]("id")
+  case object name extends Attribute[String]("name")
   case object simpleUserRecord extends Record(id :~: name :~: ∅)
   case object normalUserRecord extends Record(id :~: name :~: email :~: color :~: ∅)
 
@@ -22,8 +22,8 @@ object TestSetting {
   object simpleUser2 extends Item("simpleUser2", table, simpleUserRecord.properties)
 
   // more properties:
-  case object email extends Property[String]("email")
-  case object color extends Property[String]("color")
+  case object email extends Attribute[String]("email")
+  case object color extends Attribute[String]("color")
 
   case object normalUser extends Item("normalUser", table, normalUserRecord.properties)
 

@@ -3,10 +3,10 @@ package ohnosequences.tabula.test
 import ohnosequences.tabula._
 
 object ResourceLists {
-  
+
   import simpleModel._
 
-  type TT = AnyTable :+: AnyTable :+: RNil 
+  type TT = AnyTable :+: AnyTable :+: RNil
   val uh: TT = UsersTable :+: RandomTable :+: RNil
 
   trait AnyAction {
