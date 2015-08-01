@@ -90,7 +90,7 @@ object ImplicitConversions {
   }
 
   /* Conditions-related conversions */
-  implicit def toSDKCondition[C <: Condition](cond: C): SDKCondition = {
+  implicit def toSDKCondition[C <: AnyCondition](cond: C): SDKCondition = {
     import scala.collection.JavaConversions._
 
     val sdkCond = new SDKCondition().withComparisonOperator(cond.getClass.getSimpleName)

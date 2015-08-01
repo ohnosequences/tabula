@@ -55,7 +55,7 @@ case class SimpleQuery[
 case class NormalQuery[
   I <: AnyItem.ofCompositeTable,
   P <: SimplePredicate[I, EQ[I#Table#PrimaryKey#Hash]],
-  R <: Condition.On[I#Table#PrimaryKey#Range] with KeyCondition
+  R <: AnyCondition.On[I#Table#PrimaryKey#Range] with AnyKeyCondition
 ](p: P, r: R) extends QueryFor[I] {
 
   type Predicate = AND[P, R]

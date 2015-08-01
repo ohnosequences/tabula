@@ -22,16 +22,16 @@ case object conditions {
     * Comparison Operators with **N** Attribute Values:
       `IN`
   */
-  trait Condition {
+  sealed trait AnyCondition {
 
     type Attribute <: AnyAttribute
     val  attribute: Attribute
   }
 
-  sealed trait KeyCondition extends Condition
+  sealed trait AnyKeyCondition extends AnyCondition
 
-  object Condition {
-    type On[A <: AnyAttribute] = Condition { type Attribute = A }
+  object AnyCondition {
+    type On[A <: AnyAttribute] = AnyCondition { type Attribute = A }
   }
 
   object syntax {
@@ -63,7 +63,7 @@ case object conditions {
     ### Comparison Operators with **No** Attribute Values
   */
   sealed trait NullaryCondition[A <: AnyAttribute]
-    extends Condition { type Attribute = A }
+    extends AnyCondition { type Attribute = A }
 
   /* - `NOT_NULL` - true if an attribute exists */
   case class     NULL[A <: AnyAttribute](val attribute: A) extends NullaryCondition[A]
@@ -74,7 +74,7 @@ case object conditions {
   /*
     ## Comparison Operators with **One** Attribute Value
   */
-  trait SimpleCondition[A <: AnyAttribute] extends Condition {
+  trait SimpleCondition[A <: AnyAttribute] extends AnyCondition {
 
     type Attribute = A
     val value: A#Raw
@@ -84,10 +84,10 @@ case object conditions {
   case class EQ[A <: AnyAttribute](
     val attribute: A,
     val value: A#Raw
-  ) extends SimpleCondition[A] with KeyCondition
+  ) extends SimpleCondition[A] with AnyKeyCondition
 
   /* - `NE` - true if an attribute is not equal to a value */
-  // NOTE: this is not a KeyCondition for some reason
+  // NOTE: this is not a AnyKeyCondition for some reason
   case class NE[A <: AnyAttribute](
     val attribute: A,
     val value: A#Raw
@@ -99,14 +99,14 @@ case object conditions {
     val value: A#Raw
   )(implicit
     ev: A#Raw isOneOf NotSetValues
-  ) extends SimpleCondition[A] with KeyCondition
+  ) extends SimpleCondition[A] with AnyKeyCondition
 
   /* - `LT` - true if an attribute is less than a value */
   case class LT[A <: AnyAttribute](
     val attribute: A,
     val value: A#Raw
   )(implicit ev: A#Raw isOneOf NotSetValues)
-    extends SimpleCondition[A] with KeyCondition
+    extends SimpleCondition[A] with AnyKeyCondition
 
   /* - `GE` - true if an attribute is greater than or equal to a value */
   case class GE[A <: AnyAttribute](
@@ -114,7 +114,7 @@ case object conditions {
     val value: A#Raw
   )(implicit
     ev: A#Raw isOneOf NotSetValues
-  ) extends SimpleCondition[A] with KeyCondition
+  ) extends SimpleCondition[A] with AnyKeyCondition
 
   /* - `GT` - true if an attribute is greater than a value */
   case class GT[A <: AnyAttribute](
@@ -122,7 +122,7 @@ case object conditions {
     val value: A#Raw
   )(implicit
     ev: A#Raw isOneOf NotSetValues
-  ) extends SimpleCondition[A] with KeyCondition
+  ) extends SimpleCondition[A] with AnyKeyCondition
 
 
   /* - `CONTAINS` - true if a value is present within a set, or if one value contains another */
@@ -133,7 +133,7 @@ case object conditions {
   )(implicit
     ev: A#Raw isOneOf SetValues,
     eq: Set[V] =:= A#Raw
-  ) extends Condition { type Attribute = A }
+  ) extends AnyCondition { type Attribute = A }
 
   /* - `NOT_CONTAINS` - true if a value is not present within a set, or if one value does not contain another value */
   case class NOT_CONTAINS[A <: AnyAttribute, V](
@@ -142,7 +142,7 @@ case object conditions {
   )(implicit
     ev: A#Raw isOneOf SetValues,
     eq: Set[V] =:= A#Raw
-  ) extends Condition { type Attribute = A }
+  ) extends AnyCondition { type Attribute = A }
 
   /* - `BEGINS_WITH` - true if the first few characters of an attribute match the provided value. Do not use this operator for comparing numbers */
   case class BEGINS_WITH[A <: AnyAttribute](
@@ -150,7 +150,7 @@ case object conditions {
     val value: A#Raw
   )(implicit
     ev: A#Raw isOneOf ValuesWithPrefixes
-  ) extends SimpleCondition[A] with KeyCondition
+  ) extends SimpleCondition[A] with AnyKeyCondition
 
 
   /*
@@ -164,7 +164,7 @@ case object conditions {
     val end: A#Raw
   )(implicit
     ev: A#Raw isOneOf NotSetValues
-  ) extends KeyCondition { type Attribute = A }
+  ) extends AnyKeyCondition { type Attribute = A }
 
   // NOTE: this is not in the Amazon documentation
   // case class NOT_BETWEEN[A <: AnyAttribute](
@@ -173,7 +173,7 @@ case object conditions {
   //   val end: A#Raw
   // )(implicit
   //   ev: A#Raw isOneOf NotSetValues
-  // ) extends KeyCondition { type Attribute = A }
+  // ) extends AnyKeyCondition { type Attribute = A }
 
 
   /*
@@ -188,7 +188,7 @@ case object conditions {
     val values: List[A#Raw]
   )(implicit
     ev: A#Raw isOneOf NotSetValues
-  ) extends Condition { type Attribute = A }
+  ) extends AnyCondition { type Attribute = A }
 
 
   /* ## Method aliases for condition constructors */
