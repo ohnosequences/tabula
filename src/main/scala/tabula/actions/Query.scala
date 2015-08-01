@@ -3,7 +3,7 @@ package ohnosequences.tabula
 import ohnosequences.cosas._, types._, typeSets._
 
 import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
-import ohnosequences.tabula._, Condition._, AnyItem._
+import ohnosequences.tabula._, states._, actions._, conditions._, predicates._, items._, tables._
 import ohnosequences.tabula.impl.ImplicitConversions._
 
 // sealed trait AnyQueryResult { type Item <: AnyItem }
@@ -14,10 +14,10 @@ import ohnosequences.tabula.impl.ImplicitConversions._
 /* ### Common action trait */
 sealed trait AnyQuery extends AnyItemAction {
   // quieries make sense only for the composite key tables
-  type Item <: AnyItem.OfCompositeTable
+  type Item <: AnyItem.ofCompositeTable
 
   //require updating or creating
-  type InputState  <: AnyTableState.For[TableOf[Item]] with ReadyTable
+  type InputState  <: AnyTableState.For[Item#Table] with ReadyTable
   type OutputState = InputState
 
   // TODO: restrict this type better
@@ -28,7 +28,7 @@ sealed trait AnyQuery extends AnyItemAction {
   // type Output = List[AnyValue.ofType[Item]]
 }
 
-sealed trait QueryFor[I <: AnyItem.OfCompositeTable] extends AnyQuery {
+sealed trait QueryFor[I <: AnyItem.ofCompositeTable] extends AnyQuery {
 
   type Item = I
 }
@@ -38,22 +38,23 @@ sealed trait QueryFor[I <: AnyItem.OfCompositeTable] extends AnyQuery {
 // }
 
 case class SimpleQuery[
-  I <: AnyItem.OfCompositeTable,
-  H <: TableOf[I]#PrimaryKey#Hash#Raw
+  I <: AnyItem.ofCompositeTable,
+  H <: I#Table#PrimaryKey#Hash#Raw
 ](i: I, h: H) extends QueryFor[I] {
 
   val  item = i
 
-  type Predicate = SimplePredicate[I, EQ[TableOf[I]#PrimaryKey#Hash]]
-  val  predicate = SimplePredicate(item, EQ(item.table.primaryKey.hash, h))
+  type Predicate = SimplePredicate[Item, EQ[Item#Table#PrimaryKey#Hash]]
+  // FIXME: some types problem here
+  val  predicate = ??? //SimplePredicate(item, EQ(item.table.primaryKey.hash, h))
   // val  predicate = p
 }
 
 // the range key condition is optional
 case class NormalQuery[
-  I <: AnyItem.OfCompositeTable,
-  P <: SimplePredicate[I, EQ[TableOf[I]#PrimaryKey#Hash]],
-  R <: Condition.On[TableOf[I]#PrimaryKey#Range] with KeyCondition
+  I <: AnyItem.ofCompositeTable,
+  P <: SimplePredicate[I, EQ[I#Table#PrimaryKey#Hash]],
+  R <: Condition.On[I#Table#PrimaryKey#Range] with KeyCondition
 ](p: P, r: R) extends QueryFor[I] {
 
   type Predicate = AND[P, R]

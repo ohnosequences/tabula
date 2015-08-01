@@ -1,57 +1,56 @@
 package ohnosequences.tabula
 
-import attributes._
-import ohnosequences.cosas._, types._, typeSets._, fns._, typeUnions._, records._, properties._
-import ohnosequences.cosas.ops.typeSets._
-import shapeless._, poly._
+case object items {
 
-/*
-  ## Items
+  import attributes._, tables._
+  import ohnosequences.cosas._, typeSets._, records._
 
-  This is the type of items of a given table. A table can hold different kinds of records, as you could want to restrict access to some items for example; there's even functionality in IAM for this. By separating the item type from the table we can easily model this scenario as different item types for the same table.
-*/
+  /*
+    ## Items
 
-// trait HasValidRaw extends TypePredicate[AnyType] {
-//   type Condition[T <: AnyType] = T#Raw isOneOf ValidValues
-// }
+    This is the type of items of a given table. A table can hold different kinds of records, as you could want to restrict access to some items for example; there's even functionality in IAM for this. By separating the item type from the table we can easily model this scenario as different item types for the same table.
+  */
 
-trait AnyItem extends AnyRecord {
+  // trait HasValidRaw extends TypePredicate[AnyType] {
+  //   type Condition[T <: AnyType] = T#Raw isOneOf ValidValues
+  // }
 
-  type Attributes <: AnyTypeSet.Of[AnyAttribute]
-  val  attributes: Attributes
+  trait AnyItem extends AnyRecord {
 
-  // From AnyRecord:
-  type Properties = Attributes
-  lazy val properties = attributes
+    type Attributes <: AnyTypeSet.Of[AnyAttribute]
+    val  attributes: Attributes
 
-  type Table <: AnyTable
-  val  table: Table
+    // From AnyRecord:
+    type Properties = Attributes
+    lazy val properties = attributes
 
-  type Raw <: AnyTypeSet
-}
+    type Table <: AnyTable
+    val  table: Table
 
-class Item [
-  T  <: AnyTable,
-  Attrs <: AnyTypeSet.Of[AnyAttribute],
-  Vals <: AnyTypeSet
-](val label: String,
-  val table: T,
-  val attributes: Attrs
-)(implicit
-  val valuesOfProperties: Vals areValuesOf Attrs
-) extends AnyItem {
+    type Raw <: AnyTypeSet
+  }
 
-  type Attributes = Attrs
-  type Raw = Vals
-  type Table = T
-}
+  class Item [
+    T  <: AnyTable,
+    Attrs <: AnyTypeSet.Of[AnyAttribute],
+    Vals <: AnyTypeSet
+  ](val label: String,
+    val table: T,
+    val attributes: Attrs
+  )(implicit
+    val valuesOfProperties: Vals areValuesOf Attrs
+  ) extends AnyItem {
 
-object AnyItem {
+    type Attributes = Attrs
+    type Raw = Vals
+    type Table = T
+  }
 
-  type ofTable[T <: AnyTable] = AnyItem { type Table = T }
-  type withProperties[P <: AnyTypeSet with AnyTypeSet.Of[AnyProperty]] = AnyItem { type Props = P }
+  object AnyItem {
 
-  type TableOf[I <: AnyItem] = I#Table
+    type ofTable[T <: AnyTable] = AnyItem { type Table = T }
+    type ofCompositeTable = AnyItem { type Table <: AnyTable.withCompositeKey }
+    // type withAttributes[A <: AnyTypeSet.Of[AnyAttribute]] = AnyItem { type Attributes = A }
+  }
 
-  type OfCompositeTable = AnyItem { type Table <: AnyTable.withCompositeKey }
 }

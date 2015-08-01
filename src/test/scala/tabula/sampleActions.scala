@@ -46,7 +46,7 @@ object FunnyUserItem extends Item(
 
 // predicates
 import AnyPredicate._
-import Condition._
+import conditions._
 
 object samplePredicates {
 

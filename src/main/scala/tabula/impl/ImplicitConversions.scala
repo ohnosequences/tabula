@@ -1,7 +1,7 @@
 package ohnosequences.tabula.impl
 
 import ohnosequences.cosas._, types._, properties._
-import ohnosequences.tabula._, attributes._
+import ohnosequences.tabula._, attributes._, conditions._, predicates._
 
 import com.amazonaws.services.dynamodbv2.model.{AttributeValue, ScalarAttributeType, AttributeDefinition, ConditionalOperator}
 import com.amazonaws.services.dynamodbv2.model.{Condition => SDKCondition}

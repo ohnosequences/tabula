@@ -1,14 +1,14 @@
 package ohnosequences.tabula
 
-import ohnosequences.cosas._, types._, AnyItemAction._
+import ohnosequences.cosas._, types._
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import ohnosequences.tabula.impl.ImplicitConversions._
-import ohnosequences.tabula._, AnyItem._
+import ohnosequences.tabula._, states._, actions._, items._
 
 trait AnyPutItem extends AnyItemAction {
   //require updating or creating
-  type InputState  = AnyTableState.For[TableOf[Item]] with ReadyTable
+  type InputState  = AnyTableState.For[Item#Table] with ReadyTable
   type OutputState = InputState
 
   // type ItemValue = ValueOf[Item]

@@ -1,44 +1,49 @@
 package ohnosequences.tabula
 
-// TODO move to a different namespace
-trait AwsService
-object DynamoDB extends AwsService
+case object services {
 
-trait AnyDynamoDBService { thisService =>
-  
-  // TODO move this to the type
-  type Region <: AnyRegion
-  type Account <: AnyAccount
-  // type Auth <: AnyAuth
-  val region: Region
-  val account: Account
-  // val auth: Auth
+  import accounts._, regions._, actions._, executors._
 
-  val host = "amazonaws.com"
-  val namespace: String = "dynamodb"
-  // add here isSecure or something similar
-  def endpoint: String
 
-  // then you can do: service please createTable(table, initialState)
-  // it could also be apply, like: service createTable(table, initialState)
-  // def apply[A <: AnyAction, E <: Executor.For[A]](action: A)
-  //   (implicit mkE: A => E): E#Out = {
-  //   // E#OutC[(A#Output, A#Resources, A#OutputState)] = {
-  //     val exec = mkE(action)
-  //     exec()
-  //   }
+  // TODO move to a different namespace
+  trait AwsService
+  object DynamoDB extends AwsService
 
-  import Executor._, AnyAction._
+  trait AnyDynamoDBService { thisService =>
 
-  // def plz[A <: AnyTableAction, E <: ExecutorFor[A]](action: A)
-  //   (implicit exec: (A#Table, A) => E): InputStateOf[A] => OutOf[E] = { s => exec(action.table, action)(action)(s) }
+    // TODO move this to the type
+    type Region <: AnyRegion
+    type Account <: AnyAccount
+    // type Auth <: AnyAuth
+    val region: Region
+    val account: Account
+    // val auth: Auth
 
-  def please[A <: AnyAction, E <: ExecutorFor[A]](action: A)
-    (implicit mkExec: A => E): InputStateOf[A] => OutOf[E] = { 
-      val exec = mkExec(action)
-      s => exec(action)(s) 
-    }
+    val host = "amazonaws.com"
+    val namespace: String = "dynamodb"
+    // add here isSecure or something similar
+    def endpoint: String
 
-  // def please[A <: AnyAction, E <: ExecutorFor[A]](action: A)
-  //   (implicit exec: E): InputStateOf[A] => OutOf[E] = { s => exec(action)(s) }
+    // then you can do: service please createTable(table, initialState)
+    // it could also be apply, like: service createTable(table, initialState)
+    // def apply[A <: AnyAction, E <: Executor.For[A]](action: A)
+    //   (implicit mkE: A => E): E#Out = {
+    //   // E#OutC[(A#Output, A#Resources, A#OutputState)] = {
+    //     val exec = mkE(action)
+    //     exec()
+    //   }
+
+    // def plz[A <: AnyTableAction, E <: ExecutorFor[A]](action: A)
+    //   (implicit exec: (A#Table, A) => E): A#InputState => OutOf[E] = { s => exec(action.table, action)(action)(s) }
+
+    def please[A <: AnyAction, E <: ExecutorFor[A]](action: A)
+      (implicit mkExec: A => E): A#InputState => E#Out = {
+        val exec = mkExec(action)
+        s => exec(action)(s)
+      }
+
+    // def please[A <: AnyAction, E <: ExecutorFor[A]](action: A)
+    //   (implicit exec: E): A#InputState => OutOf[E] = { s => exec(action)(s) }
+  }
+
 }

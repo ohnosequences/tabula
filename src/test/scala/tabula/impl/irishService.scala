@@ -77,7 +77,7 @@ class irishService extends FunSuite {
   }
 
   ignore("complex example") {
-    import Condition._
+    import conditions._
     import AnyPredicate._
     import SDKRepParsers._
     import SDKRepSerializers._

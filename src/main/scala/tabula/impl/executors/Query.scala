@@ -2,7 +2,10 @@ package ohnosequences.tabula.impl
 
 import ohnosequences.cosas._, records._, fns._, types._
 import ohnosequences.cosas.ops.typeSets._
-import ohnosequences.tabula._, Condition._, AnyPredicate._, ImplicitConversions._, AnyAction._, AnyItemAction._
+
+import ohnosequences.tabula._, actions._, conditions._, predicates._, executors._
+import ImplicitConversions._
+
 import com.amazonaws.services.dynamodbv2.model._
 
 case class QueryExecutor[A <: AnyQuery](implicit
@@ -16,7 +19,7 @@ case class QueryExecutor[A <: AnyQuery](implicit
 
   import scala.collection.JavaConversions._
 
-  def apply(action: A)(inputState: InputStateOf[A]): Out = {
+  def apply(action: A)(inputState: A#InputState): Out = {
     println("executing: " + action)
 
     val res: List[ValueOf[A#Item]] = try {

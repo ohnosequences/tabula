@@ -1,6 +1,7 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._, ImplicitConversions._, AnyAction._
+import ohnosequences.tabula._, states._, actions._, executors._
+import ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 import java.util.Date
 
@@ -9,22 +10,22 @@ case class UpdateTableExecutor[A <: AnyUpdateTable]
 
   type OutC[X] = X
 
-  def apply(action: A)(inputState: InputStateOf[A]): Out = {
+  def apply(action: A)(inputState: A#InputState): Out = {
     println("executing: " + action)
 
     //CREATING, UPDATING, DELETING, ACTIVE
 
     // TODO: add checks for inputState!!!
-    dynamoClient.client.updateTable(action.table.name, 
+    dynamoClient.client.updateTable(action.table.name,
       new ProvisionedThroughput(
-        action.newReadThroughput, 
+        action.newReadThroughput,
         action.newWriteThroughput
       )
     )
 
     val oldThroughputStatus =  inputState.throughputStatus
 
-    var throughputStatus = ohnosequences.tabula.ThroughputStatus (
+    var throughputStatus = ThroughputStatus (
       readCapacity = action.newReadThroughput,
       writeCapacity = action.newWriteThroughput
     )
@@ -67,4 +68,3 @@ case class UpdateTableExecutor[A <: AnyUpdateTable]
   }
 
 }
-

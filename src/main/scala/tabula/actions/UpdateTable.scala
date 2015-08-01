@@ -1,5 +1,7 @@
 package ohnosequences.tabula
 
+import states._, actions._, tables._
+
 trait AnyUpdateTable extends AnyTableAction {
   //require updating or creating
   type InputState  = AnyTableState.For[Table] with ReadyTable
@@ -12,6 +14,6 @@ trait AnyUpdateTable extends AnyTableAction {
 }
 
 case class UpdateTable[T <: AnyTable](val table: T)(
-  val newReadThroughput: Int, 
+  val newReadThroughput: Int,
   val newWriteThroughput: Int
 ) extends AnyUpdateTable { type Table = T }

@@ -1,6 +1,7 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._, ImplicitConversions._, AnyAction._
+import ohnosequences.tabula._, actions._, executors._, tables._
+import ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 
 case class CreateTableExecutor[A <: AnyCreateTable]
@@ -8,11 +9,11 @@ case class CreateTableExecutor[A <: AnyCreateTable]
 
   type OutC[X] = X
 
-  def apply(action: A)(inputState: InputStateOf[A]): Out = {
+  def apply(action: A)(inputState: A#InputState): Out = {
     println("executing: " + action)
 
     val throughput = new ProvisionedThroughput(
-      inputState.throughputStatus.readCapacity, 
+      inputState.throughputStatus.readCapacity,
       inputState.throughputStatus.writeCapacity
     )
 
@@ -28,9 +29,9 @@ case class CreateTableExecutor[A <: AnyCreateTable]
       }
       case CompositeKey(hash, range) => {
         prerequest
-          .withKeySchema(new KeySchemaElement(hash.label, "HASH"), 
+          .withKeySchema(new KeySchemaElement(hash.label, "HASH"),
                          new KeySchemaElement(range.label, "RANGE"))
-          .withAttributeDefinitions(getAttrDef(hash), 
+          .withAttributeDefinitions(getAttrDef(hash),
                                     getAttrDef(range))
       }
     }
@@ -58,7 +59,7 @@ case class CreateTableExecutor[A <: AnyCreateTable]
 //     val hashSchemaElement = new KeySchemaElement(action.table.hashKey.label, "HASH")
 //     val rangeSchemaElement = new KeySchemaElement(action.table.rangeKey.label, "RANGE")
 //     val throughput = new ProvisionedThroughput(
-//       inputState.throughputStatus.readCapacity, 
+//       inputState.throughputStatus.readCapacity,
 //       inputState.throughputStatus.writeCapacity
 //     )
 //     val request = new CreateTableRequest()

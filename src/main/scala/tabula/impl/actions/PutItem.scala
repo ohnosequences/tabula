@@ -6,7 +6,7 @@
 // import ohnosequences.cosas.ops.typeSets._
 
 // import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
-// import ohnosequences.tabula._, impl._, ImplicitConversions._, AnyItem._
+// import ohnosequences.tabula._, impl._, ImplicitConversions._, items._
 
 // case class InHashKeyTable[T <: AnyHashKeyTable]
 //   (val t: T, val inputSt: AnyTableState.For[T] with ReadyTable) {

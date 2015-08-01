@@ -1,9 +1,10 @@
 package ohnosequences.tabula
 
-import ohnosequences.cosas._, typeUnions._, properties._
-import scala.reflect.ClassTag
-
 case object attributes {
+
+  import ohnosequences.cosas._, typeUnions._, properties._
+  import scala.reflect.ClassTag
+
 
   trait AnyAttribute extends AnyProperty {
 

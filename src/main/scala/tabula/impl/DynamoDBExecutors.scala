@@ -2,7 +2,7 @@ package ohnosequences.tabula.impl
 
 import ohnosequences.cosas._, records._, fns._, types._
 import ohnosequences.cosas.ops.typeSets._
-import ohnosequences.tabula._, ImplicitConversions._, AnyItemAction._
+import ohnosequences.tabula._, ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 
 // TODO check region of clients
@@ -34,7 +34,7 @@ case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
 
   /* PUT ITEM */
   implicit def putItemExecutor[A <: AnyPutItem](a: A)(implicit
-      serializer: ItemOf[A]#Raw SerializeTo SDKRep
+      serializer: A#Item#Raw SerializeTo SDKRep
     ): PutItemExecutor[A] =
        PutItemExecutor[A](dynamoClient, serializer)
 

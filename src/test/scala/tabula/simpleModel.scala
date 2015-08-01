@@ -53,7 +53,7 @@ object simpleModel {
 
   // predicates
   import AnyPredicate._
-  import Condition._
+  import conditions._
 
   val namePred = UserItem ? (name === "piticli")
   val ageAndPred = AND(namePred, age < 18)

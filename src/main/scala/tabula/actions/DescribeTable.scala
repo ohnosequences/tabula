@@ -1,5 +1,7 @@
 package ohnosequences.tabula
 
+import states._, actions._, tables._
+
 trait AnyDescribeTable extends AnyTableAction {
   type InputState  = AnyTableState.For[Table]
   type OutputState = AnyTableState.For[Table]
