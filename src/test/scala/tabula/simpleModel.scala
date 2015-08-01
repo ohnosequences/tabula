@@ -1,7 +1,7 @@
 package ohnosequences.tabula.test
 
 import ohnosequences.cosas._, typeSets._, properties._, records._
-import ohnosequences.tabula._, attributes._
+import ohnosequences.tabula._, attributes._, conditions._, predicates._, items._, tables._
 
 import shapeless.test._
 
@@ -19,20 +19,20 @@ object simpleModel {
   object WrongHashTable extends HashKeyTable (
     name = "users",
     hashKey = departments,
-    region = EU
+    region = regions.EU
   )
   """)
 
   case object UsersTable extends Table (
     name = "users",
     primaryKey = HashKey(name),
-    region = EU
+    region = regions.EU
   )
 
   case object RandomTable extends Table (
     name = "someStuff",
     primaryKey = CompositeKey(id, name),
-    region = EU
+    region = regions.EU
   )
 
   // you can't create a property of a non-valid type
@@ -52,8 +52,7 @@ object simpleModel {
   case object FunnyUserItem extends Item("funnyUser", UsersTable, FunnyUserItemRecord.properties)
 
   // predicates
-  import AnyPredicate._
-  import conditions._
+  import conditions.syntax._
 
   val namePred = UserItem ? (name === "piticli")
   val ageAndPred = AND(namePred, age < 18)

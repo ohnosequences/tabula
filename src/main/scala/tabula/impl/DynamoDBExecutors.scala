@@ -2,38 +2,39 @@ package ohnosequences.tabula.impl
 
 import ohnosequences.cosas._, records._, fns._, types._
 import ohnosequences.cosas.ops.typeSets._
-import ohnosequences.tabula._, ImplicitConversions._
+import ohnosequences.tabula._
+import ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 
 // TODO check region of clients
 case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
 
   /* CREATE TABLE */
-  implicit def createTableExecutor[A <: AnyCreateTable](a: A):
+  implicit def createTableExecutor[A <: action.AnyCreateTable](a: A):
     CreateTableExecutor[A] =
     CreateTableExecutor[A](dynamoClient)
 
 
   /* DELETE TABLE */
-  implicit def deleteTableExecutor[A <: AnyDeleteTable](a: A):
+  implicit def deleteTableExecutor[A <: action.AnyDeleteTable](a: A):
     DeleteTableExecutor[A] =
     DeleteTableExecutor[A](dynamoClient)
 
 
   /* DESCRIBE TABLE */
-  implicit def describeTableExecutor[A <: AnyDescribeTable](a: A):
+  implicit def describeTableExecutor[A <: action.AnyDescribeTable](a: A):
     DescribeTableExecutor[A] =
     DescribeTableExecutor[A](dynamoClient)
 
 
   /* UPDATE TABLE */
-  implicit def updateTableExecutor[A <: AnyUpdateTable](a: A):
+  implicit def updateTableExecutor[A <: action.AnyUpdateTable](a: A):
     UpdateTableExecutor[A] =
     UpdateTableExecutor[A](dynamoClient)
 
 
   /* PUT ITEM */
-  implicit def putItemExecutor[A <: AnyPutItem](a: A)(implicit
+  implicit def putItemExecutor[A <: action.AnyPutItem](a: A)(implicit
       serializer: A#Item#Raw SerializeTo SDKRep
     ): PutItemExecutor[A] =
        PutItemExecutor[A](dynamoClient, serializer)

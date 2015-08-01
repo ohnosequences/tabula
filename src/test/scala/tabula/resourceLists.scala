@@ -1,6 +1,6 @@
 package ohnosequences.tabula.test
 
-import ohnosequences.tabula._
+import ohnosequences.tabula._, resources._, tables._
 
 object ResourceLists {
 

@@ -9,7 +9,7 @@ import ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 
 
-case class PutItemExecutor[A <: AnyPutItem](
+case class PutItemExecutor[A <: action.AnyPutItem](
   dynamoClient: AnyDynamoDBClient,
   serializer: A#Item#Raw SerializeTo SDKRep
 ) extends ExecutorFor[A] {

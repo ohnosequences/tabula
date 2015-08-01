@@ -1,8 +1,9 @@
-package ohnosequences.tabula
+package ohnosequences.tabula.action
+
+import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 
 import ohnosequences.cosas._, types._, typeSets._
 
-import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
 import ohnosequences.tabula._, states._, actions._, conditions._, predicates._, items._, tables._
 import ohnosequences.tabula.impl.ImplicitConversions._
 

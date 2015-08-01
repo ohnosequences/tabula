@@ -32,6 +32,9 @@ case object conditions {
 
   object Condition {
     type On[A <: AnyAttribute] = Condition { type Attribute = A }
+  }
+
+  object syntax {
 
     implicit def conditionAnyOps[A <: AnyAttribute](attribute: A):
         ConditionAnyOps[A] =

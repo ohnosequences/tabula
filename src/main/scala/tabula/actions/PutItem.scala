@@ -1,10 +1,10 @@
-package ohnosequences.tabula
+package ohnosequences.tabula.action
 
 import ohnosequences.cosas._, types._
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
-import ohnosequences.tabula.impl.ImplicitConversions._
 import ohnosequences.tabula._, states._, actions._, items._
+
 
 trait AnyPutItem extends AnyItemAction {
   //require updating or creating

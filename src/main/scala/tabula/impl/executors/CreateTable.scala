@@ -4,7 +4,7 @@ import ohnosequences.tabula._, actions._, executors._, tables._
 import ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 
-case class CreateTableExecutor[A <: AnyCreateTable]
+case class CreateTableExecutor[A <: action.AnyCreateTable]
   (dynamoClient: AnyDynamoDBClient) extends ExecutorFor[A] {
 
   type OutC[X] = X

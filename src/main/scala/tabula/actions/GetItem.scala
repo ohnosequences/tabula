@@ -1,4 +1,4 @@
-// package ohnosequences.tabula
+// package ohnosequences.tabula.action
 
 // import ohnosequences.cosas._, types._
 // import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}

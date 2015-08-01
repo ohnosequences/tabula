@@ -4,7 +4,7 @@ import org.scalatest.FunSuite
 
 import ohnosequences.cosas._, types._, properties._, typeSets._, records._, typeUnions._
 
-import ohnosequences.tabula._, attributes._
+import ohnosequences.tabula._, attributes._, items._, tables._
 import ohnosequences.tabula.impl._, ImplicitConversions._
 
 import shapeless._, poly._
@@ -16,7 +16,7 @@ object TestSetting {
   case object simpleUserRecord extends Record(id :~: name :~: ∅)
   case object normalUserRecord extends Record(id :~: name :~: email :~: color :~: ∅)
 
-  object table extends Table("foo_table", CompositeKey(id, name), EU)
+  object table extends Table("foo_table", CompositeKey(id, name), regions.EU)
 
   object simpleUser extends Item("simpleUser", table, id :~: name :~: ∅)
   object simpleUser2 extends Item("simpleUser2", table, simpleUserRecord.properties)

@@ -1,6 +1,6 @@
-package ohnosequences.tabula
+package ohnosequences.tabula.action
 
-import states._, actions._, tables._
+import ohnosequences.tabula._, states._, actions._, tables._
 
 trait AnyDeleteTable extends AnyTableAction {
   type InputState  = Active[Table]

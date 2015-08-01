@@ -1,4 +1,4 @@
-// package ohnosequences.tabula
+// package ohnosequences.tabula.action
 
 // import com.amazonaws.services.dynamodbv2.model.AttributeValue
 // import ohnosequences.cosas.types._
@@ -29,7 +29,7 @@
 // (
 //   val t: T,
 //   val inputSt: AnyTableState.For[T] with ReadyTable
-// ) 
+// )
 // {
 
 //   case class withKey(hashKeyValue: RawOf[T#HashKey]) extends AnyDeleteItemHashKeyAction {
@@ -65,7 +65,7 @@
 // <<<<<<< HEAD
 // /* ### Composite key table */
 // trait AnyDeleteItemCompositeKeyAction extends AnyDeleteItemAction {
-  
+
 //   type Table <: AnyCompositeKeyTable
 //   type Input = ( RawOf[Table#HashKey], RawOf[Table#RangeKey] )
 // }
@@ -76,7 +76,7 @@
 //   case class withKeys(
 //     val hashKeyValue: RawOf[T#HashKey],
 //     val rangeKeyValue: RawOf[T#RangeKey]
-//   ) 
+//   )
 //   extends AnyDeleteItemCompositeKeyAction {
 
 //     type Table = T

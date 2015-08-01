@@ -3,7 +3,7 @@ package ohnosequences.tabula.impl
 import ohnosequences.tabula._, actions._, executors._
 import com.amazonaws.services.dynamodbv2.model._
 
-case class DeleteTableExecutor[A <: AnyDeleteTable]
+case class DeleteTableExecutor[A <: action.AnyDeleteTable]
   (dynamoClient: AnyDynamoDBClient) extends ExecutorFor[A] {
 
   type OutC[X] = X

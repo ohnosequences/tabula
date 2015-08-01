@@ -8,7 +8,7 @@ import ImplicitConversions._
 
 import com.amazonaws.services.dynamodbv2.model._
 
-case class QueryExecutor[A <: AnyQuery](implicit
+case class QueryExecutor[A <: action.AnyQuery](implicit
   dynamoClient: AnyDynamoDBClient,
   parser: (A#Item#Properties ParseFrom SDKRep) { type Out = A#Item#Raw }
   // parser: (PropertiesOf[ItemOf[A]] ParseFrom SDKRep) with out[RawOf[ItemOf[A]]]

@@ -8,7 +8,8 @@ import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeV
 
 import ohnosequences.cosas._, types._, typeSets._, records._, properties._
 
-import ohnosequences.tabula._, attributes._
+import ohnosequences.tabula._, attributes._, accounts._, regions._, items._, services._, tables._, states._
+import ohnosequences.tabula.action._
 import ohnosequences.tabula.impl._, ImplicitConversions._ //, actions._
 
 import shapeless._, poly._
@@ -21,7 +22,7 @@ object TestSetting {
       type Region = EU.type
       val  region = EU
 
-      type Account = ohnosequences.tabula.Account
+      type Account = accounts.Account
       val  account: Account = Account("", "")
 
       def endpoint: String = "" //shouldn't be here
@@ -77,8 +78,7 @@ class irishService extends FunSuite {
   }
 
   ignore("complex example") {
-    import conditions._
-    import AnyPredicate._
+    import conditions.syntax._
     import SDKRepParsers._
     import SDKRepSerializers._
 

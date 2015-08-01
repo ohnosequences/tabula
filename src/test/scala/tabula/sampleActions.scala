@@ -1,7 +1,7 @@
 package ohnosequences.tabula.sample
 
 import ohnosequences.cosas._, types._, properties._, typeSets._, records._, typeUnions._, ops.typeSets._
-import ohnosequences.tabula._, attributes._, AnyPredicate._
+import ohnosequences.tabula._, attributes._, conditions._, predicates._, items._, tables._
 import shapeless.test.illTyped
 
 object id extends Attribute[Num]("id")
@@ -16,20 +16,20 @@ object departments extends Attribute[Set[String]]("departments")
 // object WrongHashTable extends HashKeyTable (
 //   name = "users",
 //   hashKey = departments,
-//   region = EU
+//   region = regions.EU
 // )
 // """)
 
 case object UsersTable extends Table (
   name = "users",
   primaryKey = HashKey(name),
-  region = EU
+  region = regions.EU
 )
 
 case object RandomTable extends Table (
   name = "someStuff",
   primaryKey = CompositeKey(id, name),
-  region = EU
+  region = regions.EU
 )
 
 object UserItem extends Item(
@@ -45,10 +45,9 @@ object FunnyUserItem extends Item(
 )
 
 // predicates
-import AnyPredicate._
-import conditions._
 
 object samplePredicates {
+  import conditions.syntax._
 
   val namePred = UserItem ? (name === "piticli")
   val ageAndPred = AND(namePred, age < 18)

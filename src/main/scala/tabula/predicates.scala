@@ -90,18 +90,15 @@ case object predicates {
   object AnyPredicate {
 
     type HeadedBy[C <: Condition] = AnyPredicate { type Head <: C }
-
     type On[I <: AnyItem] = AnyPredicate { type Item = I }
+  }
 
-    /*
-      With this you can write `item ? condition` which means `SimplePredicate(item, condition)`
-    */
-    implicit def itemPredicateOps[I <: AnyItem](item: I): ItemPredicateOps[I] = ItemPredicateOps(item)
-    case class   ItemPredicateOps[I <: AnyItem](val item: I) {
-      def ?[C <: Condition](c: C)(implicit
-          ev: C#Attribute ∈ I#Attributes
-        ): SimplePredicate[I, C] = SimplePredicate(item, c)
-    }
+  /* With this you can write `item ? condition` which means `SimplePredicate(item, condition)` */
+  implicit def itemPredicateOps[I <: AnyItem](item: I): ItemPredicateOps[I] = ItemPredicateOps(item)
+  case class   ItemPredicateOps[I <: AnyItem](val item: I) {
+    def ?[C <: Condition](c: C)(implicit
+        ev: C#Attribute ∈ I#Attributes
+      ): SimplePredicate[I, C] = SimplePredicate(item, c)
   }
 
   /* An implicit check that this predicate consists only of KeyConditions */

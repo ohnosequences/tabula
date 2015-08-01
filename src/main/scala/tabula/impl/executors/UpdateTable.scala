@@ -5,7 +5,7 @@ import ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 import java.util.Date
 
-case class UpdateTableExecutor[A <: AnyUpdateTable]
+case class UpdateTableExecutor[A <: action.AnyUpdateTable]
   (dynamoClient: AnyDynamoDBClient) extends ExecutorFor[A] {
 
   type OutC[X] = X
