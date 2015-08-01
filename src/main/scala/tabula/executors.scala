@@ -15,7 +15,7 @@ case object executors {
     type Action <: AnyAction
 
     type OutC[X]
-    type Out <: OutC[ExecutorResult[Action]]
+    type Out = OutC[ExecutorResult[Action]]
 
     def apply(action: Action)(inputState: Action#InputState): Out
   }
@@ -25,12 +25,12 @@ case object executors {
   trait ExecutorFor[A <: AnyAction] extends AnyExecutor {
 
     type Action = A
-    type Out = OutC[ExecutorResult[A]]
+    // type Out = OutC[ExecutorResult[A]]
   }
 
   trait TableExecutorFor[T <: AnyTable, A <: AnyTableAction] extends AnyExecutor {
     type Action = A
-    type Out = OutC[ExecutorResult[A]]
+    // type Out = OutC[ExecutorResult[A]]
   }
 
   object Executor {

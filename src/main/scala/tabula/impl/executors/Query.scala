@@ -11,7 +11,6 @@ import com.amazonaws.services.dynamodbv2.model._
 case class QueryExecutor[A <: action.AnyQuery](implicit
   dynamoClient: AnyDynamoDBClient,
   parser: (A#Item#Properties ParseFrom SDKRep) { type Out = A#Item#Raw }
-  // parser: (PropertiesOf[ItemOf[A]] ParseFrom SDKRep) with out[RawOf[ItemOf[A]]]
 ) extends ExecutorFor[A] {
 
   type OutC[X] = X
@@ -19,10 +18,11 @@ case class QueryExecutor[A <: action.AnyQuery](implicit
 
   import scala.collection.JavaConversions._
 
-  def apply(action: A)(inputState: A#InputState): Out = {
+  def apply(action: Action)(inputState: Action#InputState): Out = {
     println("executing: " + action)
 
-    val res: List[ValueOf[A#Item]] = try {
+    // : List[ValueOf[Action#Item]]
+    val res = try {
       // val predicate = SimplePredicate(action.item, EQ(action.table.hashKey, action.input))
       // val (_, keyConditions) = toSDKPredicate(predicate)
       val (_, keyConditions) = toSDKPredicate(action.predicate)
@@ -36,14 +36,16 @@ case class QueryExecutor[A <: action.AnyQuery](implicit
           .getItems.map(_.toMap).toList
 
       // TODO: Check this valueOf
-      SDKRepsList.map{ rep => valueOf[A#Item, A#Item#Raw](action.item)(parser(action.item.properties:A#Item#Properties, rep)) }
+      // SDKRepsList.map{ rep => valueOf[Action#Item, Action#Item#Raw](action.item)(parser(action.item.properties:Action#Item#Properties, rep)) }
+      SDKRepsList.map{ rep => new Denotes[Action#Item#Raw, Action#Item](parser(action.item.properties:Action#Item#Properties, rep)) }
+      // SDKRepsList.map{ rep => (action.item := parser(action.item.properties:Action#Item#Properties, rep)) }
     } catch {
       // FIXME: error handling
       case t: Exception => throw t
     }
 
     // FIXME: ???
-    // ExecutorResult[A](res, inputState)
     ???
+    // ExecutorResult[Action](res, inputState)
   }
 }

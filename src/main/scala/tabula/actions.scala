@@ -36,6 +36,9 @@ case object actions {
   trait AnyItemAction extends AnyAction {
     type Item <: AnyItem
     val  item: Item
+
+    type Table = Item#Table
+    lazy val table: Table = item.table
   }
 
 

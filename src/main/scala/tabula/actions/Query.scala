@@ -25,30 +25,22 @@ sealed trait AnyQuery extends AnyItemAction {
   type Predicate <: AnyPredicate.On[Item]
   val  predicate: Predicate
 
-  type Output = List[ValueOf[Item]]
-  // type Output = List[AnyValue.ofType[Item]]
+  type Output = List[Denotes[Item#Raw, Item]]
+  // type Output = List[AnyDenotationOf[Item]]
 }
 
-sealed trait QueryFor[I <: AnyItem.ofCompositeTable] extends AnyQuery {
+abstract class QueryFor[I <: AnyItem.ofCompositeTable](val item: I)
+  extends AnyQuery { type Item = I }
 
-  type Item = I
-}
-
-// object AnyQuery {
-//   type Q[A <: AnyQuery] = QueryFor[A#Item]
-// }
 
 case class SimpleQuery[
   I <: AnyItem.ofCompositeTable,
-  H <: I#Table#PrimaryKey#Hash#Raw
-](i: I, h: H) extends QueryFor[I] {
+  P <: SimplePredicate[I, EQ[I#Table#PrimaryKey#Hash]]
+  // H <: I#Table#PrimaryKey#Hash#Raw
+](p: P) extends QueryFor[I](p.item) {
 
-  val  item = i
-
-  type Predicate = SimplePredicate[Item, EQ[Item#Table#PrimaryKey#Hash]]
-  // FIXME: some types problem here
-  val  predicate = ??? //SimplePredicate(item, EQ(item.table.primaryKey.hash, h))
-  // val  predicate = p
+  type Predicate = P
+  val  predicate = p
 }
 
 // the range key condition is optional
@@ -56,9 +48,8 @@ case class NormalQuery[
   I <: AnyItem.ofCompositeTable,
   P <: SimplePredicate[I, EQ[I#Table#PrimaryKey#Hash]],
   R <: AnyCondition.On[I#Table#PrimaryKey#Range] with AnyKeyCondition
-](p: P, r: R) extends QueryFor[I] {
+](p: P, r: R) extends QueryFor[I](p.item) {
 
   type Predicate = AND[P, R]
   val  predicate = AND[P, R](p, r)
-  val  item = p.item
 }

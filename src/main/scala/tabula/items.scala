@@ -46,6 +46,8 @@ case object items {
     type Table = T
   }
 
+  type TableOf[I <: AnyItem] = I#Table
+  def tableOf[I <: AnyItem](i: I): TableOf[I] = i.table
   object AnyItem {
 
     type ofTable[T <: AnyTable] = AnyItem { type Table = T }
