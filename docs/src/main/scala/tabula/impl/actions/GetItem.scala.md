@@ -1,53 +1,79 @@
 
 ```scala
-package ohnosequences.tabula.impl
+package ohnosequences.tabula.impl.actions
 
-import ohnosequences.tabula._, ImplicitConversions._
-import com.amazonaws.services.dynamodbv2.model._
+import ohnosequences.typesets._, AnyTag._
+import ohnosequences.scarph._
+import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
+import ohnosequences.tabula._, impl._, ImplicitConversions._
 
-case class DeleteItemHashKeyExecutor[A <: AnyDeleteItemHashKeyAction](a: A)
-  (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
+case class FromHashKeyTable[T <: Singleton with AnyHashKeyTable]
+  (val table: T, val inputSt: AnyTableState.For[T] with ReadyTable) { fromHashKeyTable =>
 
-  type OutC[X] = X
+  case class getItem[I <: Singleton with AnyItem with AnyItem.ofTable[T]](val item: I) { getItem =>
 
-  def apply(): Out = {
-    import scala.collection.JavaConversions._
-    println("executing: " + action)
+    case class withKey (
+      hashKeyValue: table.hashKey.Raw
+    )
+    (implicit
+      val form: ToItem[SDKRep, item.type],
+      val hasHashKey: table.HashKey ? item.record.Properties
+    ) extends AnyGetItemHashKeyAction with SDKRepParser {
 
-    val res: ohnosequences.tabula.DeleteItemResult = try {
-      dynamoClient.client.deleteItem(action.table.name, Map(
-        action.table.hashKey.label -> getAttrVal(action.input)
-      ))
-      DeleteItemSuccess
-    } catch {
-      case t: Exception => println(t.printStackTrace); DeleteItemFail
+      type Table = T
+      val table = fromHashKeyTable.table: fromHashKeyTable.table.type
+
+      type Item = I
+      val item = getItem.item: getItem.item.type
+
+      val input = hashKeyValue
+
+      val inputState = inputSt
+
+      val parseSDKRep = (m: SDKRep) => form(m, item: item.type)
+
+      override def toString = s"FromTable ${table.name} getItem ${item.label} withKey ${hashKeyValue}"
     }
 
-    ExecutorResult(res, action.table, action.inputState)
   }
+
 }
+```
 
-case class DeleteItemCompositeKeyExecutor[A <: AnyDeleteItemCompositeKeyAction](a: A)
-  (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
+### Composite key table
 
-  type OutC[X] = X
+```scala
+case class FromCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
+  (t: T, inputSt: AnyTableState.For[T] with ReadyTable) {
 
-  def apply(): Out = {
-    import scala.collection.JavaConversions._
-    println("executing: " + action)
+  case class getItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
 
-    val res: ohnosequences.tabula.DeleteItemResult = try {
-      dynamoClient.client.deleteItem(action.table.name, Map(
-        action.table.hashKey.label -> getAttrVal(action.input._1),
-        action.table.rangeKey.label -> getAttrVal(action.input._2)
-      ))
-      DeleteItemSuccess
-    } catch {
-      case t: Exception => println(t.printStackTrace); DeleteItemFail
+    case class withKeys(
+      hashKeyValue: t.hashKey.Raw,
+      rangeKeyValue: t.rangeKey.Raw
+    )(implicit
+      val form: ToItem[SDKRep, i.type],
+      val hasHashKey:  t.HashKey  ? i.record.Properties,
+      val hasRangeKey: t.RangeKey ? i.record.Properties
+    ) extends AnyGetItemCompositeKeyAction with SDKRepParser {
+      
+      type Table = T
+      val  table = t
+
+      type Item = I
+      val  item = i:i.type
+
+      val input = (hashKeyValue, rangeKeyValue)
+
+      val inputState = inputSt
+
+      val parseSDKRep = (m: SDKRep) => form(m, i:item.type)
+
+      override def toString = s"FromTable ${t.name} getItem ${i.label} withKeys ${(hashKeyValue, rangeKeyValue)}"
     }
 
-    ExecutorResult(res, action.table, action.inputState)
   }
+
 }
 
 ```
@@ -120,19 +146,19 @@ case class DeleteItemCompositeKeyExecutor[A <: AnyDeleteItemCompositeKeyAction](
 [main/scala/tabula/actions.scala]: ../../actions.scala.md
 [main/scala/tabula/conditions.scala]: ../../conditions.scala.md
 [main/scala/tabula/executors.scala]: ../../executors.scala.md
-[main/scala/tabula/impl/actions/GetItem.scala]: ../actions/GetItem.scala.md
-[main/scala/tabula/impl/actions/PutItem.scala]: ../actions/PutItem.scala.md
-[main/scala/tabula/impl/actions/Query.scala]: ../actions/Query.scala.md
+[main/scala/tabula/impl/actions/GetItem.scala]: GetItem.scala.md
+[main/scala/tabula/impl/actions/PutItem.scala]: PutItem.scala.md
+[main/scala/tabula/impl/actions/Query.scala]: Query.scala.md
 [main/scala/tabula/impl/Configuration.scala]: ../Configuration.scala.md
 [main/scala/tabula/impl/DynamoDBExecutors.scala]: ../DynamoDBExecutors.scala.md
-[main/scala/tabula/impl/executors/CreateTable.scala]: CreateTable.scala.md
-[main/scala/tabula/impl/executors/DeleteItem.scala]: DeleteItem.scala.md
-[main/scala/tabula/impl/executors/DeleteTable.scala]: DeleteTable.scala.md
-[main/scala/tabula/impl/executors/DescribeTable.scala]: DescribeTable.scala.md
-[main/scala/tabula/impl/executors/GetItem.scala]: GetItem.scala.md
-[main/scala/tabula/impl/executors/PutItem.scala]: PutItem.scala.md
-[main/scala/tabula/impl/executors/Query.scala]: Query.scala.md
-[main/scala/tabula/impl/executors/UpdateTable.scala]: UpdateTable.scala.md
+[main/scala/tabula/impl/executors/CreateTable.scala]: ../executors/CreateTable.scala.md
+[main/scala/tabula/impl/executors/DeleteItem.scala]: ../executors/DeleteItem.scala.md
+[main/scala/tabula/impl/executors/DeleteTable.scala]: ../executors/DeleteTable.scala.md
+[main/scala/tabula/impl/executors/DescribeTable.scala]: ../executors/DescribeTable.scala.md
+[main/scala/tabula/impl/executors/GetItem.scala]: ../executors/GetItem.scala.md
+[main/scala/tabula/impl/executors/PutItem.scala]: ../executors/PutItem.scala.md
+[main/scala/tabula/impl/executors/Query.scala]: ../executors/Query.scala.md
+[main/scala/tabula/impl/executors/UpdateTable.scala]: ../executors/UpdateTable.scala.md
 [main/scala/tabula/impl/ImplicitConversions.scala]: ../ImplicitConversions.scala.md
 [main/scala/tabula/items.scala]: ../../items.scala.md
 [main/scala/tabula/predicates.scala]: ../../predicates.scala.md

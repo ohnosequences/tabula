@@ -2,48 +2,35 @@
 ```scala
 package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._, ImplicitConversions._
+import ohnosequences.tabula._, Condition._, AnyPredicate._, ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 
-case class DeleteItemHashKeyExecutor[A <: AnyDeleteItemHashKeyAction](a: A)
+
+case class QueryExecutor[A <: AnyQueryAction with SDKRepParser](a: A)
   (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
 
   type OutC[X] = X
 
+  import scala.collection.JavaConversions._
   def apply(): Out = {
-    import scala.collection.JavaConversions._
     println("executing: " + action)
 
-    val res: ohnosequences.tabula.DeleteItemResult = try {
-      dynamoClient.client.deleteItem(action.table.name, Map(
-        action.table.hashKey.label -> getAttrVal(action.input)
-      ))
-      DeleteItemSuccess
+    val res = try {
+      // val predicate = SimplePredicate(action.item, EQ(action.table.hashKey, action.input))
+      // val (_, keyConditions) = toSDKPredicate(predicate)
+      val (_, keyConditions) = toSDKPredicate(action.input)
+
+      val queryRequest = new QueryRequest()
+        .withTableName(action.table.name)
+        .withKeyConditions(keyConditions)
+
+      val toSDKRep: List[Map[String, AttributeValue]] = 
+        dynamoClient.client.query(queryRequest)
+          .getItems.map(_.toMap).toList
+
+      QuerySuccess[action.Item](toSDKRep.map(action.parseSDKRep))
     } catch {
-      case t: Exception => println(t.printStackTrace); DeleteItemFail
-    }
-
-    ExecutorResult(res, action.table, action.inputState)
-  }
-}
-
-case class DeleteItemCompositeKeyExecutor[A <: AnyDeleteItemCompositeKeyAction](a: A)
-  (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
-
-  type OutC[X] = X
-
-  def apply(): Out = {
-    import scala.collection.JavaConversions._
-    println("executing: " + action)
-
-    val res: ohnosequences.tabula.DeleteItemResult = try {
-      dynamoClient.client.deleteItem(action.table.name, Map(
-        action.table.hashKey.label -> getAttrVal(action.input._1),
-        action.table.rangeKey.label -> getAttrVal(action.input._2)
-      ))
-      DeleteItemSuccess
-    } catch {
-      case t: Exception => println(t.printStackTrace); DeleteItemFail
+      case t: Exception => QueryFailure[action.Item](t.toString)
     }
 
     ExecutorResult(res, action.table, action.inputState)
