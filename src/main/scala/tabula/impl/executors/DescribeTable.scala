@@ -1,21 +1,22 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._
+import ohnosequences.tabula._, states._, actions._, executors._
 import com.amazonaws.services.dynamodbv2.model._
 
-case class DescribeTableExecutor[A <: AnyDescribeTable](a: A)
-  (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
+// case class DescribeTableExecutor[T <: AnyTable, A <: DescribeTable[T]]
+case class DescribeTableExecutor[A <: action.AnyDescribeTable]
+  (dynamoClient: AnyDynamoDBClient) extends ExecutorFor[A] {
 
   type OutC[X] = X
 
-  def apply(): Out = {
+  def apply(action: A)(inputState: A#InputState): Out = {
     println("executing: " + action)
     //CREATING, UPDATING, DELETING, ACTIVE
 
     val tableDescription = dynamoClient.client.describeTable(action.table.name).getTable
     val throughputDescription = tableDescription.getProvisionedThroughput
 
-    val throughput = ohnosequences.tabula.ThroughputStatus (
+    val throughput = ThroughputStatus (
       readCapacity = throughputDescription.getReadCapacityUnits.toInt,
       writeCapacity = throughputDescription.getWriteCapacityUnits.toInt,
       lastIncrease = throughputDescription.getLastIncreaseDateTime, // todo it will return null if no update actions was performed
@@ -23,13 +24,13 @@ case class DescribeTableExecutor[A <: AnyDescribeTable](a: A)
       numberOfDecreasesToday = throughputDescription.getNumberOfDecreasesToday.toInt
     )
 
-    val newState: action.OutputState = dynamoClient.client.describeTable(action.table.name).getTable.getTableStatus match {
-      case "ACTIVE" =>     Active(action.table, action.inputState.account, throughput)
-      case "CREATING" => Creating(action.table, action.inputState.account, throughput)
-      case "DELETING" => Deleting(action.table, action.inputState.account, throughput)
-      case "UPDATING" => Updating(action.table, action.inputState.account, throughput)
+    val newState: A#OutputState = dynamoClient.client.describeTable(action.table.name).getTable.getTableStatus match {
+      case "ACTIVE" =>     Active(action.table, inputState.account, throughput)
+      case "CREATING" => Creating(action.table, inputState.account, throughput)
+      case "DELETING" => Deleting(action.table, inputState.account, throughput)
+      case "UPDATING" => Updating(action.table, inputState.account, throughput)
     }
 
-    ExecutorResult(None, action.table, newState)
+    ExecutorResult[A](None, newState)
   }
 }

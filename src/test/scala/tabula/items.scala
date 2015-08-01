@@ -2,44 +2,44 @@ package ohnosequences.tabula
 
 import org.scalatest.FunSuite
 
-import ohnosequences.typesets._, Property._, AnyTag._, TagsOf._
-import ohnosequences.scarph._
-import ohnosequences.tabula._
+import ohnosequences.cosas._, types._, properties._, typeSets._, records._, typeUnions._
+
+import ohnosequences.tabula._, attributes._, items._, tables._
 import ohnosequences.tabula.impl._, ImplicitConversions._
 
 import shapeless._, poly._
 import shapeless.test.typed
-import AnyTag._
 
 object TestSetting {
-  case object id extends Property[Num]
-  case object name extends Property[String]
+  case object id extends Attribute[Num]("id")
+  case object name extends Attribute[String]("name")
   case object simpleUserRecord extends Record(id :~: name :~: ∅)
   case object normalUserRecord extends Record(id :~: name :~: email :~: color :~: ∅)
 
-  object table extends CompositeKeyTable("foo_table", id, name, EU)
+  object table extends Table("foo_table", CompositeKey(id, name), regions.EU)
 
-  case object simpleUser extends Item(table, simpleUserRecord)
+  object simpleUser extends Item("simpleUser", table, id :~: name :~: ∅)
+  object simpleUser2 extends Item("simpleUser2", table, simpleUserRecord.properties)
 
   // more properties:
-  case object email extends Property[String]
-  case object color extends Property[String]
+  case object email extends Attribute[String]("email")
+  case object color extends Attribute[String]("color")
 
-  case object normalUser extends Item(table, normalUserRecord)
+  case object normalUser extends Item("normalUser", table, normalUserRecord.properties)
 
   // creating item is easy and neat:
-  val user1 = simpleUser fields (
-    (id ->> 123) :~: 
-    (name ->> "foo") :~: 
+  val user1 = simpleUser(
+    id(123) :~:
+    name("foo") :~:
     ∅
   )
 
   // this way the order of properties doesn't matter
-  val user2 = normalUser fields (
-    (name is "foo") :~: 
-    (color is "orange") :~:
-    (id is 123) :~: 
-    (email is "foo@bar.qux") :~:
+  val user2 = normalUser(
+    name("foo") :~:
+    color("orange") :~:
+    id(123) :~:
+    email("foo@bar.qux") :~:
     ∅
   )
 
@@ -50,48 +50,21 @@ class itemsSuite extends FunSuite {
 
   test("accessing item properties") {
 
-    assert (
-
-      user1.get(id) === 123
-    )
-    assert(user1.get(name) === "foo")
+    assert{ user1.get(id).value == 123 }
+    assert{ user1.get(name).value == "foo" }
   }
 
   test("tags/keys of a representation") {
     // won't work; need the alias :-|
     // val keys = implicitly[Keys.Aux[id.Rep :~: name.Rep :~: ∅, id.type :~: name.type :~: ∅]]
-    val tags = TagsOf[TaggedWith[id.type] :~: TaggedWith[name.type] :~: ∅]
-    assert(tags(user1) === simpleUser.record.properties)
-    assert(tags(user1) === (id :~: name :~: ∅))
-  }
-
-  test("items serialization") {
-    // transforming simpleUser to Map
-    val tr = FromProperties[
-      id.type :~: name.type :~: ∅, 
-      TaggedWith[id.type]  :~: TaggedWith[name.type]  :~: ∅,
-      toSDKRep.type,
-      SDKRep
-    ]
-    val map1 = tr(user1)
-    println(map1)
-
-    val t = implicitly[FromProperties.Aux[simpleUser.record.Properties, simpleUser.Raw, toSDKRep.type, SDKRep]]
-    val ti = implicitly[From.ItemAux[simpleUser.type, toSDKRep.type, SDKRep]]
-    val map2 = ti(user1)
-    println(map2)
-    assert(map1 == map2)
-
-    // forming simpleUser from Map
-    val form = ToProperties[SDKRep, simpleUser.record.Properties, simpleUser.Raw, fromSDKRep.type](ToProperties.cons)
-    val i2 = form(map2, simpleUser.record.properties)
-    println(i2)
-    assert(i2 == user1)
+    // val tags = TagsOf[ValueOf[id.type] :~: ValueOf[name.type] :~: ∅]
+    // assert(tags(user1) == simpleUser.properties)
+    // assert(tags(user1) == (id :~: name :~: ∅))
   }
 
   test("item projection") {
     assertResult(user1) {
-      user2 as simpleUser.record
+      user2 as simpleUser
     }
 
     assertTypeError("""
@@ -101,14 +74,14 @@ class itemsSuite extends FunSuite {
 
   test("item extension") {
 
-    case object more extends Record(simpleUser.record.properties ∪ (email :~: color :~: ∅))
+    case object more extends Record(simpleUser.properties ∪ (email :~: color :~: ∅))
 
-    case object extendedUser extends Item(table, more)
+    case object extendedUser extends Item("extendedUser", table, more.properties)
 
     assertResult(user2) {
-      user1 as (normalUser.record,
-        (color is "orange") :~:
-        (email is "foo@bar.qux") :~:
+      user1 as (normalUser,
+        color("orange") :~:
+        email("foo@bar.qux") :~:
         ∅
       )
     }
@@ -116,7 +89,7 @@ class itemsSuite extends FunSuite {
     // you cannot provide less that it's missing
     assertTypeError("""
     val less = user1 as (normalUser,
-        (email is "foo@bar.qux") :~:
+        email("foo@bar.qux") :~:
         ∅
       )
     """)
@@ -124,44 +97,52 @@ class itemsSuite extends FunSuite {
     // neither you can provide more that was missing
     assertTypeError("""
     val more = user1 as (normalUser,
-        (color is "orange") :~:
-        (id is 4012) :~:
-        (email is "foo@bar.qux") :~:
+        color("orange") :~:
+        id(4012) :~:
+        email("foo@bar.qux") :~:
         ∅
       )
     """)
   }
 
   test("item update") {
-    val martin = normalUser fields (
-      (name is "Martin") :~:
-      (id is 1) :~:
-      (color is "dark-salmon") :~:
-      (email is "coolmartin@scala.org") :~:
+
+    val martin = normalUser(
+      name("Martin") :~:
+      id(1) :~:
+      color("dark-salmon") :~:
+      email("coolmartin@scala.org") :~:
       ∅
     )
 
-    assert((user2 update (name is "qux")) === 
-      (normalUser fields (
-          (id is user2.get(id)) :~: 
-          (name is "qux") :~: 
-          (color is user2.get(color)) :~:
-          (email is user2.get(email)) :~:
+    assert(
+
+      (
+
+        user2 update name("qux")
+      ) == (
+
+        normalUser(
+          id(user2.get(id).value) :~:
+          name("qux") :~:
+          color(user2.get(color).value) :~:
+          email(user2.get(email).value) :~:
+          ∅
+        )
+      )
+    )
+
+    assert((user2 update (name("qux") :~: id(42) :~: ∅)) ==
+      (normalUser(
+          id(42) :~:
+          name("qux") :~:
+          color(user2.get(color).value) :~:
+          email(user2.get(email).value) :~:
           ∅
         ))
     )
 
-    assert((user2 update ((name is "qux") :~: (id is 42) :~: ∅)) === 
-      (normalUser fields (
-          (id is 42) :~: 
-          (name is "qux") :~: 
-          (color is user2.get(color)) :~:
-          (email is user2.get(email)) :~:
-          ∅
-        ))
-    )
-
-    assert((user2 update (martin: normalUser.Raw)) === martin)
+    assert((user2 update martin.value) == martin)
   }
 
 }

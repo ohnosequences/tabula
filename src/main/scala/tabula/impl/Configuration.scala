@@ -1,6 +1,6 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._
+import ohnosequences.tabula._, regions._
 import com.amazonaws.auth.{PropertiesFileCredentialsProvider, EnvironmentVariableCredentialsProvider, InstanceProfileCredentialsProvider, AWSCredentialsProviderChain}
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import java.io.File
@@ -12,7 +12,7 @@ trait AnyDynamoDBClient {
   val client: AmazonDynamoDBClient
 }
 
-class DynamoDBClient[R <: AnyRegion](val region: R, val client: AmazonDynamoDBClient) 
+class DynamoDBClient[R <: AnyRegion](val region: R, val client: AmazonDynamoDBClient)
   extends AnyDynamoDBClient { type Region = R }
 
 object AnyDynamoDBClient {
@@ -30,6 +30,3 @@ object CredentialProviderChains {
     new PropertiesFileCredentialsProvider(new File(System.getProperty("user.home"), "credentials").getPath)
   )
 }
-
-
-

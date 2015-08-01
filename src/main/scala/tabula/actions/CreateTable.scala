@@ -1,14 +1,14 @@
-package ohnosequences.tabula
+package ohnosequences.tabula.action
+
+import ohnosequences.tabula._, states._, actions._, tables._
 
 trait AnyCreateTable extends AnyTableAction {
-  type InputState = InitialState[Table]
+
+  type InputState  = InitialState[Table]
   type OutputState = Creating[Table]
 
-  type Input  = None.type
-  val  input  = None
   type Output = None.type
 }
 
-case class CreateTable[T <: Singleton with AnyTable]
-  (table: T, inputState: InitialState[T])
-    extends AnyCreateTable { type Table = T }
+case class CreateTable[T <: AnyTable](val table: T)
+  extends AnyCreateTable { type Table = T }

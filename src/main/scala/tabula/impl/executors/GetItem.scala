@@ -1,69 +1,92 @@
-package ohnosequences.tabula.impl
+// package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._, ImplicitConversions._
-import com.amazonaws.services.dynamodbv2.model._
-import ohnosequences.typesets.AnyTag._
+// import ohnosequences.tabula._, ImplicitConversions._
+// import com.amazonaws.services.dynamodbv2.model._
+// import ohnosequences.cosas.types._
 
-case class GetItemHashKeyExecutor [
-  A <: AnyGetItemHashKeyAction with SDKRepParser
-](
-  val a: A
-)(
- val dynamoClient: AnyDynamoDBClient
-) extends Executor[A](a) {
+// case class GetItemHashKeyExecutor [A <: AnyGetItemHashKeyAction](
+//   val a: A
+// )(
+//  val dynamoClient: AnyDynamoDBClient
+// ) extends Executor[A](a) {
 
-  type OutC[X] = X
+// // import ohnosequences.tabula._, ImplicitConversions._
+// // import com.amazonaws.services.dynamodbv2.model._
 
-  import scala.collection.JavaConversions._
+// // case class GetItemHashKeyExecutor[A <: AnyGetItemHashKeyAction with SDKRepParser](a: A)
+// //   (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
 
-  def apply(): Out = {
+// //   type OutC[X] = X
 
-    println("executing: " + action)
+//   import scala.collection.JavaConversions._
 
-    val res: ohnosequences.tabula.GetItemResult[action.Item] = try {
+//   def apply(): Out = {
 
-      val getItemRequest = new GetItemRequest()
-        .withTableName(action.table.name)
-        .withKey(Map(
-          action.table.hashKey.label -> getAttrVal(action.input)
-        ))
+//     println("executing: " + action)
 
-      val toSDKRep = dynamoClient.client.getItem(getItemRequest).getItem
+//     val res: ohnosequences.tabula.GetItemResult[action.Item] = try {
 
-      GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
-    } catch {
-      case t: Exception => GetItemFailure(t.toString)
-    }
+// //   import scala.collection.JavaConversions._
+// //   def apply(): Out = {
+// //     println("executing: " + action)
 
-    ExecutorResult(res, action.table, action.inputState)
-  }
-}
+// //     val res = try {
 
-case class GetItemCompositeKeyExecutor[A <: AnyGetItemCompositeKeyAction with SDKRepParser](a: A)
-  (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
+// //       val getItemRequest = new GetItemRequest()
+// //         .withTableName(action.table.name)
+// //         .withKey(Map(
+// //           action.table.hashKey.label -> getAttrVal(action.input)
+// //         ))
 
-  type OutC[X] = X
+// //       val toSDKRep = dynamoClient.client.getItem(getItemRequest).getItem
 
-  import scala.collection.JavaConversions._
-  def apply(): Out = {
-    println("executing: " + action)
 
-    val res: ohnosequences.tabula.GetItemResult[action.Item] = try {
+//       GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
+//     } catch {
+//       case t: Exception => GetItemFailure(t.toString)
+//     }
 
-      val getItemRequest = new GetItemRequest()
-        .withTableName(action.table.name)
-        .withKey(Map(
-          action.table.hashKey.label -> getAttrVal(action.input._1),
-          action.table.rangeKey.label -> getAttrVal(action.input._2)
-        ))
+// //       GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
+// //     } catch {
+// //       case t: Exception => GetItemFailure[action.Item](t.toString)
+// //     }
 
-      val toSDKRep = dynamoClient.client.getItem(getItemRequest).getItem
+// //     ExecutorResult(res, action.table, inputState)
+// //   }
+// // }
 
-      GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
-    } catch {
-      case t: Exception => GetItemFailure(t.toString)
-    }
+// // case class GetItemCompositeKeyExecutor[A <: AnyGetItemCompositeKeyAction with SDKRepParser](a: A)
+// //   (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
 
-    ExecutorResult(res, action.table, action.inputState)
-  }
-}
+// //   type OutC[X] = X
+
+// //   import scala.collection.JavaConversions._
+// //   def apply(): Out = {
+// //     println("executing: " + action)
+
+//     val res: ohnosequences.tabula.GetItemResult[action.Item] = try {
+
+// //     val res = try {
+
+// //       val getItemRequest = new GetItemRequest()
+// //         .withTableName(action.table.name)
+// //         .withKey(Map(
+// //           action.table.hashKey.label -> getAttrVal(action.input._1),
+// //           action.table.rangeKey.label -> getAttrVal(action.input._2)
+// //         ))
+
+// //       val toSDKRep = dynamoClient.client.getItem(getItemRequest).getItem
+
+//       GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
+//     } catch {
+//       case t: Exception => GetItemFailure(t.toString)
+//     }
+
+// //       GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
+// //     } catch {
+// //       case t: Exception => GetItemFailure[action.Item](t.toString)
+// //     }
+
+// //     ExecutorResult(res, action.table, inputState)
+// //   }
+// // }

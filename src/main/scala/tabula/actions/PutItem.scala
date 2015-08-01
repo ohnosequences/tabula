@@ -1,21 +1,27 @@
-package ohnosequences.tabula
+package ohnosequences.tabula.action
 
-import ohnosequences.typesets._, AnyTag._
-import ohnosequences.scarph._
+import ohnosequences.cosas._, types._
+
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
-import ohnosequences.tabula.impl.ImplicitConversions._
+import ohnosequences.tabula._, states._, actions._, items._
 
-sealed trait PutItemResult
-case object PutItemFail extends PutItemResult
-case object PutItemSuccess extends PutItemResult
 
-trait AnyPutItemAction extends AnyTableItemAction {
+trait AnyPutItem extends AnyItemAction {
   //require updating or creating
-  type InputState  = AnyTableState.For[Table] with ReadyTable
+  type InputState  = AnyTableState.For[Item#Table] with ReadyTable
   type OutputState = InputState
 
-  type Input = item.Rep
-  val  input: Input
+  // type ItemValue = ValueOf[Item]
+  val  itemValue: ValueOf[Item]
 
-  type Output = PutItemResult
+  type Output = None.type
+}
+
+case class PutItem[I <: AnyItem](val itemValue: ValueOf[I])
+  (implicit val getI: ValueOf[I] => I) extends AnyPutItem {
+
+  type Item = I
+  val  item = getI(itemValue)
+
+  // type ItemValue = ValueOf[I]
 }

@@ -1,73 +1,136 @@
-package ohnosequences.tabula.impl.actions
+// // package ohnosequences.tabula.impl.actions
 
-import ohnosequences.typesets._, AnyTag._
-import ohnosequences.scarph._
-import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
-import ohnosequences.tabula._, impl._, ImplicitConversions._
+// <<<<<<< HEAD
+// import ohnosequences.cosas._, types._, typeSets._, fns._
+// import ohnosequences.cosas.ops.record._
+// import ohnosequences.cosas.ops.typeSets._
 
-case class FromHashKeyTable[T <: Singleton with AnyHashKeyTable]
-  (val table: T, val inputSt: AnyTableState.For[T] with ReadyTable) { fromHashKeyTable =>
+// import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
+// import ohnosequences.tabula._, impl._, ImplicitConversions._
 
-  case class getItem[I <: Singleton with AnyItem with AnyItem.ofTable[T]](val item: I) { getItem =>
+// case class FromHashKeyTable[T <: AnyHashKeyTable]
+//   (val table: T, val inputSt: AnyTableState.For[T] with ReadyTable) { fromHashKeyTable =>
 
-    case class withKey (
-      hashKeyValue: table.hashKey.Raw
-    )
-    (implicit
-      val form: ToItem[SDKRep, item.type],
-      val hasHashKey: table.HashKey ∈ item.record.Properties
-    ) extends AnyGetItemHashKeyAction with SDKRepParser {
+//   case class getItem[I <: AnyItem with AnyItem.ofTable[T]](val item: I) { getItem =>
 
-      type Table = T
-      val table = fromHashKeyTable.table: fromHashKeyTable.table.type
+//     case class withKey (
+//       hashKeyValue: RawOf[T#HashKey]
+//     )
+//     (implicit
+//       val parser: (I#Properties ParseFrom SDKRep) with out[RawOf[I]],
+//       val hasHashKey: T#HashKey ∈ I#Properties
+//     ) 
+//     extends AnyGetItemHashKeyAction with SDKRepParser {
 
-      type Item = I
-      val item = getItem.item: getItem.item.type
+//       type Table = T
+//       val table = fromHashKeyTable.table
 
-      val input = hashKeyValue
+//       type Item = I
+//       val item = getItem.item
+// =======
+// // import ohnosequences.typesets._
+// // import ohnosequences.scarph._
+// // import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
+// // import ohnosequences.tabula._, impl._, ImplicitConversions._
 
-      val inputState = inputSt
+// // case class FromHashKeyTable[T <: Singleton with AnyTable.withHashKey]
+// //   (state: AnyTableState.For[T] with ReadyTable) {
 
-      val parseSDKRep = (m: SDKRep) => form(m, item: item.type)
+// //   case class getItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
 
-      override def toString = s"FromTable ${table.name} getItem ${item.label} withKey ${hashKeyValue}"
-    }
+// //     case class withKey(hashKeyValue: state.resource.hashKey.Raw)
+// //     (implicit
+// //       val form: ToItem[SDKRep, i.type],
+// //       val hasHashKey: state.resource.HashKey ∈ i.Properties
+// //     ) extends AnyGetItemHashKeyAction with SDKRepParser {
+// //       type Table = T
+// //       val  table = state.resource: state.resource.type
 
-  }
+// //       type Item = I
+// //       val  item = i: i.type
+// >>>>>>> feature/table/ops
 
-}
+// //       val input = hashKeyValue
+
+// //       val inputState = state
+
+// <<<<<<< HEAD
+//       val parseSDKRep = (m: SDKRep) => { item =>> parser(item.properties, m) }
+
+//       override def toString = s"FromTable ${table.name} getItem ${item.toString} withKey ${hashKeyValue}"
+//     }
+// =======
+// //       val parseSDKRep = (m: SDKRep) => form(m, i)
+
+// //       override def toString = s"FromTable ${state.resource.name} getItem ${i.label} withKey ${hashKeyValue}"
+// //     }
+// >>>>>>> feature/table/ops
+
+// //   }
+
+// // }
 
 
-/* ### Composite key table */
-case class FromCompositeKeyTable[T <: Singleton with AnyCompositeKeyTable]
-  (t: T, inputSt: AnyTableState.For[T] with ReadyTable) {
+// <<<<<<< HEAD
+// /* ### Composite key table */
+// case class FromCompositeKeyTable[T <: AnyCompositeKeyTable]
+//   (t: T, inputSt: AnyTableState.For[T] with ReadyTable) {
 
-  case class getItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
+//   case class getItem[I <: AnyItem.ofTable[T]](i: I) {
 
-    case class withKeys(
-      hashKeyValue: t.hashKey.Raw,
-      rangeKeyValue: t.rangeKey.Raw
-    )(implicit
-      val form: ToItem[SDKRep, i.type],
-      val hasHashKey:  t.HashKey  ∈ i.record.Properties,
-      val hasRangeKey: t.RangeKey ∈ i.record.Properties
-    ) extends AnyGetItemCompositeKeyAction with SDKRepParser {
+//     case class withKeys(
+//       hashKeyValue: RawOf[T#HashKey],
+//       rangeKeyValue: RawOf[T#RangeKey]
+//     )(implicit
+//       val parser: (I#Properties ParseFrom SDKRep) with out[RawOf[I]],
+//       val hasHashKey:  T#HashKey  ∈ I#Properties,
+//       val hasRangeKey: T#RangeKey ∈ I#Properties
+//     ) 
+//     extends AnyGetItemCompositeKeyAction with SDKRepParser {
       
-      type Table = T
-      val  table = t
+//       type Table = T
+//       val  table = t
 
-      type Item = I
-      val  item = i:i.type
+//       type Item = I
+//       val  item = i
+// =======
+// // /* ### Composite key table */
+// // case class FromCompositeKeyTable[T <: Singleton with AnyTable.withCompositeKey]
+// //   (state: AnyTableState.For[T] with ReadyTable) {
 
-      val input = (hashKeyValue, rangeKeyValue)
+// //   case class getItem[I <: Singleton with AnyItem.ofTable[T]](i: I) {
 
-      val inputState = inputSt
+// //     case class withKeys(
+// //       hashKeyValue: state.resource.hashKey.Raw,
+// //       rangeKeyValue: state.resource.rangeKey.Raw
+// //     )(implicit
+// //       val form: ToItem[SDKRep, i.type],
+// //       val hasHashKey:  state.resource.HashKey  ∈ i.Properties,
+// //       val hasRangeKey: state.resource.RangeKey ∈ i.Properties
+// //     ) extends AnyGetItemCompositeKeyAction with SDKRepParser {
+// //       type Table = T
+// //       val  table = state.resource: state.resource.type
 
-      val parseSDKRep = (m: SDKRep) => form(m, i:item.type)
+// //       type Item = I
+// //       val  item = i: i.type
+// >>>>>>> feature/table/ops
 
-      override def toString = s"FromTable ${t.name} getItem ${i.label} withKeys ${(hashKeyValue, rangeKeyValue)}"
-    }
+// //       val input = (hashKeyValue, rangeKeyValue)
 
-  }
+// //       val inputState = state
 
-}
+// <<<<<<< HEAD
+//       val parseSDKRep = (m: SDKRep) => { item =>> parser(item.properties, m) }
+
+//       override def toString = s"FromTable ${t.name} getItem ${i.toString} withKeys ${(hashKeyValue, rangeKeyValue)}"
+//     }
+// =======
+// //       val parseSDKRep = (m: SDKRep) => form(m, i)
+
+// //       override def toString = s"FromTable ${state.resource.name} getItem ${i.label} withKeys ${(hashKeyValue, rangeKeyValue)}"
+// //     }
+// >>>>>>> feature/table/ops
+
+// //   }
+
+// // }

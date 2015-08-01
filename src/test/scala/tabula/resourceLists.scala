@@ -1,12 +1,12 @@
 package ohnosequences.tabula.test
 
-import ohnosequences.tabula._
+import ohnosequences.tabula._, resources._, tables._
 
 object ResourceLists {
-  
+
   import simpleModel._
 
-  type TT = AnyTable :+: AnyTable :+: RNil 
+  type TT = AnyTable :+: AnyTable :+: RNil
   val uh: TT = UsersTable :+: RandomTable :+: RNil
 
   trait AnyAction {
@@ -18,12 +18,12 @@ object ResourceLists {
     type Resources <: AnyTable :+: AnyTable :+: RNil
     val resources: Resources
 
-    val scndTblKey = resources.tail.head.hashKey
+    val scndTblKey = resources.tail.head.primaryKey
   }
 
   case class JoinTables[
-    T0 <: Singleton with AnyTable,
-    T1 <: Singleton with AnyTable
+    T0 <: AnyTable,
+    T1 <: AnyTable
   ]
   (
     val t0: T0,

@@ -1,30 +1,31 @@
 package ohnosequences.tabula.impl
 
-import ohnosequences.tabula._, ImplicitConversions._
+import ohnosequences.tabula._, states._, actions._, executors._
+import ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 import java.util.Date
 
-case class UpdateTableExecutor[A <: AnyUpdateTableAction](a: A)
-  (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
+case class UpdateTableExecutor[A <: action.AnyUpdateTable]
+  (dynamoClient: AnyDynamoDBClient) extends ExecutorFor[A] {
 
   type OutC[X] = X
 
-  def apply(): Out = {
+  def apply(action: A)(inputState: A#InputState): Out = {
     println("executing: " + action)
 
     //CREATING, UPDATING, DELETING, ACTIVE
 
     // TODO: add checks for inputState!!!
-    dynamoClient.client.updateTable(action.table.name, 
+    dynamoClient.client.updateTable(action.table.name,
       new ProvisionedThroughput(
-        action.newReadThroughput, 
+        action.newReadThroughput,
         action.newWriteThroughput
       )
     )
 
-    val oldThroughputStatus =  action.inputState.throughputStatus
+    val oldThroughputStatus =  inputState.throughputStatus
 
-    var throughputStatus = ohnosequences.tabula.ThroughputStatus (
+    var throughputStatus = ThroughputStatus (
       readCapacity = action.newReadThroughput,
       writeCapacity = action.newWriteThroughput
     )
@@ -61,10 +62,9 @@ case class UpdateTableExecutor[A <: AnyUpdateTableAction](a: A)
       )
     }
 
-    val newState = Updating(action.table, action.inputState.account, throughputStatus)
+    val newState = Updating(action.table, inputState.account, throughputStatus)
 
-    ExecutorResult(None, action.table, newState)
+    ExecutorResult[A](None, newState)
   }
 
 }
-
