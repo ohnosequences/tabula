@@ -6,6 +6,7 @@ description := "Fancy API for the Amazon DynamoDB"
 bucketSuffix := "era7.com"
 
 scalaVersion := "2.11.7"
+// crossScalaVersions  := Seq("2.10.5", scalaVersion.value)
 
 libraryDependencies ++= Seq(
   "ohnosequences" %% "cosas" % "0.6.0",
