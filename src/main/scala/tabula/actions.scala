@@ -2,17 +2,13 @@ package ohnosequences.tabula
 
 case object actions {
 
-  import items._, regions._, resources._, tables._
+  import items._, regions._, states._, resources._, tables._
 
 
   trait AnyAction {
 
-    type InputState
-    type OutputState
-
-    // // these are input and output that are not resources
-    // type Input
-    // val  input: Input
+    type InputState <: AnyDynamoDBState
+    type OutputState <: AnyDynamoDBState
 
     type Output
   }
@@ -48,6 +44,41 @@ case object actions {
   object AnyTableAction {
     type withHashKeyTable      = AnyTableAction { type Table <: AnyTable.withHashKey }
     type withCompositeKeyTable = AnyTableAction { type Table <: AnyTable.withCompositeKey }
+  }
+
+  // We compose actions cheking that the transition state is compatible
+  trait AnyChainedAction extends AnyAction {
+
+    type First <: AnyAction
+    val  first: First
+
+    type Second <: AnyAction { type InputState <: First#OutputState }
+    val  second: Second
+
+    type InputState = First#InputState
+    type OutputState = Second#OutputState
+
+    type Output = Second#Output
+  }
+
+  case class Chain[
+    F <: AnyAction,
+    S <: AnyAction { type InputState <: F#OutputState }
+  ](val first: F, val second: S) extends AnyChainedAction {
+
+    type First = F
+    type Second = S
+  }
+
+  type >>[F <: AnyAction, S <: AnyAction { type InputState <: F#OutputState }] = Chain[F, S]
+
+  implicit def actionOps[F <: AnyAction](f: F):
+        ActionOps[F] =
+    new ActionOps[F](f)
+
+  case class ActionOps[F <: AnyAction](val f: F) extends AnyVal {
+
+    def >>[S <: AnyAction { type InputState <: F#OutputState }](s: S): F >> S = Chain[F, S](f, s)
   }
 
 }
