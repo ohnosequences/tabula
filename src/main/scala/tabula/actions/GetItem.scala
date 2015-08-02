@@ -1,14 +1,18 @@
-// package ohnosequences.tabula.action
+package ohnosequences.tabula.action
 
-// import ohnosequences.cosas._, types._
-// import com.amazonaws.services.dynamodbv2.model.{AttributeValueUpdate, AttributeValue}
-// import ohnosequences.tabula.impl.ImplicitConversions._
+import ohnosequences.cosas._, types._
+import ohnosequences.tabula._, items._, actions._, states._
 
-// trait AnyGetItemAction extends AnyItemAction {
-//   //require updating or creating
-//   type InputState  = AnyTableState.For[TableOf[Item]] with ReadyTable
-//   type OutputState = InputState
+case class GetItem[I <: AnyItem](
+  val item: I,
+  val keyValue: I#Table#PrimaryKey#Raw
+) extends AnyItemAction {
 
-//   type Input = PrimaryKeyValue[TableOf[Item]#PrimaryKey]
-//   type Output = ValueOf[Item]
-// }
+  type Item = I
+
+  // require updating or creating
+  type InputState  = AnyTableState.For[TableOf[Item]] with ReadyTable
+  type OutputState = InputState
+
+  type Output = ValueOf[Item]
+}

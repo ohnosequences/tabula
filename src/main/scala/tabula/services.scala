@@ -24,26 +24,11 @@ case object services {
     // add here isSecure or something similar
     def endpoint: String
 
-    // then you can do: service please createTable(table, initialState)
-    // it could also be apply, like: service createTable(table, initialState)
-    // def apply[A <: AnyAction, E <: Executor.For[A]](action: A)
-    //   (implicit mkE: A => E): E#Out = {
-    //   // E#OutC[(A#Output, A#Resources, A#OutputState)] = {
-    //     val exec = mkE(action)
-    //     exec()
-    //   }
-
-    // def plz[A <: AnyTableAction, E <: ExecutorFor[A]](action: A)
-    //   (implicit exec: (A#Table, A) => E): A#InputState => OutOf[E] = { s => exec(action.table, action)(action)(s) }
-
-    def please[A <: AnyAction, E <: ExecutorFor[A]](action: A)
-      (implicit mkExec: A => E): A#InputState => E#Out = {
-        val exec = mkExec(action)
+    def execute[A <: AnyAction, E <: ExecutorFor[A]](action: A)
+      (implicit exec: E): A#InputState => E#Out = {
         s => exec(action)(s)
       }
 
-    // def please[A <: AnyAction, E <: ExecutorFor[A]](action: A)
-    //   (implicit exec: E): A#InputState => OutOf[E] = { s => exec(action)(s) }
   }
 
 }

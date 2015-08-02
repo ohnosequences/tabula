@@ -62,9 +62,9 @@ class irishService extends FunSuite {
     S <: AnyTableState.For[T]
   ](table: T, state: S): Active[T] = {
 
-    val exec = service please DescribeTable(table)
-    // val exec = service.please(DescribeTable(table)) //(executors.describeTableExecutor[T, DescribeTable[T]])
-    // val exec = service.plz(DescribeTable(table)) //(executors.describeTableExecutor)
+    // FIXME: implicits are not found
+    val exec = service.execute(DescribeTable(table))
+    // val exec = service.execute(DescribeTable(table))(executors.describeTableExecutor[T])
     val result = exec(state)
 
     result.state match {
@@ -83,13 +83,13 @@ class irishService extends FunSuite {
     import SDKRepSerializers._
 
     // CREATE TABLE
-    val createResult = (service please CreateTable(table)).apply(InitialState(table, service.account, InitialThroughput(1, 1)))
+    val createResult = (service execute CreateTable(table)).apply(InitialState(table, service.account, InitialThroughput(1, 1)))
     val afterCreate = waitFor(table, createResult.state)
 
     // UPDATE TABLE (takes time)
-    // val updateResult  = service please UpdateTable(table, afterCreate).withReadWriteThroughput(2, 2)
+    // val updateResult  = service execute UpdateTable(table, afterCreate).withReadWriteThroughput(2, 2)
     // val afterUpdate = waitFor(table, updateResult.state)
-    // val updateResult2 = service please UpdateTable(table, afterUpdate).withReadWriteThroughput(1, 1)
+    // val updateResult2 = service execute UpdateTable(table, afterUpdate).withReadWriteThroughput(1, 1)
     // val afterUpdate2 = waitFor(table, updateResult2.state)
 
     // PUT ITEM
@@ -120,9 +120,9 @@ class irishService extends FunSuite {
 // <<<<<<< HEAD
 //     val foo = (user1: normalUser.Raw).serializeTo[SDKRep]
 
-//     val putResul1 = service please putputput(afterCreate, user1)
+//     val putResul1 = service execute putputput(afterCreate, user1)
 
-//     // val putResul1 = service please ((InCompositeKeyTable(table, afterCreate) putItem normalUser).withValue(user1: normalUser.Raw)
+//     // val putResul1 = service execute ((InCompositeKeyTable(table, afterCreate) putItem normalUser).withValue(user1: normalUser.Raw)
 //       // (
 //       //   ohnosequences.cosas.ops.typeSets.SerializeTo.cons,
 //       //   // [SDKRep, ValueOf[id.type], ValueOf[name.type] :~: ValueOf[email.type] :~: ValueOf[color.type] :~: ∅],
@@ -133,19 +133,19 @@ class irishService extends FunSuite {
 //     assert(putResul1.output === PutItemSuccess)
 //     val afterPut1 = waitFor(table, putResul1.state)
 
-//     // val putResul2 = service please (InCompositeKeyTable(table, afterPut1) putItem normalUser withValue user2)
-//     val putResul2 = service please putputput(afterPut1, user2)
+//     // val putResul2 = service execute (InCompositeKeyTable(table, afterPut1) putItem normalUser withValue user2)
+//     val putResul2 = service execute putputput(afterPut1, user2)
 //     assert(putResul2.output === PutItemSuccess)
 //     val afterPut2 = waitFor(table, putResul2.state)
 
-//     val putResult3 = service please putputput(afterPut2, user3 as simpleUser)
+//     val putResult3 = service execute putputput(afterPut2, user3 as simpleUser)
 //     assert(putResult3.output === PutItemSuccess)
 //     val afterPut3 = waitFor(table, putResult3.state)
 
 //     // QUERY TABLE
 
 //     // here we get both users by the hash key
-//     val simpleQueryResult = service please ((QueryTable(table, afterPut3) forItem normalUser).
+//     val simpleQueryResult = service execute ((QueryTable(table, afterPut3) forItem normalUser).
 //                                             withHashKey(user1.get(id))
 //                                               // (
 //                                               //   ToItem.buah(ToProperties.cons[
@@ -160,13 +160,13 @@ class irishService extends FunSuite {
 //     assert(simpleQueryResult.output === QuerySuccess(List(user1, user2)))
 
 //     // here we would get the same, but we add a range condition on the name
-//     val normalQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser
+//     val normalQueryResult = service execute (QueryTable(table, afterPut3) forItem normalUser
 //                                             withHashKey user1.get(id)
 //                                             andRangeCondition (name beginsWith "Evd"))
 //     assert(normalQueryResult.output === QuerySuccess(List(user2)))
 
 //     // here we don't get anything
-//     val emptyQueryResult = service please (QueryTable(table, afterPut3) forItem normalUser
+//     val emptyQueryResult = service execute (QueryTable(table, afterPut3) forItem normalUser
 //                                             withHashKey user1.get(id)
 //                                             andRangeCondition (name beginsWith "foo"))
 //     assert(emptyQueryResult.output === QuerySuccess(List()))
@@ -176,28 +176,28 @@ class irishService extends FunSuite {
 
 //     // GET ITEM
 //     // NOTE: here we check that we can get a simpleUser instead of the normalUser and we will get only those properties
-//     val getResult = service please (FromCompositeKeyTable(table, afterPut3) getItem simpleUser withKeys (user1.get(id), user1.get(name)))
+//     val getResult = service execute (FromCompositeKeyTable(table, afterPut3) getItem simpleUser withKeys (user1.get(id), user1.get(name)))
 //     assert(getResult.output === GetItemSuccess(
 //       simpleUser(id(1) :~: name("Edu") :~: ∅)
 //     ))
 
 //     // DELETE ITEM + get again
-//     val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterPut3) withKeys (user1.get(id), user1.get(name)))
+//     val delResult = service execute (DeleteItemFromCompositeKeyTable(table, afterPut3) withKeys (user1.get(id), user1.get(name)))
 //     val afterDel = waitFor(table, delResult.state)
-//     val getResult2 = service please (FromCompositeKeyTable(table, afterDel) getItem normalUser withKeys (user1.get(id), user1.get(name)))
+//     val getResult2 = service execute (FromCompositeKeyTable(table, afterDel) getItem normalUser withKeys (user1.get(id), user1.get(name)))
 //     assert(getResult2.output === GetItemFailure("java.lang.NullPointerException"))
 // =======
 
     // TODO: some implicits missing here:
-    // val putResult1 = (service please PutItem(user1)).apply(afterCreate)
+    // val putResult1 = (service execute PutItem(user1)).apply(afterCreate)
     // assert(putResult1.output === None)
     // val afterPut1 = waitFor(table, putResult1.state)
     //
-    // val putResult2 = (service please PutItem(user2)).apply(afterPut1)
+    // val putResult2 = (service execute PutItem(user2)).apply(afterPut1)
     // assert(putResult2.output === None)
     // val afterPut2 = waitFor(table, putResult2.state)
     //
-    // val putResult3 = (service please PutItem(user3 as simpleUser)).apply(afterPut2)
+    // val putResult3 = (service execute PutItem(user3 as simpleUser)).apply(afterPut2)
     // assert(putResult3.output === None)
     // val afterPut3 = waitFor(table, putResult3.state)
 
@@ -205,18 +205,18 @@ class irishService extends FunSuite {
 
     // here we get both users by the hash key
     // val a = SimpleQuery(normalUser, user1.get(name))
-    // val simpleQueryResult = (service please a).apply(afterPut3)
+    // val simpleQueryResult = (service execute a).apply(afterPut3)
 
     // assert(simpleQueryResult.output === QuerySuccess(List(user1, user2)))
 
 //     // // here we would get the same, but we add a range condition on the name
-//     // val normalQueryResult = service please (QueryTable(afterPut3) forItem normalUser
+//     // val normalQueryResult = service execute (QueryTable(afterPut3) forItem normalUser
 //     //                                         withHashKey user1.get(id)
 //     //                                         andRangeCondition (name beginsWith "Evd"))
 //     // assert(normalQueryResult.output === QuerySuccess(List(user2)))
 
 //     // // here we don't get anything
-//     // val emptyQueryResult = service please (QueryTable(afterPut3) forItem normalUser
+//     // val emptyQueryResult = service execute (QueryTable(afterPut3) forItem normalUser
 //     //                                         withHashKey user1.get(id)
 //     //                                         andRangeCondition (name beginsWith "foo"))
 //     // assert(emptyQueryResult.output === QuerySuccess(List()))
@@ -226,21 +226,21 @@ class irishService extends FunSuite {
 
 //     // // GET ITEM
 //     // // NOTE: here we check that we can get a simpleUser instead of the normalUser and we will get only those attributes
-//     // val getResult = service please (FromCompositeKeyTable(afterPut3) getItem simpleUser withKeys (user1.get(id), user1.get(name)))
+//     // val getResult = service execute (FromCompositeKeyTable(afterPut3) getItem simpleUser withKeys (user1.get(id), user1.get(name)))
 //     // assert(getResult.output === GetItemSuccess(
 //     //   simpleUser ->> ((id ->> 1) :~: (name ->> "Edu") :~: ∅)
 //     // ))
 
 //     // // DELETE ITEM + get again
-//     // val delResult = service please (DeleteItemFromCompositeKeyTable(table, afterPut3) withKeys (user1.get(id), user1.get(name)))
+//     // val delResult = service execute (DeleteItemFromCompositeKeyTable(table, afterPut3) withKeys (user1.get(id), user1.get(name)))
 //     // val afterDel = waitFor(table, delResult.state)
-//     // val getResult2 = service please (FromCompositeKeyTable(afterDel) getItem normalUser withKeys (user1.get(id), user1.get(name)))
+//     // val getResult2 = service execute (FromCompositeKeyTable(afterDel) getItem normalUser withKeys (user1.get(id), user1.get(name)))
 //     // assert(getResult2.output === GetItemFailure("java.lang.NullPointerException"))
 // >>>>>>> feature/table/ops
 
     // DELETE TABLE
     val lastState = waitFor(table, createResult.state)
-    (service please DeleteTable(table)).apply(lastState)
+    (service execute DeleteTable(table)).apply(lastState)
 
   }
 

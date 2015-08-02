@@ -30,7 +30,7 @@ case object items {
     type Raw <: AnyTypeSet
   }
 
-  class Item [
+  class Item[
     T  <: AnyTable,
     Attrs <: AnyTypeSet.Of[AnyAttribute],
     Vals <: AnyTypeSet

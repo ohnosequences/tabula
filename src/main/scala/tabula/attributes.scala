@@ -19,4 +19,9 @@ case object attributes {
       val validRaw: R isOneOf ValidValues
     ) extends AnyAttribute { type Raw = R }
 
+
+  object AnyAttribute {
+
+    type ofType[T] = AnyAttribute { type Raw = T }
+  }
 }

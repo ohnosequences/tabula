@@ -2,12 +2,13 @@ package ohnosequences.tabula.action
 
 import ohnosequences.tabula._, states._, actions._, tables._
 
-trait AnyDescribeTable extends AnyTableAction {
+
+case class DescribeTable[T <: AnyTable](val table: T) extends AnyTableAction {
+
+  type Table = T
+
   type InputState  = AnyTableState.For[Table]
   type OutputState = AnyTableState.For[Table]
 
   type Output = None.type
 }
-
-case class DescribeTable[T <: AnyTable](val table: T)
-  extends AnyDescribeTable { type Table = T }

@@ -2,7 +2,7 @@ package ohnosequences.tabula.impl
 
 import ohnosequences.cosas._, records._, fns._, types._
 import ohnosequences.cosas.ops.typeSets._
-import ohnosequences.tabula._
+import ohnosequences.tabula._, tables._, items._
 import ImplicitConversions._
 import com.amazonaws.services.dynamodbv2.model._
 
@@ -10,40 +10,46 @@ import com.amazonaws.services.dynamodbv2.model._
 case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
 
   /* CREATE TABLE */
-  implicit def createTableExecutor[A <: action.AnyCreateTable](a: A):
-    CreateTableExecutor[A] =
-    CreateTableExecutor[A](dynamoClient)
+  implicit def createTableExecutor[T <: AnyTable]:
+    CreateTableExecutor[T] =
+    CreateTableExecutor[T](dynamoClient)
 
 
   /* DELETE TABLE */
-  implicit def deleteTableExecutor[A <: action.AnyDeleteTable](a: A):
-    DeleteTableExecutor[A] =
-    DeleteTableExecutor[A](dynamoClient)
+  implicit def deleteTableExecutor[T <: AnyTable]:
+    DeleteTableExecutor[T] =
+    DeleteTableExecutor[T](dynamoClient)
 
 
   /* DESCRIBE TABLE */
-  implicit def describeTableExecutor[A <: action.AnyDescribeTable](a: A):
-    DescribeTableExecutor[A] =
-    DescribeTableExecutor[A](dynamoClient)
+  implicit def describeTableExecutor[T <: AnyTable]:
+    DescribeTableExecutor[T] =
+    DescribeTableExecutor[T](dynamoClient)
 
 
   /* UPDATE TABLE */
-  implicit def updateTableExecutor[A <: action.AnyUpdateTable](a: A):
-    UpdateTableExecutor[A] =
-    UpdateTableExecutor[A](dynamoClient)
+  implicit def updateTableExecutor[T <: AnyTable]:
+    UpdateTableExecutor[T] =
+    UpdateTableExecutor[T](dynamoClient)
 
 
   /* PUT ITEM */
-  implicit def putItemExecutor[A <: action.AnyPutItem](a: A)(implicit
-      serializer: A#Item#Raw SerializeTo SDKRep
-    ): PutItemExecutor[A] =
-       PutItemExecutor[A](dynamoClient, serializer)
+  implicit def putItemExecutor[I <: AnyItem](implicit
+      serializer: I#Raw SerializeTo SDKRep
+    ): PutItemExecutor[I] =
+       PutItemExecutor[I](dynamoClient, serializer)
+
+  /* DELETE ITEM */
+  implicit def deleteItemExecutor[I <: AnyItem]:
+    DeleteItemExecutor[I] =
+    DeleteItemExecutor[I](dynamoClient)
 
 
-  // /* GET ITEM */
-  // // implicit def getItemHashKeyExecutor[A <: AnyGetItemHashKeyAction with SDKRepParser](a: A):
-  // //   GetItemHashKeyExecutor[A] =
-  // //   GetItemHashKeyExecutor[A](a)(dynamoClient)
+  /* GET ITEM */
+  implicit def getItemExecutor[I <: AnyItem](implicit
+    parser: (I#Attributes ParseFrom SDKRep) { type Out = I#Raw }
+  ): GetItemExecutor[I] =
+     GetItemExecutor[I](dynamoClient, parser)
 
   // // implicit def getItemCompositeKeyExecutor[A <: AnyGetItemCompositeKeyAction with SDKRepParser](a: A):
   // //   GetItemCompositeKeyExecutor[A] =
@@ -62,7 +68,6 @@ case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
   //      QueryExecutor[A](dynamoClient, parser)
 
 
-  // /* DELETE ITEM */
   // // implicit def deleteItemHashKeyExecutor[A <: AnyDeleteItemHashKeyAction](a: A):
   // //   DeleteItemHashKeyExecutor[A] =
   // //   DeleteItemHashKeyExecutor[A](a)(dynamoClient)

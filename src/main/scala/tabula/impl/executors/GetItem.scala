@@ -1,92 +1,48 @@
-// package ohnosequences.tabula.impl
+package ohnosequences.tabula.impl
 
-// import ohnosequences.tabula._, ImplicitConversions._
-// import com.amazonaws.services.dynamodbv2.model._
-// import ohnosequences.cosas.types._
+import ohnosequences.cosas.ops.typeSets._
+import ohnosequences.tabula._, executors._, items._, tables._
+import ImplicitConversions._
+import com.amazonaws.services.dynamodbv2.model.GetItemRequest
+import ohnosequences.cosas.types._
 
-// case class GetItemHashKeyExecutor [A <: AnyGetItemHashKeyAction](
-//   val a: A
-// )(
-//  val dynamoClient: AnyDynamoDBClient
-// ) extends Executor[A](a) {
+case class GetItemExecutor[I <: AnyItem](
+  dynamoClient: AnyDynamoDBClient,
+  parser: (I#Attributes ParseFrom SDKRep) { type Out = I#Raw }
+) extends ExecutorFor[action.GetItem[I]] {
 
-// // import ohnosequences.tabula._, ImplicitConversions._
-// // import com.amazonaws.services.dynamodbv2.model._
+  type OutC[X] = X
 
-// // case class GetItemHashKeyExecutor[A <: AnyGetItemHashKeyAction with SDKRepParser](a: A)
-// //   (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
+  def apply(action: Action)(inputState: Action#InputState): Out = {
 
-// //   type OutC[X] = X
+    import scala.collection.JavaConversions._
+    println("executing: " + action)
 
-//   import scala.collection.JavaConversions._
+    val itemKey = (action.table.primaryKey, action.keyValue) match {
+      case (HashKey(hash), h) => Map(
+        hash.label -> getAttrVal(h)
+      )
+      case (CompositeKey(hash, range), (h, r)) => Map(
+        hash.label -> getAttrVal(h),
+        range.label -> getAttrVal(r)
+      )
+    }
 
-//   def apply(): Out = {
+    val itemValue: ValueOf[Action#Item] =
+      try {
+        val itemRep: SDKRep =
+          dynamoClient.client.getItem(
+            action.table.name,
+            itemKey
+          ).getItem.toMap
 
-//     println("executing: " + action)
+        action.item := parser(action.item.attributes, itemRep)
+      } catch {
+        // FIXME: errors handling
+        case t: Exception => println(t.printStackTrace); throw(t)
+      }
 
-//     val res: ohnosequences.tabula.GetItemResult[action.Item] = try {
+    ExecutorResult[Action](itemValue, inputState)
+  }
 
-// //   import scala.collection.JavaConversions._
-// //   def apply(): Out = {
-// //     println("executing: " + action)
-
-// //     val res = try {
-
-// //       val getItemRequest = new GetItemRequest()
-// //         .withTableName(action.table.name)
-// //         .withKey(Map(
-// //           action.table.hashKey.label -> getAttrVal(action.input)
-// //         ))
-
-// //       val toSDKRep = dynamoClient.client.getItem(getItemRequest).getItem
-
-
-//       GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
-//     } catch {
-//       case t: Exception => GetItemFailure(t.toString)
-//     }
-
-// //       GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
-// //     } catch {
-// //       case t: Exception => GetItemFailure[action.Item](t.toString)
-// //     }
-
-// //     ExecutorResult(res, action.table, inputState)
-// //   }
-// // }
-
-// // case class GetItemCompositeKeyExecutor[A <: AnyGetItemCompositeKeyAction with SDKRepParser](a: A)
-// //   (dynamoClient: AnyDynamoDBClient) extends Executor[A](a) {
-
-// //   type OutC[X] = X
-
-// //   import scala.collection.JavaConversions._
-// //   def apply(): Out = {
-// //     println("executing: " + action)
-
-//     val res: ohnosequences.tabula.GetItemResult[action.Item] = try {
-
-// //     val res = try {
-
-// //       val getItemRequest = new GetItemRequest()
-// //         .withTableName(action.table.name)
-// //         .withKey(Map(
-// //           action.table.hashKey.label -> getAttrVal(action.input._1),
-// //           action.table.rangeKey.label -> getAttrVal(action.input._2)
-// //         ))
-
-// //       val toSDKRep = dynamoClient.client.getItem(getItemRequest).getItem
-
-//       GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
-//     } catch {
-//       case t: Exception => GetItemFailure(t.toString)
-//     }
-
-// //       GetItemSuccess(action.parseSDKRep(toSDKRep.toMap))
-// //     } catch {
-// //       case t: Exception => GetItemFailure[action.Item](t.toString)
-// //     }
-
-// //     ExecutorResult(res, action.table, inputState)
-// //   }
-// // }
+}

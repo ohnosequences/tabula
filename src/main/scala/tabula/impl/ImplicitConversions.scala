@@ -26,19 +26,19 @@ object ImplicitConversions {
 
   object SDKRepParsers {
 
-    implicit def caseNum[P <: AnyProperty.ofType[Num]](p: P, m: SDKRep):
-      (ValueOf[P], SDKRep) = (p(m(p.label).getN.toInt), m)
+    implicit def caseNum[A <: AnyAttribute.ofType[Num]](attr: A, rep: SDKRep):
+      (ValueOf[A], SDKRep) = (attr(rep(attr.label).getN.toInt), rep)
 
-    implicit def caseString[P <: AnyProperty.ofType[String]](p: P, m: SDKRep):
-      (ValueOf[P], SDKRep) = (p(m(p.label).getS.toString), m)
+    implicit def caseString[A <: AnyAttribute.ofType[String]](attr: A, rep: SDKRep):
+      (ValueOf[A], SDKRep) = (attr(rep(attr.label).getS.toString), rep)
 
     // TODO: a case for Bytes
   }
 
   object SDKRepSerializers {
 
-    implicit def default[P <: AnyProperty](t: ValueOf[P])
-      (implicit getP: ValueOf[P] => P): SDKRep = Map(getP(t).label -> getAttrVal[P#Raw](t.value))
+    implicit def default[A <: AnyAttribute](t: ValueOf[A])
+      (implicit getP: ValueOf[A] => A): SDKRep = Map(getP(t).label -> getAttrVal[A#Raw](t.value))
   }
 
   // trait SDKRepParser extends AnyItemAction {
