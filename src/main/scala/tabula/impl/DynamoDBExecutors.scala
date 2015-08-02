@@ -51,11 +51,6 @@ case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
   ): GetItemExecutor[I] =
      GetItemExecutor[I](dynamoClient, parser)
 
-  // // implicit def getItemCompositeKeyExecutor[A <: AnyGetItemCompositeKeyAction with SDKRepParser](a: A):
-  // //   GetItemCompositeKeyExecutor[A] =
-  // //   GetItemCompositeKeyExecutor[A](a)(dynamoClient)
-
-
   /* QUERY */
   // implicit def queryExecutor[A0 <: AnyQueryAction, A <: AnyQueryAction.Q[A0]](a: A)(implicit
   //     parser: (PropertiesOf[A#Item] ParseFrom SDKRep) with out[RawOf[A#Item]]
@@ -66,14 +61,4 @@ case class DynamoDBExecutors(dynamoClient: AnyDynamoDBClient) {
   //     parser: (A#Item#Properties ParseFrom SDKRep) with out[A#Item#Raw]
   //   ): QueryExecutor[A] =
   //      QueryExecutor[A](dynamoClient, parser)
-
-
-  // // implicit def deleteItemHashKeyExecutor[A <: AnyDeleteItemHashKeyAction](a: A):
-  // //   DeleteItemHashKeyExecutor[A] =
-  // //   DeleteItemHashKeyExecutor[A](a)(dynamoClient)
-
-  // // implicit def deleteItemCompositeKeyExecutor[A <: AnyDeleteItemCompositeKeyAction](a: A):
-  // //   DeleteItemCompositeKeyExecutor[A] =
-  // //   DeleteItemCompositeKeyExecutor[A](a)(dynamoClient)
-
 }
